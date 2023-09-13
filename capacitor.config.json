@@ -1,0 +1,11 @@
+{
+  "appId": "io.github.coloradoschoolofmines.yikyakclone",
+  "appName": "yikyak-clone",
+  "bundledWebRuntime": false,
+  "webDir": "dist",
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0
+    }
+  }
+}
