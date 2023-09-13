@@ -1,0 +1,7 @@
+{
+  "name": "yikyak-clone",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react-vite"
+}
