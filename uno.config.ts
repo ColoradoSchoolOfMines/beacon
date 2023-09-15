@@ -1,15 +1,15 @@
 /**
- * @fileoverview UnoCSS config
+ * @file UnoCSS config
+ * @see https://unocss.dev/guide/config-file
  */
 
-//Imports
 import presetWind from "@unocss/preset-wind";
 import transformDirectives from "@unocss/transformer-directives";
 import {Colord, extend} from "colord";
 import mixPlugin from "colord/plugins/mix";
 import {defineConfig} from "unocss";
 
-//Extend Colord
+// Extend Colord
 extend([mixPlugin]);
 
 /**
@@ -17,7 +17,7 @@ extend([mixPlugin]);
  */
 const primary = new Colord("#0000ff");
 
-//Generate primary tints and shades
+// Generate primary tints and shades
 const primaryTones = Object.fromEntries(
   [...primary.tints(11).reverse(), ...primary.shades(11).slice(1)]
     .map((color, index) => [50 * index, color.toHex()])
@@ -25,7 +25,6 @@ const primaryTones = Object.fromEntries(
     .slice(1, -1)
 );
 
-//Export
 export default defineConfig({
   presets: [
     presetWind({

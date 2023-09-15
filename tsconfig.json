@@ -2,6 +2,7 @@
   "compilerOptions": {
     /* Language and Environment */
     "target": "ESNext",
+
     /* Modules */
     "module": "ESNext",
     "moduleResolution": "Node",
@@ -13,24 +14,29 @@
     },
     "baseUrl": ".",
     "types": [
-      "src/vite-env.d.ts"
+      "vite/client"
     ],
+
     /* JavaScript Support */
     "allowJs": true,
     "checkJs": true,
+
     /* Emit */
     "noEmit": true,
+
     /* Language and Environment */
     "lib": [
       "ESNext",
       "DOM"
     ],
     "jsx": "react-jsx",
+
     /* Interop Constraints */
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
+
     /* Type Checking */
     "strict": true,
     "noImplicitAny": true,
@@ -45,8 +51,10 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
+
     /* Language and Environment */
     "useDefineForClassFields": true,
+
     /* Completeness */
     "skipLibCheck": true
   },

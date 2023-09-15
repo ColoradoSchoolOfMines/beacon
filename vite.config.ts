@@ -1,21 +1,20 @@
 /**
- * @fileoverview Vite config
+ * @file Vite config
+ * @see https://vitejs.dev/config/
  */
 
-//Imports
 import {dirname, join} from "node:path";
 import {fileURLToPath} from "node:url";
+import {VitePWA} from "vite-plugin-pwa";
 import legacy from "@vitejs/plugin-legacy";
 import react from "@vitejs/plugin-react";
 import UnoCSS from "unocss/vite";
 import {defineConfig} from "vite";
-import {VitePWA} from "vite-plugin-pwa";
 import Paths from "vite-tsconfig-paths";
 
-//Get the root directory
+// Get the root directory
 const root = dirname(fileURLToPath(import.meta.url));
 
-//Export
 export default defineConfig({
   plugins: [
     react(),

@@ -1,3 +1,8 @@
+/**
+ * @file Capacitor config
+ * @see https://capacitorjs.com/docs/config
+ */
+
 import {CapacitorConfig} from "@capacitor/cli";
 
 const config: CapacitorConfig = {

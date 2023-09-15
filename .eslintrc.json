@@ -7,6 +7,8 @@
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:@typescript-eslint/strict",
+    "plugin:jsdoc/recommended",
+    "plugin:jsdoc/recommended-typescript",
     "plugin:prettier/recommended",
     "plugin:react/recommended",
     "plugin:unicorn/recommended"
@@ -22,6 +24,7 @@
   "plugins": [
     "@limegrass/import-alias",
     "@typescript-eslint",
+    "jsdoc",
     "prettier",
     "unicorn"
   ],
@@ -53,6 +56,27 @@
       }
     ],
     "eqeqeq": "error",
+    "jsdoc/informative-docs": "warn",
+    "jsdoc/require-jsdoc": [
+      "warn",
+      {
+        "require": {
+          "ArrowFunctionExpression": true,
+          "ClassDeclaration": true,
+          "ClassExpression": true,
+          "FunctionDeclaration": true,
+          "FunctionExpression": true,
+          "MethodDefinition": true
+        }
+      }
+    ],
+    "jsdoc/require-param": [
+      "warn",
+      {
+        "checkDestructured": false,
+        "checkDestructuredRoots": false
+      }
+    ],
     "padding-line-between-statements": [
       "warn",
       {
@@ -184,6 +208,7 @@
         "next": "export"
       }
     ],
+    "multiline-comment-style": "warn",
     "no-extra-semi": "warn",
     "no-undef": "off",
     "no-var": "error",
@@ -191,6 +216,15 @@
     "prettier/prettier": "warn",
     "react/prop-types": "off",
     "react/react-in-jsx-scope": "off",
+    "spaced-comment": [
+      "warn",
+      "always",
+      {
+        "block": {
+          "balanced": true
+        }
+      }
+    ],
     "unicorn/filename-case": "off",
     "unicorn/prefer-query-selector": "off",
     "unicorn/prevent-abbreviations": "off"

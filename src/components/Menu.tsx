@@ -82,6 +82,10 @@ const labels = [
   "Reminders"
 ];
 
+/**
+ * Menu component
+ * @returns JSX
+ */
 const Menu: React.FC = () => {
   const location = useLocation();
 

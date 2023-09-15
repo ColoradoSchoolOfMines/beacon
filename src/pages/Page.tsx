@@ -11,6 +11,10 @@ import ExploreContainer from "~/components/ExploreContainer";
 import {useParams} from "react-router";
 import "~/pages/Page.css";
 
+/**
+ * Page component
+ * @returns JSX
+ */
 const Page: React.FC = () => {
   const {name} = useParams<{name: string}>();
   return (

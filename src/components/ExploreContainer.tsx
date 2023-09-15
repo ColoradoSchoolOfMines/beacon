@@ -1,9 +1,16 @@
 import "~/components/ExploreContainer.css";
 
 interface ContainerProperties {
+  /**
+   * Explore name
+   */
   name: string;
 }
 
+/**
+ * Explore container component
+ * @returns JSX
+ */
 const ExploreContainer: React.FC<ContainerProperties> = ({name}) => {
   return (
     <div id="container">
