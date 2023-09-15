@@ -1,15 +1,15 @@
 {
   "name": "yikyak-clone",
   "private": true,
+  "description": "An Ionic project",
   "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test.e2e": "cypress run",
-    "test.unit": "vitest",
-    "lint": "eslint"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@capacitor/app": "5.0.6",
@@ -29,20 +29,30 @@
   },
   "devDependencies": {
     "@capacitor/cli": "5.3.0",
+    "@limegrass/eslint-plugin-import-alias": "^1.1.0",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.4.3",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
+    "@typescript-eslint/eslint-plugin": "^6.7.0",
+    "@typescript-eslint/parser": "^6.7.0",
+    "@unocss/preset-wind": "^0.55.7",
+    "@unocss/transformer-directives": "^0.55.7",
     "@vitejs/plugin-legacy": "^4.0.2",
     "@vitejs/plugin-react": "^4.0.1",
-    "cypress": "^12.7.0",
+    "colord": "^2.9.3",
     "eslint": "^8.35.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-react": "^7.32.2",
-    "jsdom": "^22.1.0",
+    "eslint-plugin-unicorn": "^48.0.1",
+    "prettier": "^2.8.8",
+    "prettier-plugin-multiline-arrays": "^2.0.0",
     "typescript": "^5.1.6",
+    "unocss": "^0.55.7",
     "vite": "^4.3.9",
-    "vitest": "^0.32.2"
-  },
-  "description": "An Ionic project"
+    "vite-plugin-pwa": "^0.16.5",
+    "vite-tsconfig-paths": "^4.2.1"
+  }
 }

@@ -1,0 +1,11 @@
+{
+  "arrowParens": "avoid",
+  "bracketSameLine": false,
+  "bracketSpacing": false,
+  "multilineArraysWrapThreshold": 2,
+  "htmlWhitespaceSensitivity": "strict",
+  "trailingComma": "none",
+  "plugins": [
+    "prettier-plugin-multiline-arrays"
+  ]
+}

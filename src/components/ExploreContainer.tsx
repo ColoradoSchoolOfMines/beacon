@@ -1,14 +1,24 @@
-import './ExploreContainer.css';
+import "~/components/ExploreContainer.css";
 
-interface ContainerProps {
+interface ContainerProperties {
   name: string;
 }
 
-const ExploreContainer: React.FC<ContainerProps> = ({ name }) => {
+const ExploreContainer: React.FC<ContainerProperties> = ({name}) => {
   return (
     <div id="container">
       <strong>{name}</strong>
-      <p>Explore <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
+
+      <p>
+        Explore{" "}
+        <a
+          target="_blank"
+          rel="noopener noreferrer"
+          href="https://ionicframework.com/docs/components"
+        >
+          UI Components
+        </a>
+      </p>
     </div>
   );
 };

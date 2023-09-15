@@ -1,0 +1,198 @@
+{
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/strict",
+    "plugin:prettier/recommended",
+    "plugin:react/recommended",
+    "plugin:unicorn/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "project": [
+      "tsconfig.json"
+    ],
+    "sourceType": "module"
+  },
+  "plugins": [
+    "@limegrass/import-alias",
+    "@typescript-eslint",
+    "prettier",
+    "unicorn"
+  ],
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
+  "rules": {
+    "@limegrass/import-alias/import-alias": "warn",
+    "@typescript-eslint/ban-types": [
+      "error",
+      {
+        "types": {
+          "{}": false
+        }
+      }
+    ],
+    "@typescript-eslint/consistent-type-definitions": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-this-alias": "off",
+    "@typescript-eslint/no-unnecessary-condition": "off",
+    "@typescript-eslint/non-nullable-type-assertion-style": "off",
+    "camelcase": [
+      "warn",
+      {
+        "properties": "always"
+      }
+    ],
+    "eqeqeq": "error",
+    "padding-line-between-statements": [
+      "warn",
+      {
+        "blankLine": "always",
+        "prev": "*",
+        "next": [
+          "block",
+          "block-like",
+          "class",
+          "do",
+          "for",
+          "function",
+          "if",
+          "iife",
+          "multiline-block-like",
+          "multiline-const",
+          "multiline-expression",
+          "multiline-let",
+          "multiline-var",
+          "switch",
+          "try",
+          "while",
+          "with"
+        ]
+      },
+      {
+        "blankLine": "always",
+        "prev": [
+          "block",
+          "block-like",
+          "class",
+          "do",
+          "for",
+          "function",
+          "if",
+          "iife",
+          "multiline-block-like",
+          "multiline-const",
+          "multiline-expression",
+          "multiline-let",
+          "multiline-var",
+          "switch",
+          "try",
+          "while",
+          "with"
+        ],
+        "next": "*"
+      },
+      {
+        "blankLine": "always",
+        "prev": "import",
+        "next": [
+          "block",
+          "block-like",
+          "break",
+          "case",
+          "cjs-export",
+          "class",
+          "const",
+          "continue",
+          "debugger",
+          "default",
+          "directive",
+          "do",
+          "empty",
+          "export",
+          "expression",
+          "for",
+          "function",
+          "if",
+          "iife",
+          "let",
+          "multiline-block-like",
+          "multiline-const",
+          "multiline-expression",
+          "multiline-let",
+          "multiline-var",
+          "return",
+          "singleline-const",
+          "singleline-let",
+          "singleline-var",
+          "switch",
+          "throw",
+          "try",
+          "var",
+          "while",
+          "with"
+        ]
+      },
+      {
+        "blankLine": "always",
+        "prev": [
+          "block",
+          "block-like",
+          "break",
+          "case",
+          "cjs-import",
+          "class",
+          "const",
+          "continue",
+          "debugger",
+          "default",
+          "directive",
+          "do",
+          "empty",
+          "expression",
+          "for",
+          "function",
+          "if",
+          "iife",
+          "import",
+          "let",
+          "multiline-block-like",
+          "multiline-const",
+          "multiline-expression",
+          "multiline-let",
+          "multiline-var",
+          "return",
+          "singleline-const",
+          "singleline-let",
+          "singleline-var",
+          "switch",
+          "throw",
+          "try",
+          "var",
+          "while",
+          "with"
+        ],
+        "next": "export"
+      }
+    ],
+    "no-extra-semi": "warn",
+    "no-undef": "off",
+    "no-var": "error",
+    "prefer-const": "warn",
+    "prettier/prettier": "warn",
+    "react/prop-types": "off",
+    "react/react-in-jsx-scope": "off",
+    "unicorn/filename-case": "off",
+    "unicorn/prefer-query-selector": "off",
+    "unicorn/prevent-abbreviations": "off"
+  }
+}
