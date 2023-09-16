@@ -9,7 +9,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "supabase:start": "supabase start"
   },
   "dependencies": {
     "@capacitor/app": "5.0.6",
@@ -50,6 +51,7 @@
     "eslint-plugin-unicorn": "^48.0.1",
     "prettier": "^2.8.8",
     "prettier-plugin-multiline-arrays": "^2.0.0",
+    "supabase": "^1.93.0",
     "typescript": "^5.1.6",
     "unocss": "^0.55.7",
     "vite": "^4.3.9",

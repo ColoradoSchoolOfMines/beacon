@@ -6,7 +6,10 @@
 
 ### Setup
 
-1. Install [NodeJS](https://nodejs.org/en/download/) (LTS recommended) and [Git](https://git-scm.com/downloads)
+1. Install dependencies
+  * [NodeJS](https://nodejs.org/en/download/) (LTS recommended)
+  * [Git](https://git-scm.com/downloads)
+  * [Docker/Docker Engine](https://docs.docker.com/engine/install/) (If you want to run Supabase locally)
 2. Clone the repository:
 ```bash
 git clone https://github.com/ColoradoSchoolOfMines/yikyak-clone.git
@@ -15,10 +18,16 @@ git clone https://github.com/ColoradoSchoolOfMines/yikyak-clone.git
 ```bash
 npm install
 ```
-4. Still inside the repository, start the development server:
+4. If you want to run Supabase locally, start the Docker container:
+```bash
+# This can take a while the first time you run it because it has to download a bunch of Docker images
+npm run supabase:start
+```
+5. Still inside the repository, start the development server:
 ```bash
 npm run dev
 ```
+6. Open [`http://localhost:3000`](http://localhost:3000) in your browser
 
 ### Technologies
 
