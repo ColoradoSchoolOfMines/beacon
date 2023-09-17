@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "supabase:start": "supabase start"
+    "supabase:start": "supabase start",
+    "supabase:reset": "supabase db reset"
   },
   "dependencies": {
     "@capacitor/app": "5.0.6",

@@ -6,7 +6,6 @@
     "esbenp.prettier-vscode",
     "ionic.ionic",
     "seatonjiang.gitmoji-vscode",
-    "yoavbls.pretty-ts-errors",
-    "inferrinizzard.prettier-sql-vscode"
+    "yoavbls.pretty-ts-errors"
   ]
 }
