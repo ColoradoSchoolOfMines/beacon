@@ -45,6 +45,26 @@ BEGIN
 END;
 $$;
 
+-- Calculate the distance between two locations, with an uncertainty factor to anonymize the locations
+CREATE OR REPLACE FUNCTION utilities.anonymized_distance(
+  -- First location
+  _a GEOGRAPHY(POINT, 4326),
+
+  -- Second location
+  _b GEOGRAPHY(POINT, 4326),
+
+  -- Distance uncertainty (in meters)
+  _uncertainty DOUBLE PRECISION
+)
+RETURNS DOUBLE PRECISION
+VOLATILE
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN ST_Distance(_a, _b) + (_uncertainty * utilities.safe_random());
+END;
+$$;
+
 -- Get a random color
 CREATE OR REPLACE FUNCTION utilities.get_random_color()
 RETURNS TEXT
@@ -140,12 +160,13 @@ BEGIN
 
   -- Posts category
   IF _segments[2] = 'posts' THEN
-    -- Check that the user owns the corresponding post
+    -- Check that the user owns the corresponding post and that the post should have media
     RETURN EXISTS(
       SELECT 1
       FROM public.posts
       WHERE
         poster_id = _user_id
+        AND has_media = TRUE
         AND id = _segments[3]::UUID
     );
 
@@ -379,6 +400,8 @@ CREATE TABLE public.posts (
   content VARCHAR(300) NOT NULL,
 
   -- Whether or not the post has media (e.g.: an image or video)
+  -- Note: media is stored in the `media` bucket with the name `posts/[Post ID]`, where `[Post ID]` refers to the `id` column of this table.
+  -- Therefore, media can only be uploaded after a row is inserted into this table and its `id` column is retrieved.
   has_media BOOLEAN NOT NULL DEFAULT FALSE
 );
 
@@ -469,6 +492,41 @@ CREATE TABLE public.comment_reports (
   UNIQUE (reporter_id, comment_id)
 );
 
+/* ---------------------------------------- Setup views ---------------------------------------- */
+
+-- Posts with distances
+CREATE VIEW public.posts_with_distances
+AS
+SELECT
+  id,
+  poster_id,
+  created_at,
+  radius,
+  content,
+  has_media,
+  utilities.anonymized_distance(
+    location,
+    utilities.get_latest_location(auth.uid()),
+    -- 10% location uncertainty relative to the post's radius
+    0.1 * radius
+  ) AS distance
+FROM public.posts;
+ALTER VIEW public.posts_with_distances OWNER TO authenticated;
+
+/* --------------------------------------- Setup indexes --------------------------------------- */
+
+-- User locations location index
+CREATE INDEX locations_location ON public.locations USING GIST (location);
+
+-- Posts location index
+CREATE INDEX posts_location ON public.posts USING GIST (location);
+
+-- Posts created at index
+CREATE INDEX posts_created_at ON public.posts (created_at);
+
+-- Comments created at index
+CREATE INDEX comments_created_at ON public.comments (created_at);
+
 /* --------------------------------------- Setup buckets --------------------------------------- */
 
 -- Media
@@ -498,20 +556,6 @@ INSERT INTO storage.buckets (
     'video/webm'
   ]
 );
-
-/* --------------------------------------- Setup indexes --------------------------------------- */
-
--- User locations location index
-CREATE INDEX locations_location ON public.locations USING GIST (location);
-
--- Posts location index
-CREATE INDEX posts_location ON public.posts USING GIST (location);
-
--- Posts created at index
-CREATE INDEX posts_created_at ON public.posts (created_at);
-
--- Comments created at index
-CREATE INDEX comments_created_at ON public.comments (created_at);
 
 /* --------------------------------------- Setup triggers -------------------------------------- */
 
@@ -681,8 +725,13 @@ USING (
   -- Only show posts for which the user is the poster
   poster_id = auth.uid()
 
-  -- Or only show posts for which the user is within the post's radius
-  OR ST_Distance(location, utilities.get_latest_location(auth.uid())) <= radius
+  -- Or only show posts for which the user is within the post's radius (Use an anonymized distance to prevent trilateration attacks)
+  OR utilities.anonymized_distance(
+    location,
+    utilities.get_latest_location(auth.uid()),
+    -- 10% location uncertainty relative to the post's radius
+    0.1 * radius
+  ) <= radius
 );
 
 CREATE POLICY insert_posts
