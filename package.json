@@ -10,8 +10,9 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "supabase:start": "supabase start",
-    "supabase:reset": "supabase db reset"
+    "supabase:setup": "tsx supabase/setup.ts",
+    "supabase:start": "supabase start && npm run supabase:setup",
+    "supabase:reset": "supabase db reset && npm run supabase:setup"
   },
   "dependencies": {
     "@capacitor/app": "5.0.6",
@@ -21,6 +22,7 @@
     "@capacitor/status-bar": "5.0.6",
     "@ionic/react": "^7.0.0",
     "@ionic/react-router": "^7.0.0",
+    "@supabase/supabase-js": "^2.33.2",
     "@types/react-router": "^5.1.20",
     "@types/react-router-dom": "^5.3.3",
     "eslint-plugin-jsdoc": "^46.8.1",
@@ -50,9 +52,11 @@
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-unicorn": "^48.0.1",
+    "execa": "^8.0.1",
     "prettier": "^2.8.8",
     "prettier-plugin-multiline-arrays": "^2.0.0",
     "supabase": "^1.93.0",
+    "tsx": "^3.12.10",
     "typescript": "^5.1.6",
     "unocss": "^0.55.7",
     "vite": "^4.3.9",
