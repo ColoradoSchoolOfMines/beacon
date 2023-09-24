@@ -28,14 +28,13 @@ const primaryTones = Object.fromEntries(
 export default defineConfig({
   presets: [
     presetWind({
-      dark: "media"
-    })
-
+      dark: "media",
+    }),
   ],
   transformers: [transformDirectives()],
   theme: {
     colors: {
-      primary: primaryTones
-    }
-  }
+      primary: primaryTones,
+    },
+  },
 });

@@ -6,10 +6,6 @@
 
 -- Posts with additional, cached information
 CREATE MATERIALIZED VIEW utilities.cached_posts
-WITH (
-  security_barrier = TRUE,
-  security_invoker = TRUE
-)
 AS (
   SELECT
     id,
@@ -22,7 +18,6 @@ AS (
 -- Posts with additional, public information
 CREATE VIEW public.public_posts
 WITH (
-  security_barrier = TRUE,
   security_invoker = TRUE
 )
 AS (
@@ -44,15 +39,11 @@ AS (
       0.05 * post.radius
     ) AS distance
   FROM public.posts post
-  LEFT JOIN utilities.cached_posts cached_post ON cached_post.post_id = post.id
+  LEFT JOIN utilities.cached_posts cached_post ON cached_post.id = post.id
 );
 
 -- Comments with additional, cached information
 CREATE MATERIALIZED VIEW utilities.cached_comments
-WITH (
-  security_barrier = TRUE,
-  security_invoker = TRUE
-)
 AS (
   SELECT
     id,
@@ -65,7 +56,6 @@ AS (
 -- Comments with additional, public information
 CREATE VIEW public.public_comments
 WITH (
-  security_barrier = TRUE,
   security_invoker = TRUE
 )
 AS (
@@ -78,5 +68,5 @@ AS (
     cached_comment.upvotes,
     cached_comment.downvotes
   FROM public.comments comment
-  LEFT JOIN utilities.cached_comments cached_comment ON cached_comment.comment_id = comment.id
+  LEFT JOIN utilities.cached_comments cached_comment ON cached_comment.id = comment.id
 );

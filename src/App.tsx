@@ -7,7 +7,7 @@ import {
   IonRouterOutlet,
   IonSplitPane,
   isPlatform,
-  setupIonicReact
+  setupIonicReact,
 } from "@ionic/react";
 import {IonReactRouter} from "@ionic/react-router";
 import {Redirect, Route} from "react-router-dom";
@@ -32,7 +32,7 @@ import "~/theme/variables.css";
 
 // Setup Ionic
 setupIonicReact({
-  mode: isPlatform("ios") ? "ios" : "md"
+  mode: isPlatform("ios") ? "ios" : "md",
 });
 
 /**

@@ -5,7 +5,7 @@ import {
   IonMenuButton,
   IonPage,
   IonTitle,
-  IonToolbar
+  IonToolbar,
 } from "@ionic/react";
 import ExploreContainer from "~/components/ExploreContainer";
 import {useParams} from "react-router";

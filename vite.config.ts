@@ -20,7 +20,7 @@ export default defineConfig({
     react(),
     legacy(),
     Paths({
-      projects: [join(root, "tsconfig.json")]
+      projects: [join(root, "tsconfig.json")],
     }),
     UnoCSS(),
     VitePWA({
@@ -32,7 +32,7 @@ export default defineConfig({
         "*.png",
         "*.svg",
         "*.tiff",
-        "*.webp"
+        "*.webp",
       ],
       manifest: {
         name: "Vega",
@@ -47,20 +47,19 @@ export default defineConfig({
             src: "/icons/android-chrome-192x192.png",
             sizes: "192x192",
             type: "image/png",
-            purpose: "any maskable"
+            purpose: "any maskable",
           },
           {
             src: "/icons/android-chrome-512x512.png",
             sizes: "512x512",
             type: "image/png",
-            purpose: "any maskable"
-          }
-        ]
-      }
-    })
-
+            purpose: "any maskable",
+          },
+        ],
+      },
+    }),
   ],
   server: {
-    port: 3000
-  }
+    port: 3000,
+  },
 });

@@ -7,7 +7,7 @@ import {
   IonListHeader,
   IonMenu,
   IonMenuToggle,
-  IonNote
+  IonNote,
 } from "@ionic/react";
 import {
   archiveOutline,
@@ -22,7 +22,7 @@ import {
   trashOutline,
   trashSharp,
   warningOutline,
-  warningSharp
+  warningSharp,
 } from "ionicons/icons";
 import {useLocation} from "react-router-dom";
 import "~/components/Menu.css";
@@ -39,38 +39,38 @@ const appPages: AppPage[] = [
     title: "Inbox",
     url: "/page/Inbox",
     iosIcon: mailOutline,
-    mdIcon: mailSharp
+    mdIcon: mailSharp,
   },
   {
     title: "Outbox",
     url: "/page/Outbox",
     iosIcon: paperPlaneOutline,
-    mdIcon: paperPlaneSharp
+    mdIcon: paperPlaneSharp,
   },
   {
     title: "Favorites",
     url: "/page/Favorites",
     iosIcon: heartOutline,
-    mdIcon: heartSharp
+    mdIcon: heartSharp,
   },
   {
     title: "Archived",
     url: "/page/Archived",
     iosIcon: archiveOutline,
-    mdIcon: archiveSharp
+    mdIcon: archiveSharp,
   },
   {
     title: "Trash",
     url: "/page/Trash",
     iosIcon: trashOutline,
-    mdIcon: trashSharp
+    mdIcon: trashSharp,
   },
   {
     title: "Spam",
     url: "/page/Spam",
     iosIcon: warningOutline,
-    mdIcon: warningSharp
-  }
+    mdIcon: warningSharp,
+  },
 ];
 
 const labels = [
@@ -79,7 +79,7 @@ const labels = [
   "Notes",
   "Work",
   "Travel",
-  "Reminders"
+  "Reminders",
 ];
 
 /**

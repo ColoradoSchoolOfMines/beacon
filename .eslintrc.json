@@ -208,7 +208,6 @@
         "next": "export"
       }
     ],
-    "multiline-comment-style": "warn",
     "no-extra-semi": "warn",
     "no-undef": "off",
     "no-var": "error",

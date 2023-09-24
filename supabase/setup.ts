@@ -13,14 +13,12 @@ const root = dirname(fileURLToPath(import.meta.url));
  * Setup scripts
  */
 const scripts = [
-  /*
-   * join(root, "sql", "before.sql"),
-   * join(root, "sql", "functions.sql"),
-   * join(root, "sql", "tables.sql"),
-   * join(root, "sql", "triggers.sql"),
-   * join(root, "sql", "security.sql"),
-   */
-  join(root, "sql", "views.sql")
+  join(root, "sql", "before.sql"),
+  join(root, "sql", "functions.sql"),
+  join(root, "sql", "tables.sql"),
+  join(root, "sql", "triggers.sql"),
+  join(root, "sql", "security.sql"),
+  join(root, "sql", "views.sql"),
 ];
 
 /**
@@ -34,26 +32,23 @@ const main = async () => {
     const {all, exitCode, failed} = await execa(
       "psql",
       [
+        "-v",
+        "ON_ERROR_STOP=1",
         "-f",
-        script
+        script,
       ],
       {
-        /*
-         * all: true,
-         * cwd: root,
-         */
+        all: true,
+        cwd: root,
         env: {
           PGHOST: "localhost",
           PGPORT: "54322",
           PGUSER: "postgres",
           PGPASSWORD: "postgres",
-          PGDATABASE: "postgres"
+          PGDATABASE: "postgres",
         },
-        verbose: true
-        /*
-         * extendEnv: true,
-         * reject: true
-         */
+        extendEnv: true,
+        reject: false,
       }
     );
 
