@@ -225,6 +225,7 @@
       }
     ],
     "unicorn/filename-case": "off",
+    "unicorn/numeric-separators-style": "off",
     "unicorn/prefer-query-selector": "off",
     "unicorn/prevent-abbreviations": "off"
   }

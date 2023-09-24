@@ -2,7 +2,7 @@
  * @file Setup Supabase
  */
 
-import {execa} from "execa";
+import postgres from "postgres";
 import {dirname, join} from "node:path";
 import {fileURLToPath} from "node:url";
 
@@ -25,38 +25,26 @@ const scripts = [
  * Main async function
  */
 const main = async () => {
+  // Initialize a new Postgres connection
+  const sql = postgres({
+    database: "postgres",
+    host: "localhost",
+    password: "postgres",
+    port: 54322,
+    user: "postgres",
+  });
+
   for (const script of scripts) {
     console.info(`Running ${script}...`);
 
-    // Run the script with Psql
-    const {all, exitCode, failed} = await execa(
-      "psql",
-      [
-        "-v",
-        "ON_ERROR_STOP=1",
-        "-f",
-        script,
-      ],
-      {
-        all: true,
-        cwd: root,
-        env: {
-          PGHOST: "localhost",
-          PGPORT: "54322",
-          PGUSER: "postgres",
-          PGPASSWORD: "postgres",
-          PGDATABASE: "postgres",
-        },
-        extendEnv: true,
-        reject: false,
-      }
-    );
-
-    if (failed) {
-      console.error(`Running setup failed (Exit code ${exitCode}): ${all}`);
-      return;
-    }
+    // Execute the script
+    await sql.file(script, {
+      cache: false,
+    });
   }
+
+  // Close the Postgres connection
+  await sql.end();
 
   console.log("Setup complete.");
 };
