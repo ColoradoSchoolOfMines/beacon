@@ -4,7 +4,9 @@
 
 import postgres from "postgres";
 import {dirname, join} from "node:path";
+import {execa} from "execa";
 import {fileURLToPath} from "node:url";
+import {writeFile} from "node:fs/promises";
 
 // Get the root directory
 const root = dirname(fileURLToPath(import.meta.url));
@@ -35,8 +37,6 @@ const main = async () => {
   });
 
   for (const script of scripts) {
-    console.info(`Running ${script}...`);
-
     // Execute the script
     await sql.file(script, {
       cache: false,
@@ -46,7 +46,46 @@ const main = async () => {
   // Close the Postgres connection
   await sql.end();
 
-  console.log("Setup complete.");
+  // Get the Supabase status
+  const {all, exitCode, failed, stdout} = await execa(
+    "supabase",
+    [
+      "status",
+    ],
+    {
+      all: true,
+      cwd: root,
+      reject: false,
+    }
+  );
+
+  if (failed) {
+    console.error(
+      `Getting Supabase status failed (Exit code ${exitCode}): ${all}`
+    );
+
+    return;
+  }
+
+  // Extract the API URL and key
+  const apiUrl = /API URL: (\S+)/.exec(stdout)?.[1];
+  const apiKey = /anon key: (\S+)/.exec(stdout)?.[1];
+
+  if (apiUrl === undefined || apiKey === undefined) {
+    throw new Error(`Failed to extract API URL and/or key from: ${stdout}`);
+  }
+
+  // Create the environment file
+  await writeFile(
+    join(root, "..", ".env"),
+    `VITE_SUPABASE_URL = ${JSON.stringify(apiUrl)}
+VITE_SUPABASE_KEY = ${JSON.stringify(apiKey)}
+`
+  );
+
+  console.info(
+    "Setup complete. You may start your frontend now. (If it's already running, please restart it)"
+  );
 };
 
 main();

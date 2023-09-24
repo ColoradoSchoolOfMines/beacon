@@ -195,7 +195,7 @@ BEGIN
     RAISE EXCEPTION 'PREVIOUS_LOCATION_TOO_OLD';
   END IF;
 
-  -- RETURN _location;
+  RETURN _location;
 END;
 $$;
 

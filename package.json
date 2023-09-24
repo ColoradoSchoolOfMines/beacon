@@ -10,9 +10,9 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "supabase:setup": "tsx supabase/setup.ts",
-    "supabase:start": "supabase start && npm run supabase:setup",
-    "supabase:reset": "supabase db reset && npm run supabase:setup"
+    "supabase:status": "supabase status",
+    "supabase:start": "supabase start && tsx supabase/setup.ts",
+    "supabase:reset": "supabase db reset && tsx supabase/setup.ts"
   },
   "dependencies": {
     "@capacitor/app": "5.0.6",
@@ -26,6 +26,7 @@
     "@types/react-router": "^5.1.20",
     "@types/react-router-dom": "^5.3.3",
     "eslint-plugin-jsdoc": "^46.8.1",
+    "execa": "^8.0.1",
     "ionicons": "^7.0.0",
     "postgres": "^3.3.5",
     "react": "^18.2.0",

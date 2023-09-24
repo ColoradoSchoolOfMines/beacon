@@ -221,7 +221,10 @@
       {
         "block": {
           "balanced": true
-        }
+        },
+        "markers": [
+          "/"
+        ]
       }
     ],
     "unicorn/filename-case": "off",
