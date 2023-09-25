@@ -7,9 +7,9 @@ import {
   IonTitle,
   IonToolbar,
 } from "@ionic/react";
-import ExploreContainer from "~/components/ExploreContainer";
 import {useParams} from "react-router";
 import "~/pages/Page.css";
+import Ios from "~/components/pwa-installer/Ios";
 
 /**
  * Page component
@@ -17,6 +17,7 @@ import "~/pages/Page.css";
  */
 const Page: React.FC = () => {
   const {name} = useParams<{name: string}>();
+
   return (
     <IonPage>
       <IonHeader>
@@ -36,7 +37,7 @@ const Page: React.FC = () => {
           </IonToolbar>
         </IonHeader>
 
-        <ExploreContainer name={name} />
+        <Ios address={window.location.host} dark={false} />
       </IonContent>
     </IonPage>
   );

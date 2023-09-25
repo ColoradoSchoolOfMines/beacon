@@ -1,0 +1,25 @@
+.icon {
+  @apply flex flex-row justify-center w-16;
+}
+
+.colored-icon {
+  fill: #007aff;
+  stroke: #007aff;
+}
+
+.monochrome-icon {
+  fill: black;
+  stroke: black;
+}
+
+@media (prefers-color-scheme: dark) {
+  .colored-icon {
+    fill: #4693ff;
+    stroke: #4693ff;
+  }
+
+  .monochrome-icon {
+    fill: white;
+    stroke: white;
+  }
+}
