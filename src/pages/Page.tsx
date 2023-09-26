@@ -37,7 +37,7 @@ const Page: React.FC = () => {
           </IonToolbar>
         </IonHeader>
 
-        <Ios address={window.location.host} dark={false} />
+        <Ios address={window.location.hostname} dark={false} />
       </IonContent>
     </IonPage>
   );

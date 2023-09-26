@@ -34,18 +34,18 @@ interface IosProps {
  */
 const Ios: React.FC<IosProps> = ({address}) => (
   <div className="flex flex-col items-stretch m-4">
-    <p className="text-center text-4xl my-2">1. Click on the share button:</p>
+    <p className="text-center text-2xl my-2">1. Click on the share button:</p>
 
-    <div className="b-1 my-2 p-4 relative rounded-3xl">
+    <div className="b-1 my-2 p-4 relative rounded-xl">
       <div className="flex flex-col">
-        <div className="p-8 mx-24 my-4 relative">
+        <div className="h-14 my-4 p-4 relative">
           <div className="flex flex-row h-full items-center w-full">
             <div className={`${styles.icon} ${styles["monochrome-icon"]}`}>
               <TextFormatSize />
             </div>
 
             <div className="flex-1 text-center">
-              <p className="text-4xl">{address}</p>
+              <p className="text-lg">{address}</p>
             </div>
 
             <div className={`${styles.icon} ${styles["monochrome-icon"]}`}>
@@ -53,10 +53,10 @@ const Ios: React.FC<IosProps> = ({address}) => (
             </div>
           </div>
 
-          <div className="-z-1 absolute bg-white bottom-0 dark:opacity-20 left-0 opacity-100 right-0 rounded-3xl top-0" />
+          <div className="-z-1 absolute bg-white bottom-0 dark:opacity-20 left-0 opacity-100 right-0 rounded-xl top-0" />
         </div>
 
-        <div className="flex flex-row items-center justify-between px-8 my-4 w-full">
+        <div className="flex flex-row items-center justify-between my-4 w-full">
           <div className={`${styles.icon} ${styles["colored-icon"]}`}>
             <ChevronLeft />
           </div>
@@ -70,7 +70,7 @@ const Ios: React.FC<IosProps> = ({address}) => (
               <SquareAndArrowUp />
             </div>
 
-            <div className="-bottom-3 -left-8 -right-8 -top-3 -z-1 absolute bg-black dark:bg-white rounded-full" />
+            <div className="-bottom-4 -left-4 -right-4 -top-4 -z-1 absolute bg-black dark:bg-white rounded-full" />
           </div>
 
           <div className={`${styles.icon} ${styles["colored-icon"]}`}>
@@ -83,12 +83,12 @@ const Ios: React.FC<IosProps> = ({address}) => (
         </div>
       </div>
 
-      <div className="-z-2 absolute bg-neutral-200 bottom-0 dark:bg-inherit left-0 right-0 top-0" />
+      <div className="-z-2 absolute bg-neutral-300 bottom-0 dark:bg-neutral-800 left-0 right-0 rounded-xl top-0" />
     </div>
 
-    <p className="text-center text-4xl my-2">2. Click on Add to Home Screen:</p>
+    <p className="text-center text-2xl my-2">2. Click on Add to Home Screen:</p>
 
-    <div className="b-1 my-2 p-4 relative rounded-3xl">
+    <div className="b-1 my-2 p-4 relative rounded-xl">
       <p>TODO</p>
     </div>
   </div>

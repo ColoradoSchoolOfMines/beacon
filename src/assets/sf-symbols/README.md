@@ -4,4 +4,6 @@ This directory contains the SVG versions of Apple's SF Symbols font. [Source](ht
 
 ## Changes
 
-- Removed `fill` and `stroke` attributes from all SVGs (so they can be styled with CSS)
+- Run just the path through [this](https://yqnn.github.io/svg-path-editor/) SVG editor
+  - Recenter the viewbox at `(0, 0)`
+  - Remove the `fill` and `stroke` attributes
