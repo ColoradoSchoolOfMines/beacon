@@ -1,21 +1,23 @@
+.bgLow {
+  @apply -z-10 bg-neutral-100 dark:bg-neutral-900;
+}
+
+.bgHigh {
+  @apply -z-5 bg-white opacity-100 dark:opacity-20;
+}
+
+.blueText {
+  @apply text-[#007aff] dark:text-[#4693ff];
+}
+
 .icon {
-  @apply flex flex-row h-5 justify-center stroke-2 w-5;
+  @apply flex flex-row justify-center stroke-2;
 }
 
-.colored-icon {
-  @apply fill-[#007aff] stroke-[#007aff];
+.blueIcon {
+  @apply fill-[#007aff] stroke-[#007aff] dark:fill-[#4693ff] dark:stroke-[#4693ff];
 }
 
-.monochrome-icon {
-  @apply fill-black stroke-black;
-}
-
-@media (prefers-color-scheme: dark) {
-  .colored-icon {
-    @apply fill-[#4693ff] stroke-[#4693ff];
-  }
-
-  .monochrome-icon {
-    @apply fill-white stroke-white;
-  }
+.monochromeIcon {
+  @apply fill-black stroke-black dark:fill-white dark:stroke-white;
 }
