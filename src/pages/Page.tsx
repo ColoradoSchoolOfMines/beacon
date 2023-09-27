@@ -8,8 +8,8 @@ import {
   IonToolbar,
 } from "@ionic/react";
 import {useParams} from "react-router";
+import {Markdown} from "~/components/markdown/Markdown";
 import "~/pages/Page.css";
-import Ios from "~/components/pwa-installer/Ios";
 
 /**
  * Page component
@@ -37,7 +37,7 @@ const Page: React.FC = () => {
           </IonToolbar>
         </IonHeader>
 
-        <Ios address={window.location.hostname} dark={false} />
+        <Markdown />
       </IonContent>
     </IonPage>
   );

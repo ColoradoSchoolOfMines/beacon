@@ -1,5 +1,5 @@
 /**
- * iOS PWA installer
+ * @file iOS PWA installer
  */
 
 import * as React from "react";
