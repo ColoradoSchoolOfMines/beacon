@@ -26,6 +26,7 @@
     "@typescript-eslint",
     "jsdoc",
     "prettier",
+    "simple-import-sort",
     "unicorn"
   ],
   "settings": {
@@ -215,6 +216,8 @@
     "prettier/prettier": "warn",
     "react/prop-types": "off",
     "react/react-in-jsx-scope": "off",
+    "simple-import-sort/imports": "error",
+    "simple-import-sort/exports": "error",
     "spaced-comment": [
       "warn",
       "always",

@@ -2,18 +2,6 @@
  * @file App shell
  */
 
-import {
-  IonApp,
-  IonRouterOutlet,
-  IonSplitPane,
-  isPlatform,
-  setupIonicReact,
-} from "@ionic/react";
-import {IonReactRouter} from "@ionic/react-router";
-import {Redirect, Route} from "react-router-dom";
-import Menu from "~/components/Menu";
-import Page from "~/pages/Page";
-
 // Styles
 import "@ionic/react/css/core.css";
 import "@ionic/react/css/normalize.css";
@@ -25,10 +13,22 @@ import "@ionic/react/css/text-alignment.css";
 import "@ionic/react/css/text-transformation.css";
 import "@ionic/react/css/flex-utils.css";
 import "@ionic/react/css/display.css";
-
 import "@unocss/reset/tailwind.css";
 import "virtual:uno.css";
 import "~/theme/variables.css";
+
+import {
+  IonApp,
+  IonRouterOutlet,
+  IonSplitPane,
+  isPlatform,
+  setupIonicReact,
+} from "@ionic/react";
+import {IonReactRouter} from "@ionic/react-router";
+import {Redirect, Route} from "react-router-dom";
+
+import {Menu} from "~/components/Menu";
+import {Page} from "~/pages/Page";
 
 // Setup Ionic
 setupIonicReact({
@@ -39,7 +39,7 @@ setupIonicReact({
  * App shell
  * @returns JSX
  */
-const App: React.FC = () => {
+export const App: React.FC = () => {
   return (
     <IonApp>
       <IonReactRouter>
@@ -60,5 +60,3 @@ const App: React.FC = () => {
     </IonApp>
   );
 };
-
-export default App;

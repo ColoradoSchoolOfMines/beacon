@@ -2,11 +2,12 @@
  * @file Setup Supabase
  */
 
-import postgres from "postgres";
-import {dirname, join} from "node:path";
-import {execa} from "execa";
-import {fileURLToPath} from "node:url";
 import {writeFile} from "node:fs/promises";
+import {dirname, join} from "node:path";
+import {fileURLToPath} from "node:url";
+
+import {execa} from "execa";
+import postgres from "postgres";
 
 // Get the root directory
 const root = dirname(fileURLToPath(import.meta.url));

@@ -2,20 +2,27 @@
  * @file WYSIWYG markdown editor
  */
 
-import Mentions from "~/components/markdown/Mentions";
-import React, {useEffect} from "react";
-import {Editor, editorViewOptionsCtx, rootCtx} from "@milkdown/core";
-import {Milkdown, MilkdownProvider, useEditor} from "@milkdown/react";
+import "@milkdown/theme-nord/style.css";
+
+import {
+  defaultValueCtx,
+  Editor,
+  editorViewOptionsCtx,
+  rootCtx,
+} from "@milkdown/core";
+import {listener, listenerCtx} from "@milkdown/plugin-listener";
 import {commonmark} from "@milkdown/preset-commonmark";
 import {gfm} from "@milkdown/preset-gfm";
-import {listener, listenerCtx} from "@milkdown/plugin-listener";
+import {Milkdown, MilkdownProvider, useEditor} from "@milkdown/react";
 import {nord} from "@milkdown/theme-nord";
 import {replaceAll} from "@milkdown/utils";
-import {slashFactory} from "@milkdown/plugin-slash";
 import {
   ProsemirrorAdapterProvider,
   usePluginViewFactory,
 } from "@prosemirror-adapter/react";
+import React, {useEffect} from "react";
+
+import {Mentions, slashMentions} from "~/components/markdown/Mentions";
 
 /**
  * Props for WYSIWYG markdown editor
@@ -40,8 +47,6 @@ interface MarkdownProps {
   readonly?: boolean;
 }
 
-const slash = slashFactory("mentions");
-
 /**
  * Internal Milkdown editor
  * @returns JSX
@@ -62,11 +67,16 @@ const MilkdownEditor: React.FC<MarkdownProps> = ({
         ctx.set(rootCtx, root);
 
         // Set the slash view
-        ctx.set(slash.key, {
+        ctx.set(slashMentions.key, {
           view: pluginViewFactory({
             component: Mentions,
           }),
         });
+
+        // Set the default content
+        if (content !== undefined) {
+          ctx.set(defaultValueCtx, content);
+        }
 
         // Listen to content changes
         const listener = ctx.get(listenerCtx);
@@ -80,7 +90,7 @@ const MilkdownEditor: React.FC<MarkdownProps> = ({
       .use(commonmark)
       .use(gfm)
       .use(listener)
-      .use(slash)
+      .use(slashMentions)
   );
 
   // Effects
@@ -116,7 +126,7 @@ const MilkdownEditor: React.FC<MarkdownProps> = ({
 
     // Replace all content
     editor.action(replaceAll(content));
-  });
+  }, [content]);
 
   return <Milkdown />;
 };

@@ -3,15 +3,16 @@
  * @see https://vitejs.dev/config/
  */
 
-import Paths from "vite-tsconfig-paths";
-import Svgr from "vite-plugin-svgr";
-import UnoCSS from "unocss/vite";
-import Legacy from "@vitejs/plugin-legacy";
-import React from "@vitejs/plugin-react";
-import {VitePWA} from "vite-plugin-pwa";
-import {defineConfig} from "vite";
 import {dirname, join} from "node:path";
 import {fileURLToPath} from "node:url";
+
+import Legacy from "@vitejs/plugin-legacy";
+import React from "@vitejs/plugin-react";
+import UnoCSS from "unocss/vite";
+import {defineConfig} from "vite";
+import {VitePWA} from "vite-plugin-pwa";
+import Svgr from "vite-plugin-svgr";
+import Paths from "vite-tsconfig-paths";
 
 // Get the root directory
 const root = dirname(fileURLToPath(import.meta.url));

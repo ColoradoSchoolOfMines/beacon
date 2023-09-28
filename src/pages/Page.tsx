@@ -1,3 +1,5 @@
+import "~/pages/Page.css";
+
 import {
   IonButtons,
   IonContent,
@@ -8,14 +10,14 @@ import {
   IonToolbar,
 } from "@ionic/react";
 import {useParams} from "react-router";
+
 import {Markdown} from "~/components/markdown/Markdown";
-import "~/pages/Page.css";
 
 /**
  * Page component
  * @returns JSX
  */
-const Page: React.FC = () => {
+export const Page: React.FC = () => {
   const {name} = useParams<{name: string}>();
 
   return (
@@ -37,10 +39,14 @@ const Page: React.FC = () => {
           </IonToolbar>
         </IonHeader>
 
-        <Markdown />
+        <Markdown
+          content="aaaaaaaaaaaaaaaaaaaaaaa
+
+ccccccccccccc
+
+bbbbbbbbbbbbbbbbbbbbbb"
+        />
       </IonContent>
     </IonPage>
   );
 };
-
-export default Page;

@@ -3,9 +3,10 @@
  * @see App.tsx (You probably want to use App.tsx instead of this file)
  */
 
-import App from "~/App";
 import React from "react";
 import {createRoot} from "react-dom/client";
+
+import {App} from "~/App";
 
 // Setup React
 const container = document.getElementById("root");

@@ -1,3 +1,5 @@
+import "~/components/Menu.css";
+
 import {
   IonContent,
   IonIcon,
@@ -25,7 +27,6 @@ import {
   warningSharp,
 } from "ionicons/icons";
 import {useLocation} from "react-router-dom";
-import "~/components/Menu.css";
 
 interface AppPage {
   url: string;
@@ -86,7 +87,7 @@ const labels = [
  * Menu component
  * @returns JSX
  */
-const Menu: React.FC = () => {
+export const Menu: React.FC = () => {
   const location = useLocation();
 
   return (
@@ -138,5 +139,3 @@ const Menu: React.FC = () => {
     </IonMenu>
   );
 };
-
-export default Menu;

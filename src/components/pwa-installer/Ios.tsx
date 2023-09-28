@@ -3,7 +3,6 @@
  */
 
 import * as React from "react";
-import styles from "~/components/pwa-installer/Ios.module.css";
 
 import ArrowClockwise from "~/assets/sf-symbols/arrow.clockwise.svg?react";
 import Book from "~/assets/sf-symbols/book.svg?react";
@@ -19,6 +18,7 @@ import SquareAndArrowUp from "~/assets/sf-symbols/square.and.arrow.up.svg?react"
 import SquareOnSquare from "~/assets/sf-symbols/square.on.square.svg?react";
 import Star from "~/assets/sf-symbols/star.svg?react";
 import TextFormatSize from "~/assets/sf-symbols/textformat.size.svg?react";
+import styles from "~/components/pwa-installer/Ios.module.css";
 
 /**
  * Props for the iOS PWA installer
@@ -39,7 +39,7 @@ interface IosProps {
  * iOS PWA installer
  * @returns JSX
  */
-const Ios: React.FC<IosProps> = ({address}) => (
+export const Ios: React.FC<IosProps> = ({address}) => (
   <div className="flex flex-col items-stretch m-4">
     <p className="text-3xl mb-2">1. Click the share button:</p>
 
@@ -235,5 +235,3 @@ const Ios: React.FC<IosProps> = ({address}) => (
     </div>
   </div>
 );
-
-export default Ios;
