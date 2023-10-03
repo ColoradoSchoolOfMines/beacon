@@ -1,5 +1,3 @@
-import "~/components/Menu.css";
-
 import {
   IonContent,
   IonIcon,

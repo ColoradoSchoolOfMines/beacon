@@ -1,0 +1,152 @@
+.container {
+  @apply overflow-auto w-full;
+}
+
+.markdown {
+  @apply min-w-fit;
+}
+
+.markdown h1 {
+  @apply text-4xl;
+}
+
+.markdown h2 {
+  @apply text-3xl;
+}
+
+.markdown h3 {
+  @apply text-2xl;
+}
+
+.markdown h4 {
+  @apply text-xl;
+}
+
+.markdown h5 {
+  @apply text-lg;
+}
+
+.markdown h6 {
+  @apply text-sm;
+}
+
+.markdown ol {
+  @apply list-decimal list-inside;
+}
+
+.markdown ul {
+  @apply list-disc list-inside;
+}
+
+.markdown hr {
+  @apply my-4;
+}
+
+.markdown pre {
+  @apply bg-neutral-100 dark:bg-neutral-800 p-2 rounded-md;
+}
+
+.markdown blockquote {
+  @apply border-l-4 italic pl-2 border-red-400;
+}
+
+.markdown blockquote blockquote {
+  @apply border-orange-400;
+}
+
+.markdown blockquote blockquote blockquote {
+  @apply border-yellow-400;
+}
+
+.markdown blockquote blockquote blockquote blockquote {
+  @apply border-lime-400;
+}
+
+.markdown blockquote blockquote blockquote blockquote blockquote {
+  @apply border-green-400;
+}
+
+.markdown blockquote blockquote blockquote blockquote blockquote blockquote {
+  @apply border-teal-400;
+}
+
+.markdown
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote {
+  @apply border-sky-400;
+}
+
+.markdown
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote {
+  @apply border-blue-400;
+}
+
+.markdown
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote {
+  @apply border-indigo-400;
+}
+
+.markdown
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote {
+  @apply border-purple-400;
+}
+
+.markdown
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote {
+  @apply border-fuchsia-400;
+}
+
+.markdown
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote
+  blockquote {
+  @apply border-neutral-300 dark:border-neutral-600;
+}

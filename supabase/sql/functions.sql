@@ -53,9 +53,6 @@ DECLARE
     -- Greens
     '#86efac', '#22c55e', '#166534',
 
-    -- Emeralds
-    '#6ee7b7', '#10b981', '#065f46',
-
     -- Teals
     '#5eead4', '#14b8a6', '#115e59',
 
