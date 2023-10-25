@@ -1,6 +1,8 @@
-# YikYak beacon
+# Beacon
 
-(Name to be changed soon)
+![Logo](assets/logo.png)
+
+A location-based social media app.
 
 ## Documentation
 
