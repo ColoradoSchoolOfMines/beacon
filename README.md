@@ -1,4 +1,4 @@
-# YikYak Clone
+# YikYak beacon
 
 (Name to be changed soon)
 
@@ -16,7 +16,7 @@
 2. Clone the repository:
 
 ```bash
-git clone https://github.com/ColoradoSchoolOfMines/yikyak-clone.git
+git clone https://github.com/ColoradoSchoolOfMines/beacon.git
 ```
 
 3. Inside the repository, install the dependencies:
