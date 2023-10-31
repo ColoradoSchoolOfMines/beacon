@@ -15,7 +15,7 @@ extend([mixPlugin]);
 /**
  * Primary color
  */
-const primary = new Colord("#0000ff");
+const primary = new Colord("#206eeb");
 
 // Generate primary tints and shades
 const primaryTones = Object.fromEntries(
