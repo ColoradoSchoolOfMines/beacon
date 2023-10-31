@@ -1,7 +1,6 @@
 {
   "name": "beacon",
   "private": true,
-  "description": "An Ionic project",
   "version": "0.0.1",
   "type": "module",
   "scripts": {

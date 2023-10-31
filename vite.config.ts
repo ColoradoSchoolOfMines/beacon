@@ -29,23 +29,22 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       manifest: {
-        name: "Vega",
+        name: "Beacon",
         // eslint-disable-next-line camelcase
         short_name: "Location-based social media",
         // eslint-disable-next-line camelcase
-        theme_color: "#0000ff",
+        theme_color: "#206eeb",
         // eslint-disable-next-line camelcase
-        background_color: "#0000ff",
+        background_color: "#2dc4ff",
         icons: [
-          // {
-          //   src: "/icons/android-chrome-192x192.png",
-          //   sizes: "192x192",
-          //   type: "image/png",
-          //   purpose: "any maskable",
-          // },
           {
-            // src: "/icons/android-chrome-512x512.png",
-            src: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/SMPTE_Color_Bars.svg/1200px-SMPTE_Color_Bars.svg.png",
+            src: "/logo-192x192.png",
+            sizes: "192x192",
+            type: "image/png",
+            purpose: "any maskable",
+          },
+          {
+            src: "/logo-512x512.png",
             sizes: "512x512",
             type: "image/png",
             purpose: "any maskable",
