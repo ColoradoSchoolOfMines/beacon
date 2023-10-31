@@ -22,13 +22,13 @@ const primaryTones = Object.fromEntries(
   [...primary.tints(11).reverse(), ...primary.shades(11).slice(1)]
     .map((color, index) => [50 * index, color.toHex()])
     .filter((_, index) => index === 1 || index % 2 === 0)
-    .slice(1, -1)
+    .slice(1, -1),
 );
 
 export default defineConfig({
   presets: [
     presetWind({
-      dark: "media",
+      dark: "class",
     }),
   ],
   transformers: [transformDirectives()],

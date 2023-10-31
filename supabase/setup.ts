@@ -57,12 +57,12 @@ const main = async () => {
       all: true,
       cwd: root,
       reject: false,
-    }
+    },
   );
 
   if (failed) {
     console.error(
-      `Getting Supabase status failed (Exit code ${exitCode}): ${all}`
+      `Getting Supabase status failed (Exit code ${exitCode}): ${all}`,
     );
 
     return;
@@ -81,11 +81,11 @@ const main = async () => {
     join(root, "..", ".env"),
     `VITE_SUPABASE_URL = ${JSON.stringify(apiUrl)}
 VITE_SUPABASE_KEY = ${JSON.stringify(apiKey)}
-`
+`,
   );
 
   console.info(
-    "Setup complete. You may start your frontend now. (If it's already running, please restart it)"
+    "Setup complete. You may start your frontend now. (If it's already running, please restart it)",
   );
 };
 

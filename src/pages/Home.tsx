@@ -31,7 +31,7 @@ export const Home: React.FC = () => {
             <IonTitle size="large">Home</IonTitle>
           </IonToolbar>
         </IonHeader>
-        <p className="h-[500vh]">Hello, world!</p>
+        <p className="text-red dark:text-green h-[500vh]">Hello, world!</p>
       </IonContent>
     </IonPage>
   );

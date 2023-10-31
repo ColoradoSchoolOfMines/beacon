@@ -57,7 +57,6 @@
       }
     ],
     "eqeqeq": "error",
-    "jsdoc/informative-docs": "warn",
     "jsdoc/require-jsdoc": [
       "warn",
       {
