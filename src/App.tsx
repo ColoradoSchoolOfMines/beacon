@@ -25,10 +25,12 @@ import {
   setupIonicReact,
 } from "@ionic/react";
 import {IonReactRouter} from "@ionic/react-router";
-import {Redirect, Route} from "react-router-dom";
+import {Route} from "react-router-dom";
 
 import {Menu} from "~/components/Menu";
-import {Page} from "~/pages/Page";
+import {Error} from "~/pages/Error";
+import {Home} from "~/pages/Home";
+import {Settings} from "~/pages/Settings";
 
 // Setup Ionic
 setupIonicReact({
@@ -48,11 +50,19 @@ export const App: React.FC = () => {
 
           <IonRouterOutlet id="main">
             <Route path="/" exact={true}>
-              <Redirect to="/folder/Inbox" />
+              <Home />
             </Route>
 
-            <Route path="/folder/:name" exact={true}>
-              <Page />
+            <Route path="/settings" exact={true}>
+              <Settings />
+            </Route>
+
+            <Route>
+              <Error
+                code="404"
+                description="The requested page was not found!"
+                homeButton={true}
+              />
             </Route>
           </IonRouterOutlet>
         </IonSplitPane>
