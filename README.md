@@ -1,8 +1,13 @@
 # Beacon
 
-![Logo](assets/logo.png)
+<p align="center">
+  <img alt="Beacon logo" height="256" width="256" src="src/assets/logo.png">
+</p>
 
 A location-based social media app.
+
+> **Warning**
+> This project is under active development and is not yet ready for production use.
 
 ## Documentation
 
