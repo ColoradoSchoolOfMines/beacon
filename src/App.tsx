@@ -21,6 +21,7 @@ import {
   IonApp,
   IonRouterOutlet,
   IonSplitPane,
+  isPlatform,
   setupIonicReact,
 } from "@ionic/react";
 import {IonReactRouter} from "@ionic/react-router";
@@ -28,17 +29,15 @@ import {useEffect} from "react";
 import {Route} from "react-router-dom";
 
 import {Menu} from "~/components/Menu";
-import {useStore} from "~/lib/state";
+import {ThemeVariant, useStore} from "~/lib/state";
 import {Error} from "~/pages/Error";
 import {Home} from "~/pages/Home";
 import {Settings} from "~/pages/Settings";
 
-// Get the initial, **non-reactive** state
-const initialState = useStore.getState();
-
-// Setup Ionic
+// Initialize Ionic
 setupIonicReact({
-  mode: initialState.theme.mode,
+  animated: true,
+  mode: isPlatform("ios") ? "ios" : "md",
 });
 
 /**
@@ -47,18 +46,14 @@ setupIonicReact({
  */
 export const App: React.FC = () => {
   // Hooks
-  const theme = useStore(state => state.theme);
+  const variant = useStore(state => state.theme.variant);
 
-  // Effects
   useEffect(() => {
-    // Update Ionic mode
-    setupIonicReact({
-      mode: theme.mode,
-    });
-
-    // Update dark mode
-    document.documentElement.classList.toggle("dark", theme.dark);
-  }, [theme]);
+    document.documentElement.classList.toggle(
+      "dark",
+      variant === ThemeVariant.DARK,
+    );
+  }, [variant]);
 
   return (
     <IonApp>

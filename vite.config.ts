@@ -2,6 +2,7 @@
  * @file Vite config
  * @see https://vitejs.dev/config/
  */
+/* eslint-disable camelcase */
 
 import {dirname, join} from "node:path";
 import {fileURLToPath} from "node:url";
@@ -52,11 +53,8 @@ export default defineConfig(async () => {
         registerType: "autoUpdate",
         manifest: {
           name: "Beacon",
-          // eslint-disable-next-line camelcase
           short_name: "Location-based social media",
-          // eslint-disable-next-line camelcase
           theme_color: "#206eeb",
-          // eslint-disable-next-line camelcase
           background_color: "#2dc4ff",
           icons: [
             {

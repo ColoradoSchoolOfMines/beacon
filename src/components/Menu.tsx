@@ -18,7 +18,6 @@ import {
 import {useLocation} from "react-router-dom";
 
 import logo from "~/assets/logo.png";
-import {GIT_BRANCH, GIT_COMMIT, VERSION} from "~/lib/env";
 
 interface NavItem {
   url: string;
@@ -86,15 +85,6 @@ export const Menu: React.FC = () => {
               </IonMenuToggle>
             );
           })}
-
-          <div className="flex-1" />
-
-          {/* About  */}
-          <IonItem>
-            <p className="text-center w-full">
-              Version: {VERSION} ({GIT_COMMIT}@{GIT_BRANCH})
-            </p>
-          </IonItem>
         </IonList>
       </IonContent>
     </IonMenu>
