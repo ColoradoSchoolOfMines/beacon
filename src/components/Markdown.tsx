@@ -62,7 +62,7 @@ interface MarkdownProps {
 }
 
 /**
- * WYSIWYG markdown editor
+ * WYSIWYG markdown editor component
  * @returns JSX
  */
 export const Markdown: React.FC<MarkdownProps> = ({raw}) => (

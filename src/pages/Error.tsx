@@ -1,3 +1,7 @@
+/**
+ * @file Error page
+ */
+
 import {
   IonButton,
   IonButtons,
@@ -12,7 +16,7 @@ import {
 import {homeOutline, homeSharp} from "ionicons/icons";
 
 export interface ErrorProps {
-  code: string;
+  name: string;
   description: string;
   homeButton: boolean;
 }
@@ -22,7 +26,7 @@ export interface ErrorProps {
  * @returns JSX
  */
 export const Error: React.FC<ErrorProps> = ({
-  code,
+  name: code,
   description,
   homeButton,
 }) => {

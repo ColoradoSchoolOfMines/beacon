@@ -1,3 +1,7 @@
+/**
+ * @file Menu
+ */
+
 import {
   IonContent,
   IonIcon,
@@ -28,8 +32,8 @@ interface NavItem {
 
 const navItem: NavItem[] = [
   {
-    title: "Home",
-    url: "/",
+    title: "Nearby",
+    url: "/nearby",
     iosIcon: compassOutline,
     mdIcon: compassSharp,
   },

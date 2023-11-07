@@ -3,32 +3,40 @@
  */
 /* eslint-disable jsdoc/require-jsdoc */
 
+import {User} from "@supabase/supabase-js";
 import {merge} from "lodash-es";
 import {create} from "zustand";
 import {createJSONStorage, devtools, persist} from "zustand/middleware";
 
 import {stateStorage} from "~/lib/storage";
-import {DeepPartial} from "~/lib/types";
-
-/**
- * Theme variant
- */
-export enum ThemeVariant {
-  /**
-   * Light theme variant
-   */
-  LIGHT = "light",
-
-  /**
-   * Dark theme variant
-   */
-  DARK = "dark",
-}
+import {DeepPartial, GlobalError, Theme} from "~/lib/types";
 
 /**
  * Store state and actions
  */
 interface Store {
+  /**
+   * Global error
+   */
+  error?: GlobalError;
+
+  /**
+   * Set the global error
+   * @param newError Global error or undefined to clear the error
+   */
+  setError: (newError?: GlobalError) => void;
+
+  /**
+   * Current user
+   */
+  user?: User;
+
+  /**
+   * Set the current user
+   * @param newUser New user or undefined to clear the user
+   */
+  setUser: (newUser?: User) => void;
+
   /**
    * Whether or not the store has been hydrated from storage
    */
@@ -40,20 +48,15 @@ interface Store {
   setHydrated: () => void;
 
   /**
-   * Theme state
+   * Theme
    */
-  theme: {
-    /**
-     * Theme variant
-     */
-    variant: ThemeVariant;
+  theme: Theme;
 
-    /**
-     * Set the theme variant
-     * @param newVariant New variant
-     */
-    setVariant: (newVariant: ThemeVariant) => void;
-  };
+  /**
+   * Set the theme
+   * @param newTheme New theme
+   */
+  setTheme: (newTheme: Theme) => void;
 
   /**
    * Reset the store to its default state
@@ -65,13 +68,11 @@ interface Store {
  * Default store state
  */
 const defaultState: DeepPartial<Store> = {
-  theme: {
-    variant:
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? ThemeVariant.DARK
-        : ThemeVariant.LIGHT,
-  },
+  theme:
+    window.matchMedia &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? Theme.DARK
+      : Theme.LIGHT,
 };
 
 /**
@@ -82,29 +83,35 @@ export const useStore = create<Store>()(
     persist<Store, [], [], DeepPartial<Store>>(
       set =>
         merge({}, defaultState, {
+          error: undefined,
+          setError: (error?: GlobalError) =>
+            set(state => ({
+              ...state,
+              error,
+            })),
+          user: undefined,
+          setUser: (user: User) =>
+            set(state => ({
+              ...state,
+              user,
+            })),
           hydrated: false,
           setHydrated: () =>
             set(() => ({
               hydrated: true,
             })),
-          theme: {
-            setVariant: (newVariant: ThemeVariant) =>
-              set(state => ({
-                theme: {
-                  ...state.theme,
-                  variant: newVariant,
-                },
-              })),
-          },
+          setTheme: (newTheme: Theme) =>
+            set(state => ({
+              ...state,
+              theme: newTheme,
+            })),
           reset: () => set(state => merge({}, state, defaultState)),
         } as DeepPartial<Store>) as Store,
       {
         name: "global-state",
         storage: createJSONStorage(() => stateStorage),
         partialize: state => ({
-          theme: {
-            variant: state.theme.variant,
-          },
+          theme: state.theme,
         }),
         merge: (persisted, current) => merge({}, current, persisted),
         onRehydrateStorage: state => () => {

@@ -14,3 +14,33 @@ export type DeepPartial<T> = {
     ? DeepPartial<T[P]>
     : T[P];
 };
+
+/**
+ * Theme
+ */
+export enum Theme {
+  /**
+   * Light theme
+   */
+  LIGHT = "light",
+
+  /**
+   * Dark theme
+   */
+  DARK = "dark",
+}
+
+/**
+ * Global error
+ */
+export interface GlobalError {
+  /**
+   * Error name
+   */
+  name: string;
+
+  /**
+   * Error description
+   */
+  description: string;
+}

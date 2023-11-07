@@ -18,6 +18,7 @@ import "virtual:uno.css";
 import "~/styles/theme.css";
 
 import {
+  IonAlert,
   IonApp,
   IonRouterOutlet,
   IonSplitPane,
@@ -26,12 +27,17 @@ import {
 } from "@ionic/react";
 import {IonReactRouter} from "@ionic/react-router";
 import {useEffect} from "react";
-import {Route} from "react-router-dom";
+import {Route, useHistory} from "react-router-dom";
 
+import {AuthenticatedRoute} from "~/components/AuthenticatedRoute";
 import {Menu} from "~/components/Menu";
-import {ThemeVariant, useStore} from "~/lib/state";
+import {useStore} from "~/lib/state";
+import {client} from "~/lib/supabase";
+import {Theme} from "~/lib/types";
+import {Auth} from "~/pages/Auth";
 import {Error} from "~/pages/Error";
-import {Home} from "~/pages/Home";
+import {Index} from "~/pages/Index";
+import {Nearby} from "~/pages/Nearby";
 import {Settings} from "~/pages/Settings";
 
 // Initialize Ionic
@@ -46,33 +52,81 @@ setupIonicReact({
  */
 export const App: React.FC = () => {
   // Hooks
-  const variant = useStore(state => state.theme.variant);
+  const error = useStore(state => state.error);
+  const setError = useStore(state => state.setError);
+  const setUser = useStore(state => state.setUser);
+  const theme = useStore(state => state.theme);
+  const history = useHistory();
 
+  // Effects
   useEffect(() => {
-    document.documentElement.classList.toggle(
-      "dark",
-      variant === ThemeVariant.DARK,
-    );
-  }, [variant]);
+    document.documentElement.classList.toggle("dark", theme === Theme.DARK);
+  }, [theme]);
+
+  // Subscribe to auth changes
+  client.auth.onAuthStateChange((event, session) => {
+    switch (event) {
+      case "INITIAL_SESSION":
+      case "SIGNED_IN":
+      case "TOKEN_REFRESHED":
+      case "USER_UPDATED":
+        // Set the user
+        setUser(session?.user);
+        break;
+
+      case "SIGNED_OUT": {
+        // Set the error
+        setError({
+          name: "Signed out",
+          description: "You have been signed out",
+        });
+
+        // Clear the user
+        setUser();
+
+        // Redirect to the auth page
+        history.push("/auth");
+      }
+    }
+  });
 
   return (
     <IonApp>
       <IonReactRouter>
+        <IonAlert
+          isOpen={error !== undefined}
+          header={error?.name}
+          subHeader={error?.description}
+          buttons={["OK"]}
+          onIonAlertDidDismiss={() => setError()}
+        />
+
         <IonSplitPane contentId="main">
           <Menu />
 
           <IonRouterOutlet id="main">
+            {/* Unauthenticated routes */}
             <Route path="/" exact={true}>
-              <Home />
+              <Index />
             </Route>
 
-            <Route path="/settings" exact={true}>
+            <Route path="/auth" exact={true}>
+              <Auth />
+            </Route>
+
+            {/* Authenticated routes */}
+            <AuthenticatedRoute path="/nearby" exact={true}>
+              <Nearby />
+            </AuthenticatedRoute>
+
+            <AuthenticatedRoute path="/settings" exact={true}>
               <Settings />
-            </Route>
+            </AuthenticatedRoute>
 
+            {/* Catch-all route */}
             <Route>
               <Error
-                code="404"
+                name="404"
                 description="The requested page was not found!"
                 homeButton={true}
               />

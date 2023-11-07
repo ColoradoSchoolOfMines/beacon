@@ -1,3 +1,7 @@
+/**
+ * @file Setting page
+ */
+
 import {
   IonButtons,
   IonContent,
@@ -19,8 +23,8 @@ import {
 } from "@ionic/react";
 import {refreshOutline, refreshSharp} from "ionicons/icons";
 
-import {GIT_BRANCH, GIT_COMMIT, VERSION} from "~/lib/env";
 import {useStore} from "~/lib/state";
+import {GIT_BRANCH, GIT_COMMIT, VERSION} from "~/lib/vars";
 
 /**
  * Settings page component
@@ -28,8 +32,8 @@ import {useStore} from "~/lib/state";
  */
 export const Settings: React.FC = () => {
   // Hooks
-  const variant = useStore(state => state.theme.variant);
-  const setVariant = useStore(state => state.theme.setVariant);
+  const theme = useStore(state => state.theme);
+  const setTheme = useStore(state => state.setTheme);
   const reset = useStore(state => state.reset);
   const [present] = useIonActionSheet();
 
@@ -68,28 +72,23 @@ export const Settings: React.FC = () => {
         </IonToolbar>
       </IonHeader>
 
-      <IonContent forceOverscroll={false} fullscreen={true}>
-        <IonHeader collapse="condense">
-          <IonToolbar>
-            <IonTitle size="large">Settings</IonTitle>
-          </IonToolbar>
-        </IonHeader>
-        <IonList>
+      <IonContent forceOverscroll={false}>
+        <IonList className="py-0">
           <IonItemGroup>
             <IonItemDivider>
-              <IonLabel>Theme</IonLabel>
+              <IonLabel>Look and Feel</IonLabel>
             </IonItemDivider>
             <IonItem>
               <IonSelect
                 interface="action-sheet"
                 interfaceOptions={{
-                  header: "Theme variant",
-                  subHeader: "Select your preferred theme variant",
+                  header: "Theme",
+                  subHeader: "Select your preferred theme",
                 }}
-                label="Variant"
+                label="Theme"
                 labelPlacement="floating"
-                onIonChange={event => setVariant(event.detail.value)}
-                value={variant}
+                onIonChange={event => setTheme(event.detail.value)}
+                value={theme}
               >
                 <IonSelectOption value="light">Light</IonSelectOption>
                 <IonSelectOption value="dark">Dark</IonSelectOption>
