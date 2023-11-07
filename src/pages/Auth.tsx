@@ -23,7 +23,7 @@ import {
 import {logInOutline, logInSharp} from "ionicons/icons";
 import {isValidPhoneNumber, parsePhoneNumber} from "libphonenumber-js/core";
 import metadata from "libphonenumber-js/metadata.min.json";
-import {Ref, useRef} from "react";
+import {useRef} from "react";
 import {Controller, useForm} from "react-hook-form";
 import {useHistory} from "react-router-dom";
 import {z} from "zod";
@@ -63,7 +63,7 @@ type FormSchema = z.infer<typeof formSchema>;
 export const Auth: React.FC = () => {
   // Hooks
   const history = useHistory();
-  const captcha = useRef<HCaptcha>();
+  const captcha = useRef<HCaptcha>(null);
   const setError = useStore(state => state.setError);
   const theme = useStore(state => state.theme);
 
@@ -165,7 +165,7 @@ export const Auth: React.FC = () => {
                       >
                         <HCaptcha
                           onVerify={token => onChange(token)}
-                          ref={captcha as Ref<HCaptcha>}
+                          ref={captcha}
                           sitekey={HCAPTCHA_SITEKEY}
                           theme={theme === Theme.DARK ? "dark" : "light"}
                         />
