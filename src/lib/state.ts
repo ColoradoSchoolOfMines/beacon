@@ -4,6 +4,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
 import {User} from "@supabase/supabase-js";
+import {PhoneNumber} from "libphonenumber-js/core";
 import {merge} from "lodash-es";
 import {create} from "zustand";
 import {createJSONStorage, devtools, persist} from "zustand/middleware";
@@ -25,6 +26,17 @@ interface Store {
    * @param newError Global error or undefined to clear the error
    */
   setError: (newError?: GlobalError) => void;
+
+  /**
+   * Temporary phone number
+   */
+  phoneNumber?: PhoneNumber;
+
+  /**
+   * Set the temporary phone number
+   * @param newPhoneNumber New phone number
+   */
+  setPhoneNumber: (newPhoneNumber?: PhoneNumber) => void;
 
   /**
    * Current user
@@ -65,7 +77,7 @@ interface Store {
 }
 
 /**
- * Default store state
+ * Default persisted store state
  */
 const defaultState: DeepPartial<Store> = {
   theme:
@@ -88,6 +100,12 @@ export const useStore = create<Store>()(
             set(state => ({
               ...state,
               error,
+            })),
+          phoneNumber: undefined,
+          setPhoneNumber: (phoneNumber?: PhoneNumber) =>
+            set(state => ({
+              ...state,
+              phoneNumber,
             })),
           user: undefined,
           setUser: (user: User) =>

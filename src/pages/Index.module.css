@@ -1,0 +1,3 @@
+.snapContent::part(scroll) {
+  @apply <md:snap-y <md:snap-mandatory;
+}

@@ -16,6 +16,8 @@ import {
 import {
   compassOutline,
   compassSharp,
+  homeOutline,
+  homeSharp,
   settingsOutline,
   settingsSharp,
 } from "ionicons/icons";
@@ -31,6 +33,12 @@ interface NavItem {
 }
 
 const navItem: NavItem[] = [
+  {
+    title: "Home",
+    url: "/",
+    iosIcon: homeOutline,
+    mdIcon: homeSharp,
+  },
   {
     title: "Nearby",
     url: "/nearby",

@@ -36,7 +36,7 @@ interface IosProps {
 }
 
 /**
- * iOS PWA installer
+ * iOS PWA installer component
  * @returns JSX
  */
 export const Ios: React.FC<IosProps> = ({address}) => (
