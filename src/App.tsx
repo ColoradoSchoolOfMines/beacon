@@ -36,7 +36,7 @@ import {client} from "~/lib/supabase";
 import {Theme} from "~/lib/types";
 import {Auth} from "~/pages/Auth";
 import {Error} from "~/pages/Error";
-import {Index} from "~/pages/Index";
+import {Home} from "~/pages/Home";
 import {Nearby} from "~/pages/Nearby";
 import {Settings} from "~/pages/Settings";
 
@@ -107,7 +107,7 @@ export const App: React.FC = () => {
           <IonRouterOutlet id="main">
             {/* Unauthenticated routes */}
             <Route path="/" exact={true}>
-              <Index />
+              <Home />
             </Route>
 
             <Route path="/auth" exact={true}>

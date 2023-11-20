@@ -5,9 +5,12 @@
 import {zodResolver} from "@hookform/resolvers/zod";
 import {IonButton, IonIcon, IonInput} from "@ionic/react";
 import {checkmarkOutline, checkmarkSharp} from "ionicons/icons";
+import {useEffect} from "react";
 import {Controller, useForm} from "react-hook-form";
+import {useHistory} from "react-router";
 import {z} from "zod";
 
+import {checkOtpSupport, checkPasskeySupport, getOtp} from "~/lib/auth";
 import {useStore} from "~/lib/state";
 import {client} from "~/lib/supabase";
 import {AuthStep} from "~/pages/Auth";
@@ -40,6 +43,7 @@ export interface Step3BProps {
  */
 export const Step3B: React.FC<Step3BProps> = ({setStep}) => {
   // Hooks
+  const history = useHistory();
   const phoneNumber = useStore(state => state.phoneNumber);
   const setError = useStore(state => state.setError);
 
@@ -47,16 +51,40 @@ export const Step3B: React.FC<Step3BProps> = ({setStep}) => {
     resolver: zodResolver(formSchema),
   });
 
+  // Effects
+  useEffect(() => {
+    (async () => {
+      // Attempt to get the OTP automatically
+      if (!checkOtpSupport()) {
+        console.warn("Automatic OTP retrieval is not supported!");
+        return;
+      }
+
+      let otp: string | undefined;
+
+      try {
+        otp = await getOtp();
+      } catch (error) {
+        console.warn(error);
+        return;
+      }
+
+      if (otp !== undefined) {
+        await verify(otp);
+      }
+    })();
+  }, []);
+
   // Methods
   /**
    * Verify the code
-   * @param data Form data
+   * @param code Code
    */
-  const verify = async (data: FormSchema) => {
+  const verify = async (code: string) => {
     // Log in
     const {error} = await client.auth.verifyOtp({
       phone: phoneNumber?.number as string,
-      token: data.code,
+      token: code,
       type: "sms",
     });
 
@@ -75,11 +103,22 @@ export const Step3B: React.FC<Step3BProps> = ({setStep}) => {
     }
 
     // Go to the next step
-    setStep(AuthStep.STEP4B);
+    if (checkPasskeySupport()) {
+      setStep(AuthStep.STEP4B);
+    } else {
+      history.push("/nearby");
+    }
   };
 
+  /**
+   * Form submit handler
+   * @param data Form data
+   * @returns Nothing
+   */
+  const onSubmit = async (data: FormSchema) => await verify(data.code);
+
   return (
-    <form onSubmit={handleSubmit(verify)}>
+    <form onSubmit={handleSubmit(onSubmit)}>
       <Controller
         control={control}
         name="code"

@@ -16,6 +16,14 @@ export type DeepPartial<T> = {
 };
 
 /**
+ * OTP credential
+ */
+export interface OTPCredential extends Credential {
+  /** [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/API/OTPCredential/code) */
+  readonly code: string;
+}
+
+/**
  * Theme
  */
 export enum Theme {

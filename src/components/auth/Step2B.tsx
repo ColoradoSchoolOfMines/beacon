@@ -63,10 +63,10 @@ export const Step2B: React.FC<Step2BProps> = ({setStep}) => {
 
   // Methods
   /**
-   * Log in
+   * Form submit handler
    * @param data Form data
    */
-  const login = async (data: FormSchema) => {
+  const onSubmit = async (data: FormSchema) => {
     // Parse the phone number
     const phoneNumber = parsePhoneNumber(data.phoneNumber, "US", metadata);
     setPhoneNumber(phoneNumber);
@@ -104,7 +104,7 @@ export const Step2B: React.FC<Step2BProps> = ({setStep}) => {
   };
 
   return (
-    <form onSubmit={handleSubmit(login)}>
+    <form onSubmit={handleSubmit(onSubmit)}>
       <Controller
         control={control}
         name="phoneNumber"

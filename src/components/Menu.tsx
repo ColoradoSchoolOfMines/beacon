@@ -18,35 +18,49 @@ import {
   compassSharp,
   homeOutline,
   homeSharp,
+  lockClosedOutline,
+  lockClosedSharp,
   settingsOutline,
   settingsSharp,
 } from "ionicons/icons";
 import {useLocation} from "react-router-dom";
 
 import logo from "~/assets/logo.png";
+import {useStore} from "~/lib/state";
 
 interface NavItem {
   url: string;
+  authenticated: boolean;
   iosIcon: string;
   mdIcon: string;
   title: string;
 }
 
-const navItem: NavItem[] = [
+const navItems: NavItem[] = [
   {
     title: "Home",
+    authenticated: false,
     url: "/",
     iosIcon: homeOutline,
     mdIcon: homeSharp,
   },
   {
+    title: "Authentication",
+    authenticated: false,
+    url: "/auth",
+    iosIcon: lockClosedOutline,
+    mdIcon: lockClosedSharp,
+  },
+  {
     title: "Nearby",
+    authenticated: true,
     url: "/nearby",
     iosIcon: compassOutline,
     mdIcon: compassSharp,
   },
   {
     title: "Settings",
+    authenticated: true,
     url: "/settings",
     iosIcon: settingsOutline,
     mdIcon: settingsSharp,
@@ -58,6 +72,8 @@ const navItem: NavItem[] = [
  * @returns JSX
  */
 export const Menu: React.FC = () => {
+  // Hooks
+  const user = useStore(state => state.user);
   const location = useLocation();
 
   return (
@@ -73,30 +89,32 @@ export const Menu: React.FC = () => {
           </IonListHeader>
 
           {/* Navigation items */}
-          {navItem.map((appPage, index) => {
-            return (
-              <IonMenuToggle key={index} autoHide={false}>
-                <IonItem
-                  className={
-                    location.pathname === appPage.url ? "selected" : ""
-                  }
-                  routerLink={appPage.url}
-                  routerDirection="none"
-                  lines="none"
-                  detail={false}
-                >
-                  <IonIcon
-                    aria-hidden="true"
-                    slot="start"
-                    ios={appPage.iosIcon}
-                    md={appPage.mdIcon}
-                  />
+          {navItems
+            .filter(navItem => !navItem.authenticated || user !== undefined)
+            .map((navItem, index) => {
+              return (
+                <IonMenuToggle key={index} autoHide={false}>
+                  <IonItem
+                    className={
+                      location.pathname === navItem.url ? "selected" : ""
+                    }
+                    routerLink={navItem.url}
+                    routerDirection="none"
+                    lines="none"
+                    detail={false}
+                  >
+                    <IonIcon
+                      aria-hidden="true"
+                      slot="start"
+                      ios={navItem.iosIcon}
+                      md={navItem.mdIcon}
+                    />
 
-                  <IonLabel>{appPage.title}</IonLabel>
-                </IonItem>
-              </IonMenuToggle>
-            );
-          })}
+                    <IonLabel>{navItem.title}</IonLabel>
+                  </IonItem>
+                </IonMenuToggle>
+              );
+            })}
         </IonList>
       </IonContent>
     </IonMenu>
