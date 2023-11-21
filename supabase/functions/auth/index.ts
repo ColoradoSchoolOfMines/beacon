@@ -2,8 +2,8 @@
  * @file Authentication edge function
  */
 
-import { Application, Router } from "https://deno.land/x/oak@v12.6.1/mod.ts";
-import { generateChallenge, verifyChallenge } from "./webauthn.ts";
+import {Application, Router} from "oak";
+import {generateChallenge, verifyChallenge} from "~/auth/webauthn.ts";
 
 // Initialize Oak
 const router = new Router();
@@ -16,4 +16,4 @@ router.post("/auth/webauthn/verify", verifyChallenge);
 const app = new Application();
 app.use(router.routes());
 app.use(router.allowedMethods());
-await app.listen({ port: 8000 });
+await app.listen({port: 8000});

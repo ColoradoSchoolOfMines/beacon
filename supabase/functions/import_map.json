@@ -1,0 +1,10 @@
+{
+  "imports": {
+    "~/": "./",
+    "@supabase/supabase": "https://esm.sh/@supabase/supabase-js@2.38.4",
+    "fido2": "https://deno.land/x/fido2@3.4.1/dist/main.js",
+    "oak": "https://deno.land/x/oak@v12.6.1/mod.ts",
+    "postgres": "https://deno.land/x/postgres@v0.17.0/mod.ts",
+    "zod": "https://deno.land/x/zod@v3.22.4/mod.ts"
+  }
+}

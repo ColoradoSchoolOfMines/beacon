@@ -2,7 +2,7 @@
  * @file Auth helpers
  */
 
-import { Fido2Lib } from "https://deno.land/x/fido2@3.4.1/dist/main.js";
+import {Fido2Lib} from "fido2";
 
 /**
  * FIDO2 library instance
@@ -27,5 +27,5 @@ export const f2l = new Fido2Lib({
     -259, // RS512
     -258, // RS384
     -257, // RS256
-  ]
+  ],
 });

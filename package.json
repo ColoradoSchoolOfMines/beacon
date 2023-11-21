@@ -9,11 +9,11 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "supabase:functions": "supabase functions serve",
+    "supabase:functions": "supabase functions serve --import-map ./supabase/functions/import_map_supabase.json",
     "supabase:reset": "supabase db reset && tsx supabase/setup.ts",
     "supabase:start": "supabase start && tsx supabase/setup.ts",
     "supabase:status": "supabase status",
-    "supabase:types": "supabase gen types typescript --local --schema public > src/lib/schema.ts && eslint . --fix"
+    "supabase:types": "supabase gen types typescript --local --schema public | tee src/lib/schema.ts supabase/functions/lib/schema.ts > /dev/null && eslint . --fix"
   },
   "dependencies": {
     "@capacitor/app": "5.0.6",
