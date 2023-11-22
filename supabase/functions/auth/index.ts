@@ -9,8 +9,10 @@ import {generateChallenge, verifyChallenge} from "~/auth/webauthn.ts";
 const router = new Router();
 
 // Register routes
-router.post("/auth/webauthn/generate", generateChallenge);
-router.post("/auth/webauthn/verify", verifyChallenge);
+router.post("/auth/webauthn/attestate/begin", generateChallenge);
+router.post("/auth/webauthn/attestate/end", generateChallenge);
+router.post("/auth/webauthn/authenticate/begin", generateChallenge);
+router.post("/auth/webauthn/authenticate/end", verifyChallenge);
 
 // Start the server
 const app = new Application();

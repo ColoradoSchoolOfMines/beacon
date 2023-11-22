@@ -14,6 +14,7 @@ import {getStatus, root} from "./lib";
  */
 const scripts = [
   join(root, "sql", "before.sql"),
+  join(root, "sql", "types.sql"),
   join(root, "sql", "functions.sql"),
   join(root, "sql", "tables.sql"),
   join(root, "sql", "triggers.sql"),

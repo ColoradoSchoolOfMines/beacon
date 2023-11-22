@@ -6,6 +6,24 @@
 
 /* ---------------------------------------- Setup tables --------------------------------------- */
 
+-- WebAuthn challenges
+CREATE TABLE auth.webauthn_challenges (
+  -- Primary key
+  id UUID NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
+
+  -- User ID (Foreign key to auth.users)
+  user_id UUID NOT NULL REFERENCES auth.users ON UPDATE CASCADE ON DELETE CASCADE,
+
+  -- Creation timestamp
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+  -- Challenge type
+  type auth.webauthn_challenge_type NOT NULL,
+
+  -- Challenge (Base64 encoded; maximum length of 100 characters)
+  challenge VARCHAR(100) NOT NULL DEFAULT encode(extensions.gen_random_bytes(64), 'base64')
+);
+
 -- WebAuthn credentials
 CREATE TABLE auth.webauthn_credentials (
   -- Primary key
@@ -18,22 +36,10 @@ CREATE TABLE auth.webauthn_credentials (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
   -- Client-side credential ID (Base64 encoded; maximum length of 1000 characters)
-  key_id VARCHAR(1000) NOT NULL,
+  credential_id VARCHAR(1000) NOT NULL,
 
   -- Public key (Base64 encoded; maximum length of 1000 characters)
   public_key VARCHAR(1000) NOT NULL
-);
-
--- WebAuthn challenges
-CREATE TABLE auth.webauthn_challenges (
-  -- Primary key
-  id UUID NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
-
-  -- Creation timestamp
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-  -- Challenge (Base64 encoded; maximum length of 100 characters)
-  challenge VARCHAR(100) NOT NULL DEFAULT encode(extensions.gen_random_bytes(64), 'base64')
 );
 
 -- Profiles (Modifying auth.users is considered bad practice, so additonal user data is stored here)

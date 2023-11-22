@@ -35,7 +35,7 @@ export const createPasskey = async (
   challenge: ArrayLike<number> | ArrayBufferLike,
   userId: string,
 ) =>
-  (await navigator.credentials.create({
+  ((await navigator.credentials.create({
     publicKey: {
       attestation: "none",
       authenticatorSelection: {
@@ -82,7 +82,7 @@ export const createPasskey = async (
         displayName: `Beacon User ${userId}`,
       },
     },
-  })) ?? undefined;
+  })) as PublicKeyCredential | null) ?? undefined;
 
 /**
  * Get a passkey

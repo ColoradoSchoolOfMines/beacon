@@ -42,7 +42,9 @@ const createUserClient = async <T extends boolean>(
   ctx: Context,
   requireAuth: T,
 ): Promise<
-  [SupabaseClient<Database> | undefined, T extends true ? User : undefined]
+  T extends true
+    ? [SupabaseClient<Database>, User]
+    : [SupabaseClient<Database> | undefined, User | undefined]
 > => {
   // Get the authorization header
   const authorization = ctx.request.headers.get("Authorization");

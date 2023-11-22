@@ -4,24 +4,83 @@
 
 import {Context} from "oak";
 import {createUserClient, dbClient} from "~/lib/client.ts";
+import {encodeBase64, decodeBase64} from "std/encoding/base64.ts";
+import {fido2} from "~/lib/auth.ts";
+import {generateUsername} from "~/lib/user.ts";
 import {z} from "zod";
-import {f2l} from "~/lib/auth.ts";
 
-export const registerCredential = async (ctx: Context) => {
+/**
+ * WebAuthn attestation options
+ */
+interface AttestationOptions {
+  challenge: ArrayBuffer;
+  user: object;
+  rp: object;
+}
+
+/**
+ * Begin a WebAuthn attestation
+ * @param ctx Router context
+ */
+export const beginAttestation = async (ctx: Context) => {
   // Create a Supabase client for the current user
-  const [_, user] = await createUserClient(ctx, true);
+  const [userClient, user] = await createUserClient(ctx, true);
+
+  // Get profile information
+  const {data, error} = await userClient.from("profiles").select("*").limit(1);
+
+  if (error) {
+    ctx.throw(500, error.message);
+  }
+
+  // Generate the username
+  const username = generateUsername(data[0].color, data[0].emoji);
 
   // Generate the attestation options
-  const attestationOptions = await f2l.attestationOptions();
-  (attestationOptions.user as Record<string, any>).id = user.id;
+  const attestationOptions =
+    (await fido2.attestationOptions()) as unknown as AttestationOptions;
+  attestationOptions.user = {
+    id: user.id,
+    name: username,
+    displayName: username,
+  };
 
-  // Store the attestation
+  const encodedChallenge = encodeBase64(attestationOptions.challenge);
+
+  // Store the challenge
   await dbClient.queryObject(
-    "INSERT INTO auth.webauthn_attestations (user_id, options) VALUES ($1, $2);",
-    [user.id, attestationOptions],
+    "INSERT INTO auth.webauthn_challenges (user_id, type, challenge) VALUES ($1, $2, $3);",
+    [
+      user.id,
+      "attestation",
+      encodedChallenge,
+    ],
   );
 
-  // ctx.request.headers.
+  // Return the attestation options
+  ctx.response.body = {
+    ...attestationOptions,
+    challenge: encodedChallenge,
+  };
+};
+
+const endAttestationSchema = z.object({
+  authenticatorAttachment: z.string().optional(),
+  rawId: z.string(),
+  response: z.object({
+    attestationObject: z.string(),
+    clientData: z.string(),
+  }),
+});
+
+/**
+ * End a WebAuthn attestation
+ * @param ctx Router context
+ */
+export const endAttestation = async (ctx: Context) => {
+  // Parse and validate the request body
+  const req = await endAttestationSchema.parseAsync(ctx.request.body());
+  const result = await fido2.attestationResult();
 };
 
 /**

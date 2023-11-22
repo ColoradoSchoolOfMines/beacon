@@ -7,7 +7,7 @@ import {Fido2Lib} from "fido2";
 /**
  * FIDO2 library instance
  */
-export const f2l = new Fido2Lib({
+export const fido2 = new Fido2Lib({
   timeout: 60000,
   rpId: "beacon.social",
   rpName: "Beacon Social Network",
