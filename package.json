@@ -10,10 +10,10 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "supabase:functions": "supabase functions serve --import-map ./supabase/functions/import_map_supabase.json",
-    "supabase:reset": "supabase db reset && tsx supabase/setup.ts",
-    "supabase:start": "supabase start && tsx supabase/setup.ts",
+    "supabase:reset": "tsx supabase/scripts/reset.ts",
+    "supabase:start": "tsx supabase/scripts/start.ts",
     "supabase:status": "supabase status",
-    "supabase:types": "supabase gen types typescript --local --schema public | tee src/lib/schema.ts supabase/functions/lib/schema.ts > /dev/null && eslint . --fix"
+    "supabase:schema": "tsx supabase/scripts/schema.ts"
   },
   "dependencies": {
     "@capacitor/app": "5.0.6",

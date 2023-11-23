@@ -1,0 +1,22 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "deno",
+      "command": "cache",
+      "args": [
+        "--config",
+        "${workspaceFolder}/supabase/functions/deno.json",
+        "--lock",
+        "${workspaceFolder}/supabase/functions/deno.lock",
+        "--lock-write",
+        "${workspaceFolder}/supabase/functions/auth/index.ts",
+      ],
+      "problemMatcher": [
+        "$deno"
+      ],
+      "group": "build",
+      "label": "deno: cache"
+    }
+  ]
+}
