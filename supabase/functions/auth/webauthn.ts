@@ -3,20 +3,20 @@
  */
 
 import {Context} from "oak";
-import {createUserClient, dbClient} from "~/lib/client.ts";
-import {encodeBase64, decodeBase64} from "std/encoding/base64.ts";
-import {fido2} from "~/lib/auth.ts";
+import {createUserClient, dbClient, serviceClient} from "~/lib/client.ts";
+import {fido2, rpId} from "~/lib/auth.ts";
 import {generateUsername} from "~/lib/user.ts";
 import {z} from "zod";
 
 /**
- * WebAuthn attestation options
+ * UTF-8 text decoder
  */
-interface AttestationOptions {
-  challenge: ArrayBuffer;
-  user: object;
-  rp: object;
-}
+const textDecoder = new TextDecoder();
+
+/**
+ * UTF-8 text encoder
+ */
+const textEncoder = new TextEncoder();
 
 /**
  * Begin a WebAuthn attestation
@@ -37,39 +37,43 @@ export const beginAttestation = async (ctx: Context) => {
   const username = generateUsername(data[0].color, data[0].emoji);
 
   // Generate the attestation options
-  const attestationOptions =
-    (await fido2.attestationOptions()) as unknown as AttestationOptions;
+  const attestationOptions = await fido2.attestationOptions();
   attestationOptions.user = {
-    id: user.id,
+    id: textEncoder.encode(user.id),
     name: username,
     displayName: username,
   };
-
-  const encodedChallenge = encodeBase64(attestationOptions.challenge);
+  const decodedChallenge = textDecoder.decode(attestationOptions.challenge);
 
   // Store the challenge
-  await dbClient.queryObject(
-    "INSERT INTO auth.webauthn_challenges (user_id, type, challenge) VALUES ($1, $2, $3);",
+  const {rows} = await dbClient.queryObject<{
+    id: string;
+  }>(
+    "INSERT INTO auth.webauthn_challenges (type, challenge) VALUES ($1, $2, $3) RETURNING id;",
     [
       user.id,
       "attestation",
-      encodedChallenge,
+      decodedChallenge,
     ],
   );
 
   // Return the attestation options
   ctx.response.body = {
     ...attestationOptions,
-    challenge: encodedChallenge,
+    challengeId: rows[0].id,
+    challenge: decodedChallenge,
   };
 };
 
+/**
+ * End a WebAuthn attestation request body schema
+ */
 const endAttestationSchema = z.object({
-  authenticatorAttachment: z.string().optional(),
+  challengeId: z.string(),
   rawId: z.string(),
   response: z.object({
     attestationObject: z.string(),
-    clientData: z.string(),
+    clientDataJSON: z.string(),
   }),
 });
 
@@ -78,51 +82,225 @@ const endAttestationSchema = z.object({
  * @param ctx Router context
  */
 export const endAttestation = async (ctx: Context) => {
+  // Create a Supabase client for the current user
+  const [_, user] = await createUserClient(ctx, true);
+
   // Parse and validate the request body
   const req = await endAttestationSchema.parseAsync(ctx.request.body());
-  const result = await fido2.attestationResult();
-};
-
-/**
- * Generate a WebAuthn challenge
- * @param ctx Router context
- */
-export const generateChallenge = async (ctx: Context) => {
-  const {rows} = await dbClient.queryObject<{
-    id: string;
-    challenge: string;
-  }>(
-    "INSERT INTO auth.webauthn_challenges DEFAULT VALUES RETURNING id, challenge;",
-  );
-
-  // Return the challenge
-  ctx.response.body = {
-    id: rows[0].id,
-    challenge: rows[0].challenge,
-  };
-};
-
-const verifyChallengeSchema = z.object({
-  id: z.string().uuid(),
-});
-
-/**
- * Verify a WebAuthn challenge and log the user in
- * @param ctx Router context
- */
-export const verifyChallenge = async (ctx: Context) => {
-  // Get the request body
-  if (!ctx.request.hasBody) {
-    ctx.throw(415, "Request body is required");
-  }
-
-  const body = await ctx.request.body().value;
 
   // Get the challenge
   const {rows} = await dbClient.queryObject<{
     id: string;
     challenge: string;
-  }>("SELECT id, challenge FROM auth.webauthn_challenges WHERE id = $1;", [
-    body.id,
-  ]);
+  }>(
+    "SELECT id, challenge FROM auth.webauthn_challenges WHERE type = 'attestation'::auth.webauthn_challenge_type AND id = $1;",
+    [
+      req.challengeId,
+    ],
+  );
+
+  if (rows.length === 0) {
+    ctx.throw(400, "Missing challenge");
+  }
+
+  // Verify the attestation
+  const result = await fido2.attestationResult(
+    {
+      rawId: textEncoder.encode(req.rawId),
+      response: {
+        attestationObject: req.response.attestationObject,
+        clientDataJSON: req.response.clientDataJSON,
+      },
+    },
+    {
+      challenge: rows[0].challenge,
+      origin: `https://${rpId}`,
+      factor: "either",
+      rpId,
+    },
+  );
+
+  // Get the credential counter, raw ID, and public key
+  const rawId = result.clientData.get("rawId");
+  const counter = result.authnrData.get("counter");
+  const credentialPublicKeyPem = result.authnrData.get(
+    "credentialPublicKeyPem",
+  );
+
+  if (
+    counter === undefined ||
+    rawId === undefined ||
+    credentialPublicKeyPem === undefined
+  ) {
+    ctx.throw(400, "Missing credential data");
+  }
+
+  const transaction = await dbClient.createTransaction(
+    "add_webauthn_credential",
+  );
+  await transaction.begin();
+
+  // Store the credential
+  await transaction.queryObject(
+    "INSERT INTO auth.webauthn_credentials (user_id, credential_id, counter, public_key) VALUES ($1, $2, $3, $4);",
+    [
+      user.id,
+      rawId,
+      counter,
+      credentialPublicKeyPem,
+    ],
+  );
+
+  // Delete the challenge
+  await transaction.queryObject(
+    "DELETE FROM auth.webauthn_challenges WHERE id = $1;",
+    [
+      rows[0].id,
+    ],
+  );
+
+  await transaction.commit();
+};
+
+/**
+ * Begin a WebAuthn assertion
+ * @param ctx Router context
+ */
+export const beginAssertion = async (ctx: Context) => {
+  // Generate the assertion options
+  const assertionOptions = await fido2.assertionOptions();
+  const decodedChallenge = textDecoder.decode(assertionOptions.challenge);
+
+  // Store the challenge
+  const {rows} = await dbClient.queryObject<{
+    id: string;
+  }>(
+    "INSERT INTO auth.webauthn_challenges (type, challenge) VALUES ($1, $2) RETURNING id;",
+    [
+      "assertion",
+      decodedChallenge,
+    ],
+  );
+
+  if (rows.length === 0) {
+    ctx.throw(500, "Failed to store challenge");
+  }
+
+  // Return the assertion options
+  ctx.response.body = {
+    ...assertionOptions,
+    challengeId: rows[0].id,
+    challenge: decodedChallenge,
+  };
+};
+
+/**
+ * End a WebAuthn assertion request body schema
+ */
+const endAssertionSchema = z.object({
+  challengeId: z.string(),
+  rawId: z.string(),
+  response: z.object({
+    authenticatorData: z.string(),
+    clientDataJSON: z.string(),
+    signature: z.string(),
+  }),
+});
+
+/**
+ * End a WebAuthn assertion
+ * @param ctx Router context
+ */
+export const endAssertion = async (ctx: Context) => {
+  // Parse and validate the request body
+  const req = await endAssertionSchema.parseAsync(ctx.request.body());
+
+  // Get the challenge
+  const {rows: challengeRows} = await dbClient.queryObject<{
+    id: string;
+    challenge: string;
+  }>(
+    "SELECT id, challenge FROM auth.webauthn_challenges WHERE type = 'assertion'::auth.webauthn_challenge_type AND id = $1;",
+    [
+      req.challengeId,
+    ],
+  );
+
+  if (challengeRows.length === 0) {
+    ctx.throw(400, "Missing challenge");
+  }
+
+  // Get the credential
+  const {rows: credentialRows} = await dbClient.queryObject<{
+    counter: number;
+    public_key: string;
+  }>(
+    "SELECT counter, public_key FROM auth.webauthn_credentials WHERE user_id = $1;",
+    [
+      req.rawId,
+    ],
+  );
+
+  if (credentialRows.length === 0) {
+    ctx.throw(400, "Missing credential");
+  }
+
+  // Verify the assertion
+  await fido2.assertionResult(
+    {
+      rawId: textEncoder.encode(req.rawId),
+      response: {
+        authenticatorData: textEncoder.encode(req.response.authenticatorData),
+        clientDataJSON: req.response.clientDataJSON,
+        signature: req.response.signature,
+      },
+    },
+    {
+      challenge: challengeRows[0].challenge,
+      factor: "either",
+      origin: `https://${rpId}`,
+      prevCounter: credentialRows[0].counter,
+      publicKey: credentialRows[0].public_key,
+      rpId,
+      userHandle: null,
+    },
+  );
+
+  const transaction = await dbClient.createTransaction(
+    "use_webauthn_credential",
+  );
+  await transaction.begin();
+
+  // Delete the challenge
+  await dbClient.queryObject(
+    "DELETE FROM auth.webauthn_challenges WHERE id = $1;",
+    [
+      req.challengeId,
+    ],
+  );
+
+  // Update the credential counter
+  await dbClient.queryObject(
+    "UPDATE auth.webauthn_credentials SET counter = counter + 1 WHERE user_id = $1",
+    [
+      req.rawId,
+    ],
+  );
+
+  await transaction.commit();
+
+  // Generate a magic link
+  const {data, error} = await serviceClient.auth.admin.generateLink({
+    email: "",
+    type: "magiclink",
+  });
+
+  if (error) {
+    ctx.throw(500, error.message);
+  }
+
+  // Return the magic link
+  ctx.response.body = {
+    link: data.properties.action_link,
+  };
 };
