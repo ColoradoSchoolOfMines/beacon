@@ -1,5 +1,5 @@
 /**
- * @file Auth helpers
+ * @file Auth utilities
  */
 
 import {OTPCredential} from "~/lib/types";

@@ -95,7 +95,8 @@ ALTER TABLE public.comment_reports ENABLE ROW LEVEL SECURITY;
 CREATE POLICY select_profiles
 ON public.profiles
 FOR SELECT
-TO authenticated;
+TO authenticated
+USING (true);
 
 -- User locations
 CREATE POLICY select_locations

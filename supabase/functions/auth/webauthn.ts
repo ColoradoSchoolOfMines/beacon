@@ -3,15 +3,12 @@
  */
 
 import {Context} from "oak";
-import {createUserClient, dbClient, serviceClient} from "~/lib/client.ts";
-import {fido2, rpId} from "~/lib/auth.ts";
+import {createUserClient, dbClient} from "../lib/supabase.ts";
+import {decodeBase64, encodeBase64} from "std/encoding/base64.ts";
+import {fido2, rpId} from "../lib/webauthn.ts";
+import {generateSession} from "~/lib/auth.ts";
 import {generateUsername} from "~/lib/user.ts";
 import {z} from "zod";
-
-/**
- * UTF-8 text decoder
- */
-const textDecoder = new TextDecoder();
 
 /**
  * UTF-8 text encoder
@@ -27,41 +24,52 @@ export const beginAttestation = async (ctx: Context) => {
   const [userClient, user] = await createUserClient(ctx, true);
 
   // Get profile information
-  const {data, error} = await userClient.from("profiles").select("*").limit(1);
+  const {data, error} = await userClient
+    .from("profiles")
+    .select("color, emoji")
+    .eq("id", user.id)
+    .limit(1);
 
   if (error) {
     ctx.throw(500, error.message);
   }
 
-  // Generate the username
-  const username = generateUsername(data[0].color, data[0].emoji);
+  if (data === null || data.length === 0) {
+    ctx.throw(400, "Missing profile");
+  }
 
   // Generate the attestation options
   const attestationOptions = await fido2.attestationOptions();
-  attestationOptions.user = {
-    id: textEncoder.encode(user.id),
-    name: username,
-    displayName: username,
-  };
-  const decodedChallenge = textDecoder.decode(attestationOptions.challenge);
+  const encodedChallenge = encodeBase64(attestationOptions.challenge);
 
   // Store the challenge
   const {rows} = await dbClient.queryObject<{
     id: string;
   }>(
-    "INSERT INTO auth.webauthn_challenges (type, challenge) VALUES ($1, $2, $3) RETURNING id;",
+    "INSERT INTO auth.webauthn_challenges (type, challenge) VALUES ($1, $2) RETURNING id;",
     [
-      user.id,
       "attestation",
-      decodedChallenge,
+      encodedChallenge,
     ],
   );
+
+  if (rows.length === 0) {
+    ctx.throw(500, "Failed to store challenge");
+  }
+
+  // Generate the username
+  const username = generateUsername(data[0].color, data[0].emoji);
 
   // Return the attestation options
   ctx.response.body = {
     ...attestationOptions,
+    user: {
+      id: user.id,
+      name: username,
+      displayName: username,
+    },
     challengeId: rows[0].id,
-    challenge: decodedChallenge,
+    challenge: encodedChallenge,
   };
 };
 
@@ -100,7 +108,7 @@ export const endAttestation = async (ctx: Context) => {
   );
 
   if (rows.length === 0) {
-    ctx.throw(400, "Missing challenge");
+    ctx.throw(400, "Invalid challenge");
   }
 
   // Verify the attestation
@@ -169,7 +177,7 @@ export const endAttestation = async (ctx: Context) => {
 export const beginAssertion = async (ctx: Context) => {
   // Generate the assertion options
   const assertionOptions = await fido2.assertionOptions();
-  const decodedChallenge = textDecoder.decode(assertionOptions.challenge);
+  const encodedChallenge = encodeBase64(assertionOptions.challenge);
 
   // Store the challenge
   const {rows} = await dbClient.queryObject<{
@@ -178,7 +186,7 @@ export const beginAssertion = async (ctx: Context) => {
     "INSERT INTO auth.webauthn_challenges (type, challenge) VALUES ($1, $2) RETURNING id;",
     [
       "assertion",
-      decodedChallenge,
+      encodedChallenge,
     ],
   );
 
@@ -190,7 +198,7 @@ export const beginAssertion = async (ctx: Context) => {
   ctx.response.body = {
     ...assertionOptions,
     challengeId: rows[0].id,
-    challenge: decodedChallenge,
+    challenge: encodedChallenge,
   };
 };
 
@@ -289,18 +297,11 @@ export const endAssertion = async (ctx: Context) => {
 
   await transaction.commit();
 
-  // Generate a magic link
-  const {data, error} = await serviceClient.auth.admin.generateLink({
-    email: "",
-    type: "magiclink",
-  });
+  // Generate a session
+  const session = await generateSession(req.rawId);
 
-  if (error) {
-    ctx.throw(500, error.message);
-  }
-
-  // Return the magic link
+  // Return the session
   ctx.response.body = {
-    link: data.properties.action_link,
+    session,
   };
 };

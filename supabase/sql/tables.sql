@@ -1,7 +1,7 @@
 /**
  * Setup tables and indexes
  *
- * Prerequisites: before.sql, functions.sql
+ * Prerequisites: before.sql, functions.sql, types.sql
  */
 
 /* ---------------------------------------- Setup tables --------------------------------------- */
@@ -18,7 +18,7 @@ CREATE TABLE auth.webauthn_challenges (
   type auth.webauthn_challenge_type NOT NULL,
 
   -- Challenge (Maximum length of 100 characters)
-  challenge VARCHAR(100) NOT NULL DEFAULT encode(extensions.gen_random_bytes(64), 'base64')
+  challenge VARCHAR(100) NOT NULL
 );
 
 -- WebAuthn credentials

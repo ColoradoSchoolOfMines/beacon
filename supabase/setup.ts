@@ -48,7 +48,18 @@ const main = async () => {
   // Get the current Supabase status
   const status = await getStatus();
 
-  // Create the environment file
+  // Create the environment files
+  await writeFile(
+    join(root, "functions", ".env"),
+    `SUPABASE_DB_URL = ${JSON.stringify(status.dbUrl)}
+SUPABASE_URL = ${JSON.stringify(status.apiUrl)}
+SUPABASE_ANON_KEY = ${JSON.stringify(status.anonKey)}
+SUPABASE_JWT_SECRET = ${JSON.stringify(status.jwtSecret)}
+SUPABASE_JWT_ISSUER = ${JSON.stringify(
+      new URL("/auth/v1", status.apiUrl).toString(),
+    )}`,
+  );
+
   await writeFile(
     join(root, "..", ".env"),
     `VITE_SUPABASE_URL = ${JSON.stringify(status.apiUrl)}

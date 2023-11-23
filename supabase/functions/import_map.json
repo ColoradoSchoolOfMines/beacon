@@ -1,7 +1,8 @@
 {
   "imports": {
     "~/": "./",
-    "@supabase/supabase": "https://esm.sh/@supabase/supabase-js@2.38.4",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.38.4",
+    "color-name-list": "https://esm.sh/color-name-list@10.16.0",
     "colord": "https://esm.sh/v134/colord@2.9.3/es2022/colord.mjs",
     "colord/": "https://esm.sh/v134/colord@2.9.3/es2022/",
     "fido2-lib": "npm:fido2-lib@3.4.3",

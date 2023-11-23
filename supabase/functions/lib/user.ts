@@ -2,32 +2,45 @@
  * @file User utilities
  */
 
-import {colord, extend} from "colord";
-import namesPlugin from "colord/plugins/names.mjs";
+//@deno-types="npm:colord@^2.9.3"
+import {Colord, extend} from "colord";
+import labPlugin from "colord/plugins/lab.js";
+import rawColorNames from "color-name-list";
 
-// Extend colord
-extend([namesPlugin]);
+// Extend Colord
+extend([labPlugin]);
 
 /**
- * Colord with name plugin
+ * Colors
  */
-interface ColordName extends ReturnType<typeof colord> {
-  toName(options: {cloesest: boolean}): string | undefined;
-}
+const colors = Object.fromEntries(
+  rawColorNames.colorNameList.map((color: {name: string; hex: string}) => [
+    color.name,
+    new Colord(color.hex),
+  ]),
+) as Record<string, Colord>;
 
 /**
  * Generate a username from the user profile's color and emoji
- * @param color Profile color
+ * @param rawColor Raw profile color
  * @param emoji Profile emoji
  * @returns Username
  */
-export const generateUsername = (color: string, emoji: string) => {
-  // Get the name of the color
-  const colorName = (colord(color) as ColordName).toName({
-    cloesest: true,
-  });
+export const generateUsername = (rawColor: string, emoji: string) => {
+  // Find the nearest color
+  const color = new Colord(rawColor);
+  let closestName: string | undefined;
+  let closestDistance = Infinity;
 
-  const username = `${colorName} ${emoji}`;
+  for (const [name, namedColor] of Object.entries(colors)) {
+    //@ts-expect-error Lab plugin types don't work in Deno
+    const distance = color.delta(namedColor);
 
-  return username;
+    if (distance < closestDistance) {
+      closestName = name;
+      closestDistance = distance;
+    }
+  }
+
+  return `${closestName ?? "Mystery"} ${emoji}`;
 };
