@@ -41,6 +41,16 @@ export const cingularmeCom: Gateway = (from, to, content) => ({
 });
 
 /**
+ * mmsCricketwirelessNet gateway
+ */
+export const mmsCricketwirelessNet: Gateway = (from, to, content) => ({
+  content,
+  from,
+  subject: "",
+  to: `${to.nationalNumber}@mms.cricketwireless.net`,
+});
+
+/**
  * csouth1Com gateway
  */
 export const csouth1Com: Gateway = (from, to, content) => ({
@@ -162,6 +172,27 @@ export const messagingSprintpcsCom: Gateway = (from, to, content) => ({
 });
 
 /**
+ * mmsGocbwCom gateway
+ */
+export const mmsGocbwCom: Gateway = (from, to, content) => ({
+  content,
+  from,
+  subject: "",
+  to: `${to.nationalNumber}@mms.gocbw.com`,
+});
+
+/**
+ * mmst5TracfoneCom gateway
+ * @note T-Mobile SIM
+ */
+export const mmst5TracfoneCom: Gateway = (from, to, content) => ({
+  content,
+  from,
+  subject: "",
+  to: `${to.number}@mmst5.tracfone.com`,
+});
+
+/**
  * mobileGciNet gateway
  */
 export const mobileGciNet: Gateway = (from, to, content) => ({
@@ -240,6 +271,16 @@ export const mymetropcsCom: Gateway = (from, to, content) => ({
   from,
   subject: "",
   to: `${to.nationalNumber}@mymetropcs.com`,
+});
+
+/**
+ * mypixmessagesCom gateway
+ */
+export const mypixmessagesCom: Gateway = (from, to, content) => ({
+  content,
+  from,
+  subject: "",
+  to: `${to.nationalNumber}@mypixmessages.com`,
 });
 
 /**
@@ -447,12 +488,13 @@ export const textLonglinesCom: Gateway = (from, to, content) => ({
 
 /**
  * tmomailNet gateway
+ * @note Uses T-mobile's gateway. Number is the 10 cell number or can include 1 at the beginning.
  */
 export const tmomailNet: Gateway = (from, to, content) => ({
   content,
   from,
   subject: "",
-  to: `${to.nationalNumber}@tmomail.net`,
+  to: `${to.number}@tmomail.net`,
 });
 
 /**

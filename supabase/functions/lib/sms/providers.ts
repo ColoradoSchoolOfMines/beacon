@@ -79,6 +79,15 @@ export const bluegrassCellular: Provider = {
 };
 
 /**
+ * boostMobile provider
+ */
+export const boostMobile: Provider = {
+  country: "US",
+  names: ["Boost Mobile"],
+  gateways: [gateways.txtAttNet, gateways.tmomailNet],
+};
+
+/**
  * cellcom provider
  */
 export const cellcom: Provider = {
@@ -115,6 +124,15 @@ export const charitonValleyWireless: Provider = {
 };
 
 /**
+ * cincinnatiBell provider
+ */
+export const cincinnatiBell: Provider = {
+  country: "US",
+  names: ["Cincinnati Bell"],
+  gateways: [gateways.mmsGocbwCom],
+};
+
+/**
  * cingular provider
  * @note Must be logged in prior to visiting link
  */
@@ -132,6 +150,15 @@ export const consumerCellular: Provider = {
   country: "US",
   names: ["Consumer Cellular"],
   gateways: [gateways.cingularmeCom, gateways.mailmymobileNet],
+};
+
+/**
+ * cricket provider
+ */
+export const cricket: Provider = {
+  country: "US",
+  names: ["Cricket"],
+  gateways: [gateways.mmsCricketwirelessNet],
 };
 
 /**
@@ -334,6 +361,16 @@ export const simpleMobile: Provider = {
 };
 
 /**
+ * solavei provider
+ * @note Uses T-mobile's gateway. Number is the 10 cell number or can include 1 at the beginning.
+ */
+export const solavei: Provider = {
+  country: "US",
+  names: ["Solavei"],
+  gateways: [gateways.tmomailNet],
+};
+
+/**
  * southCentralCommunications provider
  */
 export const southCentralCommunications: Provider = {
@@ -362,6 +399,7 @@ export const sprint: Provider = {
 
 /**
  * straightTalk provider
+ * @note T-Mobile SIM
  */
 export const straightTalk: Provider = {
   country: "US",
@@ -369,6 +407,9 @@ export const straightTalk: Provider = {
   gateways: [
     gateways.messagingSprintpcsCom,
     gateways.txtAttNet,
+    gateways.mmst5TracfoneCom,
+    gateways.mypixmessagesCom,
+    gateways.tmomailNet,
     gateways.vtextCom,
   ],
 };
@@ -392,6 +433,14 @@ export const teleflip: Provider = {
 };
 
 /**
+ * tellusTalk provider
+ */
+export const tellusTalk: Provider = {
+  names: ["TellusTalk"],
+  gateways: [gateways.esmsNu],
+};
+
+/**
  * telusMobility provider
  */
 export const telusMobility: Provider = {
@@ -410,13 +459,24 @@ export const ting: Provider = {
 };
 
 /**
+ * tMobile provider
+ * @note Number begins with 1 (the US country code)
+ */
+export const tMobile: Provider = {
+  country: "US",
+  names: ["T-Mobile"],
+  gateways: [gateways.tmomailNet],
+};
+
+/**
  * tracFone provider
- * @note Indirect
+ * @note Direct
  */
 export const tracFone: Provider = {
   country: "US",
   names: ["TracFone"],
   gateways: [
+    gateways.mmst5TracfoneCom,
     gateways.txtAttNet,
     gateways.emailUsccNet,
     gateways.tmomailNet,

@@ -117,18 +117,18 @@ const raw = await res.json() as {
 // Process the raw data
 const processed = await Promise.all(raw.map(async (entry) => {
   // Skip
-  if (
-    !countries.includes(entry.country) ||
-    entry["email-to-sms"] === ""
-  ) {
+  const email = entry["email-to-sms"] !== ""
+    ? entry["email-to-sms"]
+    : entry["email-to-mms"];
+  if (!countries.includes(entry.country) || email === "") {
     return undefined;
   }
 
   // Parse the email address
-  const email = entry["email-to-sms"].split("@");
+  const segments = email.split("@");
 
   // Skip
-  if (email.length !== 2 || !await hasSmtp(email[1])) {
+  if (segments.length !== 2 || !await hasSmtp(segments[1])) {
     return undefined;
   }
 
@@ -136,14 +136,14 @@ const processed = await Promise.all(raw.map(async (entry) => {
   const note = entry.notes.trim() === "" ? undefined : entry.notes.trim();
   const name = entry.carrier.replace(/\s*\([^\)]+\)/g, "").trim();
 
-  const gatewayID = camelCase(email[1].trim().replace(/\W/g, "_"));
+  const gatewayID = camelCase(segments[1].trim().replace(/\W/g, "_"));
   const providerID = camelCase(name.replace(/\W/g, "_").trim());
 
   return {
     gateway: {
       id: gatewayID,
       note,
-      email: email as [string, string],
+      email: segments as [string, string],
     },
     provider: {
       id: providerID,
