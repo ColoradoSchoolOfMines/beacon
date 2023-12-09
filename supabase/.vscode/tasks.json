@@ -6,11 +6,11 @@
       "command": "cache",
       "args": [
         "--config",
-        "${workspaceFolder}/supabase/functions/deno.json",
+        "${workspaceFolder}/functions/deno.json",
         "--lock",
-        "${workspaceFolder}/supabase/functions/deno.lock",
+        "${workspaceFolder}/functions/deno.lock",
         "--lock-write",
-        "${workspaceFolder}/supabase/functions/auth/index.ts",
+        "${workspaceFolder}/functions/auth/index.ts",
       ],
       "problemMatcher": [
         "$deno"

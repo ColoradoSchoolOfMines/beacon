@@ -4,10 +4,11 @@
 
 //@deno-types="npm:colord@^2.9.3"
 import {Colord, extend} from "colord";
-import labPlugin from "colord/plugins/lab.js";
+import labPlugin from "colord/plugins/lab";
 import rawColorNames from "color-name-list";
 
 // Extend Colord
+// @ts-expect-error Plugin types are broken in Deno
 extend([labPlugin]);
 
 /**

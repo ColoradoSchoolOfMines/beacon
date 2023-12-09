@@ -57,6 +57,7 @@
     "**/*.tsx"
   ],
   "exclude": [
-    "dist/*"
+    "dist/*",
+    "supabase/*"
   ]
 }
