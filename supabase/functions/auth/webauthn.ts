@@ -43,15 +43,16 @@ export const beginAttestation = async (ctx: Context) => {
   const encodedChallenge = encodeBase64(attestationOptions.challenge);
 
   // Store the challenge
-  const {rows} = await dbClient.queryObject<{
+  const {rows} = await dbClient<{
     id: string;
-  }>(
-    "INSERT INTO auth.webauthn_challenges (type, challenge) VALUES ($1, $2) RETURNING id;",
-    [
-      "attestation",
-      encodedChallenge,
-    ],
-  );
+  }>`INSERT INTO auth.webauthn_challenges ${dbClient(
+    {
+      type: "attestation",
+      challenge: encodedChallenge,
+    },
+    "type",
+    "challenge",
+  )} RETURNING id;`;
 
   if (rows.length === 0) {
     ctx.throw(500, "Failed to store challenge");
@@ -97,15 +98,10 @@ export const endAttestation = async (ctx: Context) => {
   const req = await endAttestationSchema.parseAsync(ctx.request.body());
 
   // Get the challenge
-  const {rows} = await dbClient.queryObject<{
+  const {rows} = await dbClient<{
     id: string;
     challenge: string;
-  }>(
-    "SELECT id, challenge FROM auth.webauthn_challenges WHERE type = 'attestation'::auth.webauthn_challenge_type AND id = $1;",
-    [
-      req.challengeId,
-    ],
-  );
+  }>`SELECT id, challenge FROM auth.webauthn_challenges WHERE type = 'attestation'::auth.webauthn_challenge_type AND id = ${req.challengeId};`;
 
   if (rows.length === 0) {
     ctx.throw(400, "Invalid challenge");
@@ -143,30 +139,28 @@ export const endAttestation = async (ctx: Context) => {
     ctx.throw(400, "Missing credential data");
   }
 
+  // Delete the challenge and store the credential
   const transaction = await dbClient.createTransaction(
     "add_webauthn_credential",
   );
-  await transaction.begin();
+  await transaction.begin(async sql => [
+    // Store the credential
+    await transaction`INSERT INTO auth.webauthn_credentials ${transaction(
+      {
+        user_id: user.id,
+        credential_id: rawId,
+        counter,
+        public_key: credentialPublicKeyPem,
+      },
+      "user_id",
+      "credential_id",
+      "counter",
+      "public_key",
+    )}`,
 
-  // Store the credential
-  await transaction.queryObject(
-    "INSERT INTO auth.webauthn_credentials (user_id, credential_id, counter, public_key) VALUES ($1, $2, $3, $4);",
-    [
-      user.id,
-      rawId,
-      counter,
-      credentialPublicKeyPem,
-    ],
-  );
-
-  // Delete the challenge
-  await transaction.queryObject(
-    "DELETE FROM auth.webauthn_challenges WHERE id = $1;",
-    [
-      rows[0].id,
-    ],
-  );
-
+    // Delete the challenge
+    await transaction`DELETE FROM auth.webauthn_challenges WHERE id = ${rows[0].id};`,
+  ]);
   await transaction.commit();
 };
 
@@ -180,15 +174,16 @@ export const beginAssertion = async (ctx: Context) => {
   const encodedChallenge = encodeBase64(assertionOptions.challenge);
 
   // Store the challenge
-  const {rows} = await dbClient.queryObject<{
+  const {rows} = await dbClient<{
     id: string;
-  }>(
-    "INSERT INTO auth.webauthn_challenges (type, challenge) VALUES ($1, $2) RETURNING id;",
-    [
-      "assertion",
-      encodedChallenge,
-    ],
-  );
+  }>`INSERT INTO auth.webauthn_challenges ${dbClient(
+    {
+      type: "assertion",
+      challenge: encodedChallenge,
+    },
+    "type",
+    "challenge",
+  )} RETURNING id;`;
 
   if (rows.length === 0) {
     ctx.throw(500, "Failed to store challenge");
@@ -224,30 +219,20 @@ export const endAssertion = async (ctx: Context) => {
   const req = await endAssertionSchema.parseAsync(ctx.request.body());
 
   // Get the challenge
-  const {rows: challengeRows} = await dbClient.queryObject<{
+  const {rows: challengeRows} = await dbClient<{
     id: string;
     challenge: string;
-  }>(
-    "SELECT id, challenge FROM auth.webauthn_challenges WHERE type = 'assertion'::auth.webauthn_challenge_type AND id = $1;",
-    [
-      req.challengeId,
-    ],
-  );
+  }>`SELECT id, challenge FROM auth.webauthn_challenges WHERE type = 'assertion'::auth.webauthn_challenge_type AND id = ${req.challengeId};`;
 
   if (challengeRows.length === 0) {
     ctx.throw(400, "Missing challenge");
   }
 
   // Get the credential
-  const {rows: credentialRows} = await dbClient.queryObject<{
+  const {rows: credentialRows} = await dbClient<{
     counter: number;
     public_key: string;
-  }>(
-    "SELECT counter, public_key FROM auth.webauthn_credentials WHERE user_id = $1;",
-    [
-      req.rawId,
-    ],
-  );
+  }>`SELECT counter, public_key FROM auth.webauthn_credentials WHERE user_id = ${req.rawId};`;
 
   if (credentialRows.length === 0) {
     ctx.throw(400, "Missing credential");
@@ -274,27 +259,17 @@ export const endAssertion = async (ctx: Context) => {
     },
   );
 
+  // Delete the challenge and update the credential counter
   const transaction = await dbClient.createTransaction(
     "use_webauthn_credential",
   );
-  await transaction.begin();
+  await transaction.begin(async sql => [
+    // Delete the challenge
+    await sql`DELETE FROM auth.webauthn_challenges WHERE id = ${req.challengeId};`,
 
-  // Delete the challenge
-  await dbClient.queryObject(
-    "DELETE FROM auth.webauthn_challenges WHERE id = $1;",
-    [
-      req.challengeId,
-    ],
-  );
-
-  // Update the credential counter
-  await dbClient.queryObject(
-    "UPDATE auth.webauthn_credentials SET counter = counter + 1 WHERE user_id = $1",
-    [
-      req.rawId,
-    ],
-  );
-
+    // Update the credential counter
+    await sql`UPDATE auth.webauthn_credentials SET counter = counter + 1 WHERE user_id = ${req.rawId};`,
+  ]);
   await transaction.commit();
 
   // Generate a session

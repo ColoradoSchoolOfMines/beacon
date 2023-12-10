@@ -1,0 +1,65 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Supabase Start (NPM)",
+      "presentation": {
+        "hidden": false,
+        "group": "NPM",
+        "order": 1
+      },
+      "request": "launch",
+      "type": "node",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run-script",
+        "supabase:start"
+      ],
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+    },
+    {
+      "name": "Supabase Reset (NPM)",
+      "presentation": {
+        "hidden": false,
+        "group": "NPM",
+        "order": 1
+      },
+      "request": "launch",
+      "type": "node",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run-script",
+        "supabase:reset"
+      ],
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+    },
+    {
+      "name": "Auth (Supabase Function)",
+      "presentation": {
+        "hidden": false,
+        "group": "Supbase Function",
+        "order": 1
+      },
+      "request": "launch",
+      "type": "node",
+      "runtimeExecutable": "deno",
+      "runtimeArgs": [
+        "run",
+        "--unstable",
+        "--import-map",
+        "${workspaceFolder}/supabase/functions/import_map.json",
+        "--inspect-wait",
+        "--allow-all"
+      ],
+      "attachSimplePort": 9229,
+      "cwd": "${workspaceFolder}/supabase/functions",
+      "envFile": "${workspaceFolder}/supabase/functions/.env",
+      "program": "${workspaceFolder}/supabase/functions/auth/index.ts",
+    }
+  ],
+  "compounds": []
+}

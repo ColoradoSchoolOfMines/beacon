@@ -6,12 +6,11 @@
     "color-name-list": "https://esm.sh/color-name-list@10.16.0",
     "colord": "https://esm.sh/colord@2.9.3",
     "colord/plugins/lab": "https://esm.sh/colord@2.9.3/plugins/lab.js",
-    "country-code-lookup": "https://esm.sh/country-code-lookup@0.1.0",
     "fido2-lib": "npm:fido2-lib@3.4.3",
     "jose": "https://deno.land/x/jose@v5.1.1/index.ts",
     "libphonenumber-js": "https://esm.sh/libphonenumber-js@1.10.51",
     "oak": "https://deno.land/x/oak@v12.6.1/mod.ts",
-    "postgres": "https://deno.land/x/postgres@v0.17.0/mod.ts",
+    "postgres": "https://esm.sh/postgres@3.4.3",
     "smtp": "https://deno.land/x/smtp@v0.7.0/mod.ts",
     "std/": "https://deno.land/std@0.207.0/",
     "zod": "https://deno.land/x/zod@v3.22.4/mod.ts"

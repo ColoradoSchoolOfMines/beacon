@@ -58,6 +58,6 @@
   ],
   "exclude": [
     "dist/*",
-    "supabase/*"
+    "supabase/functions/*"
   ]
 }

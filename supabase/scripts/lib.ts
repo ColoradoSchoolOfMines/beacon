@@ -1,3 +1,5 @@
+/* eslint-disable unicorn/no-null */
+/* eslint-disable camelcase */
 /**
  * @file Supabase utilities
  */
@@ -6,7 +8,9 @@ import {readFile, unlink, writeFile} from "node:fs/promises";
 import {dirname, join} from "node:path";
 import {fileURLToPath} from "node:url";
 
+import {parse} from "@fast-csv/parse";
 import {execa} from "execa";
+import fetch from "node-fetch";
 import postgres from "postgres";
 
 /**
@@ -82,7 +86,142 @@ export const start = async () => {
 };
 
 /**
- * Supabase database setup files
+ * International ISO 3166-1 alpha-2 code
+ */
+const internationalAlpha2 = "XX";
+
+/**
+ * Country metadata source
+ * @see https://github.com/datasets/country-codes
+ */
+const countryMetadataSrc =
+  "https://raw.githubusercontent.com/datasets/country-codes/master/data/country-codes.csv";
+
+/**
+ * Get country metadata
+ * @returns Country metadata
+ */
+const getCountryMetadata = async () => {
+  // Download the metadata
+  const res = await fetch(countryMetadataSrc);
+
+  const parser = parse({
+    headers: true,
+  });
+
+  // Parse and processthe metadata
+  const processed = [
+    {
+      name: "International",
+      alpha2: internationalAlpha2,
+      alpha3: "XXX",
+      numeric: 999,
+      tld: null,
+      dialing_codes: [],
+    },
+  ] as {
+    name: string;
+    alpha2: string;
+    alpha3: string;
+    numeric: number;
+    tld: string | null;
+    dialing_codes: string[];
+  }[];
+
+  await Promise.all([
+    res.body?.pipe(parser).on("data", raw => {
+      const name =
+        raw["official_name_en"] ||
+        raw["UNTERM English Short"] ||
+        raw["UNTERM English Formal"] ||
+        raw["CLDR display name"];
+
+      processed.push({
+        name,
+        alpha2: raw["ISO3166-1-Alpha-2"],
+        alpha3: raw["ISO3166-1-Alpha-3"],
+        numeric: Number(raw["ISO3166-1-numeric"]),
+        tld: raw["TLD"].startsWith(".") ? raw["TLD"].slice(1) : raw["TLD"],
+        dialing_codes: raw["Dial"].split(","),
+      });
+    }),
+    new Promise<void>(resolve => {
+      parser.on("end", resolve);
+    }),
+  ]);
+
+  return processed;
+};
+
+/**
+ * Telecom carriers source
+ * @see https://github.com/cubiclesoft/email_sms_mms_gateways
+ */
+const telecomCarriersSrc =
+  "https://raw.githubusercontent.com/cubiclesoft/email_sms_mms_gateways/master/sms_mms_gateways.txt";
+
+/**
+ * Get telecom carriers
+ * @returns Telecom carriers
+ */
+const getTelecomCarriers = async () => {
+  // Download the telecom carriers
+  const res = await fetch(telecomCarriersSrc);
+
+  const raw = (await res.json()) as {
+    info: string;
+    license: string;
+    lastupdated: string;
+    countries: Record<string, string>;
+    sms_carriers: Record<string, Record<string, string[]>>;
+    mms_carriers: Record<string, Record<string, string[]>>;
+  };
+
+  // Process the data
+  const processed = [] as {
+    tld?: string;
+    name: string;
+    sms_gateways: string[];
+    mms_gateways: string[];
+  }[];
+
+  for (const type of ["sms", "mms"] as const) {
+    for (const [region, carriers] of Object.entries(
+      type === "sms" ? raw.sms_carriers : raw.mms_carriers,
+    )) {
+      for (const carrier of Object.values(carriers)) {
+        if (carrier.length < 2) {
+          console.warn(`Invalid carrier: ${region} ${carrier}!`);
+          continue;
+        }
+
+        // Find the carrier if it already exists
+        const existingCarrier = processed.find(c => c.name === carrier[0]);
+
+        const name = carrier[0]!;
+        const gateways = carrier.slice(1);
+
+        if (existingCarrier === undefined) {
+          processed.push({
+            tld: region.length === 2 ? region : undefined,
+            name,
+            sms_gateways: type === "sms" ? gateways : [],
+            mms_gateways: type === "mms" ? gateways : [],
+          });
+        } else if (type === "sms") {
+          existingCarrier.sms_gateways = gateways;
+        } else if (type === "mms") {
+          existingCarrier.mms_gateways = gateways;
+        }
+      }
+    }
+  }
+
+  return processed;
+};
+
+/**
+ * Database setup files
  */
 const dbSetupFiles = [
   join(root, "supabase", "sql", "before.sql"),
@@ -112,6 +251,36 @@ export const setupDB = async () => {
     await sql.file(dbSetupFile, {
       cache: false,
     });
+  }
+
+  // Get the country metadata
+  const countryMetadata = await getCountryMetadata();
+
+  // Insert the country metadata
+  await sql`INSERT INTO public.countries ${sql(
+    countryMetadata,
+    "name",
+    "alpha2",
+    "alpha3",
+    "numeric",
+    "tld",
+    "dialing_codes",
+  )}`;
+
+  // Get the telecom carriers
+  const telecomCarriers = await getTelecomCarriers();
+
+  // Insert the telecom carriers
+  for (const telecomCarrier of telecomCarriers) {
+    await (telecomCarrier.tld === undefined
+      ? sql`
+        INSERT INTO public.telecom_carriers (country_id, name, sms_gateways, mms_gateways)
+            VALUES ((SELECT id FROM public.countries WHERE alpha2 = ${internationalAlpha2}), ${telecomCarrier.name}, ${telecomCarrier.sms_gateways}, ${telecomCarrier.mms_gateways});
+      `
+      : sql`
+        INSERT INTO public.telecom_carriers (country_id, name, sms_gateways, mms_gateways)
+            VALUES ((SELECT id FROM public.countries WHERE tld ILIKE ${telecomCarrier.tld}), ${telecomCarrier.name}, ${telecomCarrier.sms_gateways}, ${telecomCarrier.mms_gateways});
+      `);
   }
 
   // Close the Postgres connection

@@ -17,7 +17,7 @@ CREATE TABLE auth.webauthn_challenges (
   -- Challenge type
   type auth.webauthn_challenge_type NOT NULL,
 
-  -- Challenge (Maximum length of 100 characters)
+  -- Challenge (Up to 100 characters)
   challenge VARCHAR(100) NOT NULL
 );
 
@@ -32,14 +32,56 @@ CREATE TABLE auth.webauthn_credentials (
   -- Creation timestamp
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-  -- Client-side credential ID (Maximum length of 1000 characters)
+  -- Client-side credential ID (Up to 1000 characters)
   credential_id VARCHAR(1000) NOT NULL,
 
   -- Crdential use counter (To prevent replay attacks)
   counter INTEGER NOT NULL DEFAULT 0,
 
-  -- Public key (Maximum length of 1000 characters)
+  -- Public key (Up to 1000 characters)
   public_key VARCHAR(1000) NOT NULL
+);
+
+-- Country metadata
+CREATE TABLE public.countries (
+  -- Primary key
+  id UUID NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
+
+  -- Country name (Up to 100 characters)
+  name VARCHAR(100) NOT NULL,
+
+  -- ISO 3166-1 Alpha-2 code (Exactly 2 characters)
+  alpha2 CHAR(2) NOT NULL,
+
+  -- ISO 3166-1 Alpha-3 code (Exactly 3 characters)
+  alpha3 CHAR(3) NOT NULL,
+
+  -- ISO 3166-1 Numeric code
+  numeric INTEGER NOT NULL,
+
+  -- IANA country-code top-level domain (Exactly 2 characters)
+  tld CHAR(2) NULL,
+
+  -- International dialing codes
+  dialing_codes TEXT[] NOT NULL
+);
+
+-- Telecom carriers
+CREATE TABLE public.telecom_carriers (
+  -- Primary key
+  id UUID NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
+
+  -- Country ID (Foreign key to public.countries)
+  country_id UUID NOT NULL REFERENCES public.countries ON UPDATE CASCADE ON DELETE CASCADE,
+
+  -- Carrier name (Up to 100 characters)
+  name VARCHAR(100) NOT NULL,
+
+  -- SMS-SMTP gatways ({number} represents the national phone number)
+  sms_gateways TEXT[] NOT NULL,
+
+  -- MMS-SMTP gatways ({number} represents the national phone number)
+  mms_gateways TEXT[] NOT NULL
 );
 
 -- Profiles (Modifying auth.users is considered bad practice, so additonal user data is stored here)
@@ -94,7 +136,7 @@ CREATE TABLE public.posts (
   -- Filter radius in meters (Clamped between 500 meters and 50 kilometers)
   radius DOUBLE PRECISION NOT NULL CHECK (500 < radius AND radius < 50000),
 
-  -- Plain-text content (Maximum length of 300 characters)
+  -- Plain-text content (Up to 300 characters)
   content VARCHAR(300) NOT NULL,
 
   -- Whether or not the post has media (e.g.: an image or video)
@@ -167,7 +209,7 @@ CREATE TABLE public.comments (
   -- Creation timestamp
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW() CHECK (created_at <= NOW()),
 
-  -- Comment content (Maximum length of 1000 characters)
+  -- Comment content (Up to 1000 characters)
   content VARCHAR(1000) NOT NULL,
 
   -- Number of upvotes

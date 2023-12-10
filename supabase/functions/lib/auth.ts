@@ -90,7 +90,7 @@ const decodedSupabaseJwtSecret = new TextEncoder().encode(SUPABASE_JWT_SECRET);
  */
 export const generateSession = async (rawId: string) => {
   // Get the user
-  const {rows: userRows} = await dbClient.queryObject<{
+  const {rows: userRows} = await dbClient<{
     id: string;
     aud?: string;
     role?: string;
@@ -98,12 +98,7 @@ export const generateSession = async (rawId: string) => {
     phone?: string;
     raw_app_meta_data?: Record<string, unknown>;
     raw_user_meta_data?: Record<string, unknown>;
-  }>(
-    "SELECT id, aud, role, email, phone, raw_app_meta_data, raw_user_meta_data FROM auth.users WHERE id = $1;",
-    [
-      rawId,
-    ],
-  );
+  }>`SELECT id, aud, role, email, phone, raw_app_meta_data, raw_user_meta_data FROM auth.users WHERE id = ${rawId};`;
 
   if (
     userRows.length === 0 ||
@@ -118,16 +113,21 @@ export const generateSession = async (rawId: string) => {
   }
 
   // Create a session entry
-  const {rows: sessionRows} = await dbClient.queryObject<{
+  const now = new Date();
+  const {rows: sessionRows} = await dbClient<{
     id: string;
-  }>(
-    "INSERT INTO auth.sessions (user_id, created_at, updated_at, aal) VALUES ($1, $2, $2, $3) RETURNING id;",
-    [
-      userRows[0].id,
-      new Date(),
-      AAL1,
-    ],
-  );
+  }>`INSERT INTO auth.sessions ${dbClient(
+    {
+      user_id: userRows[0].id,
+      created_at: now,
+      updated_at: now,
+      aal: AAL1,
+    },
+    "user_id",
+    "created_at",
+    "updated_at",
+    "aal",
+  )} RETURNING id;`;
 
   if (sessionRows.length === 0) {
     throw new Error("Failed to create session");
