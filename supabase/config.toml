@@ -1,3 +1,5 @@
+# See https://raw.githubusercontent.com/supabase/cli/main/internal/utils/templates/init_config.toml
+
 # A string used to distinguish different Supabase projects on the same host. Defaults to the
 # working directory name when running `supabase init`.
 project_id = "beacon"
@@ -18,7 +20,7 @@ max_rows = 1000
 [db]
 # Port to use for the local database URL.
 port = 54322
-# Port used by db diff command to initialise the shadow database.
+# Port used by db diff command to initialize the shadow database.
 shadow_port = 54320
 # The database major version to use. This has to be the same as your remote database's. Run `SHOW
 # server_version;` on the remote database to check.
@@ -46,7 +48,7 @@ enabled = true
 # Port to use for Supabase Studio.
 port = 54323
 # External URL of the API server that frontend connects to.
-api_url = "http://localhost"
+api_url = "http://127.0.0.1"
 
 # Email testing server. Emails sent with the local dev setup are not actually sent - rather, they
 # are monitored, and you can view the emails that would have been sent from the web interface.
@@ -67,9 +69,9 @@ file_size_limit = "50MiB"
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
 # in emails.
-site_url = "http://localhost:3000"
+site_url = "http://127.0.0.1:3000"
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["https://localhost:3000"]
+additional_redirect_urls = ["https://127.0.0.1:3000"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # If disabled, the refresh token will never expire.
@@ -82,7 +84,7 @@ enable_signup = true
 
 [auth.email]
 # Allow/disallow new user signups via email to your project.
-enable_signup = true
+enable_signup = false
 # If enabled, a user will be required to confirm any email change on both the old, and new email
 # addresses. If disabled, only the new email is required to confirm.
 double_confirm_changes = true
@@ -99,10 +101,12 @@ enable_confirmations = true
 enable_signup = true
 # If enabled, users need to confirm their phone number before signing in.
 enable_confirmations = true
+# Template for sending OTP to users
+template = "Your code is {{ .Code }} ."
 
 # Use pre-defined map of phone number to OTP for testing.
 [auth.sms.test_otp]
-4152127777 = "123456"
+14152127777 = "123456"
 
 # Configure one of the supported SMS providers: `twilio`, `twilio_verify`, `messagebird`, `textlocal`, `vonage`.
 [auth.sms.twilio]
@@ -112,12 +116,29 @@ message_service_sid = ""
 # DO NOT commit your Twilio auth token to git. Use environment variable substitution instead:
 auth_token = "env(SUPABASE_AUTH_SMS_TWILIO_AUTH_TOKEN)"
 
+[auth.sms.vonage]
+enabled = false
+# from = ""
+api_key = "env(SUPABASE_AUTH_SMS_VONAGE_AUTH_API_KEY)"
+api_secret = "env(SUPABASE_AUTH_SMS_VONAGE_AUTH_API_SECRET)"
+
+# Use an external OAuth provider. The full list of providers are: `apple`, `azure`, `bitbucket`,
+# `discord`, `facebook`, `github`, `gitlab`, `google`, `keycloak`, `linkedin`, `notion`, `twitch`,
+# `twitter`, `slack`, `spotify`, `workos`, `zoom`.
+[auth.external.apple]
+enabled = false
+client_id = ""
+# DO NOT commit your OAuth provider secret to git. Use environment variable substitution instead:
+secret = "env(SUPABASE_AUTH_EXTERNAL_APPLE_SECRET)"
+# Overrides the default auth redirectUrl.
+redirect_uri = ""
+# Overrides the default auth provider URL. Used to support self-hosted gitlab, single-tenant Azure,
+# or any other third-party OIDC providers.
+url = ""
+
 [analytics]
 enabled = false
 port = 54327
 vector_port = 54328
 # Configure one of the supported backends: `postgres`, `bigquery`.
 backend = "postgres"
-
-[functions.auth]
-verify_jwt = false
