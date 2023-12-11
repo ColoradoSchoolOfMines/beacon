@@ -5,29 +5,60 @@
 /**
  * Current semantic version
  */
-export const VERSION = import.meta.env.VERSION;
+const VERSION = import.meta.env.VERSION;
 
 /**
  * Current commit hash
  */
-export const GIT_COMMIT = import.meta.env.GIT_COMMIT;
+const GIT_COMMIT = import.meta.env.GIT_COMMIT;
 
 /**
  * Current branch name
  */
-export const GIT_BRANCH = import.meta.env.GIT_BRANCH;
+const GIT_BRANCH = import.meta.env.GIT_BRANCH;
 
 /**
  * hCaptcha site key
  */
-export const HCAPTCHA_SITEKEY = import.meta.env.VITE_HCAPTCHA_SITEKEY;
+const HCAPTCHA_SITEKEY = import.meta.env.VITE_HCAPTCHA_SITEKEY;
 
 /**
  * Supabase API URL
  */
-export const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 /**
- * Supabase API key
+ * Supabase API anonymous key
  */
-export const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+// Validate variables
+const vars = {
+  VERSION: VERSION,
+  GIT_COMMIT: GIT_COMMIT,
+  GIT_BRANCH: GIT_BRANCH,
+  HCAPTCHA_SITEKEY: HCAPTCHA_SITEKEY,
+  SUPABASE_URL: SUPABASE_URL,
+  SUPABASE_ANON_KEY: SUPABASE_ANON_KEY,
+};
+
+const missing = [];
+
+for (const [name, value] of Object.entries(vars)) {
+  if (value === undefined) {
+    missing.push(name);
+  }
+}
+
+if (missing.length > 0) {
+  throw new Error(`Variable(s) ${missing.join(", ")} must be set!`);
+}
+
+export {
+  GIT_BRANCH,
+  GIT_COMMIT,
+  HCAPTCHA_SITEKEY,
+  SUPABASE_ANON_KEY,
+  SUPABASE_URL,
+  VERSION,
+};

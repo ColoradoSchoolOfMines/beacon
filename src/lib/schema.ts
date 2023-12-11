@@ -186,6 +186,36 @@ export interface Database {
           },
         ];
       };
+      countries: {
+        Row: {
+          alpha2: string;
+          alpha3: string;
+          dialing_codes: string[];
+          id: string;
+          name: string;
+          numeric: number;
+          tld: string | null;
+        };
+        Insert: {
+          alpha2: string;
+          alpha3: string;
+          dialing_codes: string[];
+          id?: string;
+          name: string;
+          numeric: number;
+          tld?: string | null;
+        };
+        Update: {
+          alpha2?: string;
+          alpha3?: string;
+          dialing_codes?: string[];
+          id?: string;
+          name?: string;
+          numeric?: number;
+          tld?: string | null;
+        };
+        Relationships: [];
+      };
       locations: {
         Row: {
           created_at: string;
@@ -373,6 +403,40 @@ export interface Database {
             foreignKeyName: "profiles_id_fkey";
             columns: ["id"];
             referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      telecom_carriers: {
+        Row: {
+          country_id: string;
+          gateways: string[];
+          id: string;
+          mms_gateways: string[];
+          name: string;
+          sms_gateways: string[];
+        };
+        Insert: {
+          country_id: string;
+          gateways?: string[];
+          id?: string;
+          mms_gateways: string[];
+          name: string;
+          sms_gateways: string[];
+        };
+        Update: {
+          country_id?: string;
+          gateways?: string[];
+          id?: string;
+          mms_gateways?: string[];
+          name?: string;
+          sms_gateways?: string[];
+        };
+        Relationships: [
+          {
+            foreignKeyName: "telecom_carriers_country_id_fkey";
+            columns: ["country_id"];
+            referencedRelation: "countries";
             referencedColumns: ["id"];
           },
         ];

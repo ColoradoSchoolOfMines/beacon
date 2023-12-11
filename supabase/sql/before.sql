@@ -4,12 +4,17 @@
 
 /* --------------------------------------- Setup schemas --------------------------------------- */
 
+-- Auth
+GRANT ALL ON ALL TABLES IN SCHEMA auth TO postgres, service_role;
+
 -- Public
 REVOKE ALL ON SCHEMA public FROM anon, authenticated;
+GRANT ALL ON ALL TABLES IN SCHEMA auth TO postgres, service_role;
 
 -- Utilities (Non-public helper functions)
 CREATE SCHEMA IF NOT EXISTS utilities;
 REVOKE ALL ON SCHEMA utilities FROM anon, authenticated;
+GRANT ALL ON ALL TABLES IN SCHEMA auth TO postgres, service_role;
 
 /* -------------------------------------- Setup extensions ------------------------------------- */
 

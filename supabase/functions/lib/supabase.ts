@@ -2,20 +2,24 @@
  * @file Supabase clients
  */
 
-import {Client} from "postgres";
 import {Context} from "oak";
 import {Database} from "~/lib/schema.ts";
 import {SupabaseClient, User} from "@supabase/supabase-js";
-import {SUPABASE_ANON_KEY, SUPABASE_DB_URL, SUPABASE_URL} from "~/lib/vars.ts";
+import {
+  SUPABASE_ANON_KEY,
+  SUPABASE_DB_URL,
+  SUPABASE_SERVICE_ROLE_KEY,
+  SUPABASE_URL,
+} from "~/lib/vars.ts";
 
 /**
- * Create a Supabase client for the current user
+ * Generate a Supabase client for the current user
  * @param T Whether or not the user must be authenticated
  * @param ctx Router context
  * @param requireAuth Require the user to already be authenticated
  * @returns Supabase user-role client
  */
-export const createUserClient = async <T extends boolean>(
+export const generateUserClient = async <T extends boolean>(
   ctx: Context,
   requireAuth: T,
 ): Promise<
@@ -29,6 +33,7 @@ export const createUserClient = async <T extends boolean>(
     if (requireAuth) {
       ctx.throw(401, "Authorization header is required");
     } else {
+      // deno-lint-ignore no-explicit-any
       return [undefined, undefined] as any;
     }
   }
@@ -53,17 +58,21 @@ export const createUserClient = async <T extends boolean>(
     if (requireAuth) {
       ctx.throw(401, "Authorization header is invalid");
     } else {
+      // deno-lint-ignore no-explicit-any
       return [undefined, undefined] as any;
     }
   }
 
+  // deno-lint-ignore no-explicit-any
   return [client, data.user] as any;
 };
 
 /**
- * Supabase database client singleton
+ * Supabase service role client singleton
+ *
+ * **!!!WARNING!!! This client bypasses all security policies !!!WARNING!!!**
  */
-const dbClient = new Client(SUPABASE_DB_URL);
-await dbClient.connect();
-
-export {dbClient};
+export const serviceRoleClient = new SupabaseClient<Database>(
+  SUPABASE_URL,
+  SUPABASE_SERVICE_ROLE_KEY,
+);

@@ -4,6 +4,74 @@
  * Prerequisites: before.sql
  */
 
+-- Create the webauthn credential after a challenge has been attested
+CREATE OR REPLACE FUNCTION auth.attest_webauthn_credential(
+  -- User ID
+  _user_id UUID,
+
+  -- Challenge ID
+  _challenge_id UUID,
+
+  -- Credential ID
+  _credential_id TEXT,
+
+  -- Credential counter
+  _counter INTEGER,
+
+  -- Credential public key
+  _public_key VARCHAR(1000)
+)
+RETURNS VOID
+SECURITY DEFINER
+VOLATILE
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  -- Insert the credential
+  INSERT INTO auth.webauthn_credentials (
+    user_id,
+    credential_id,
+    counter,
+    public_key
+  ) VALUES (
+    _user_id,
+    _credential_id,
+    _counter,
+    _public_key
+  );
+
+  -- Delete the challenge
+  DELETE FROM auth.webauthn_challenges
+  WHERE id = _challenge_id;
+END;
+$$;
+
+-- Update the webauthn credential after a challenge has been asserted
+CREATE OR REPLACE FUNCTION auth.assert_webauthn_credential(
+  -- User ID
+  _user_id UUID,
+
+  -- Challenge ID
+  _challenge_id UUID,
+
+  -- Credential ID
+  _credential_id TEXT
+)
+RETURNS VOID
+SECURITY DEFINER
+VOLATILE
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  -- Update the credential
+  UPDATE auth.webauthn_credentials SET counter = counter + 1 WHERE user_id = _user_id AND credential_id = _credential_id;
+
+  -- Delete the challenge
+  DELETE FROM auth.webauthn_challenges
+  WHERE id = _challenge_id;
+END;
+$$;
+
 -- Generate a random double precision number between 0 (inclusive) and 1 (exclusive), using crypto-safe random data
 CREATE OR REPLACE FUNCTION utilities.safe_random()
 RETURNS DOUBLE PRECISION

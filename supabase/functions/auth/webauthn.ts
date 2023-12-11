@@ -3,8 +3,8 @@
  */
 
 import {Context} from "oak";
-import {createUserClient, dbClient} from "../lib/supabase.ts";
-import {decodeBase64, encodeBase64} from "std/encoding/base64.ts";
+import {generateUserClient, serviceRoleClient} from "../lib/supabase.ts";
+import {encodeBase64} from "std/encoding/base64.ts";
 import {fido2, rpId} from "../lib/webauthn.ts";
 import {generateSession} from "~/lib/auth.ts";
 import {generateUsername} from "~/lib/user.ts";
@@ -21,7 +21,7 @@ const textEncoder = new TextEncoder();
  */
 export const beginAttestation = async (ctx: Context) => {
   // Create a Supabase client for the current user
-  const [userClient, user] = await createUserClient(ctx, true);
+  const [userClient, user] = await generateUserClient(ctx, true);
 
   // Get profile information
   const {data, error} = await userClient
@@ -31,7 +31,8 @@ export const beginAttestation = async (ctx: Context) => {
     .limit(1);
 
   if (error) {
-    ctx.throw(500, error.message);
+    console.error(error);
+    ctx.throw(500, "Failed to get profile");
   }
 
   if (data === null || data.length === 0) {
@@ -43,18 +44,18 @@ export const beginAttestation = async (ctx: Context) => {
   const encodedChallenge = encodeBase64(attestationOptions.challenge);
 
   // Store the challenge
-  const {rows} = await dbClient<{
-    id: string;
-  }>`INSERT INTO auth.webauthn_challenges ${dbClient(
-    {
-      type: "attestation",
+  const challengeRes = await serviceRoleClient
+    .schema("auth")
+    .from("webauthn_challenges")
+    .insert({
+      type: "assertion",
       challenge: encodedChallenge,
-    },
-    "type",
-    "challenge",
-  )} RETURNING id;`;
+    })
+    .select("id")
+    .single();
 
-  if (rows.length === 0) {
+  if (challengeRes.error !== null || challengeRes.data === null) {
+    console.error(challengeRes.error ?? "Failed to store challenge");
     ctx.throw(500, "Failed to store challenge");
   }
 
@@ -62,6 +63,7 @@ export const beginAttestation = async (ctx: Context) => {
   const username = generateUsername(data[0].color, data[0].emoji);
 
   // Return the attestation options
+  ctx.response.status = 200;
   ctx.response.body = {
     ...attestationOptions,
     user: {
@@ -69,7 +71,7 @@ export const beginAttestation = async (ctx: Context) => {
       name: username,
       displayName: username,
     },
-    challengeId: rows[0].id,
+    challengeId: challengeRes.data.id,
     challenge: encodedChallenge,
   };
 };
@@ -91,20 +93,24 @@ const endAttestationSchema = z.object({
  * @param ctx Router context
  */
 export const endAttestation = async (ctx: Context) => {
-  // Create a Supabase client for the current user
-  const [_, user] = await createUserClient(ctx, true);
-
   // Parse and validate the request body
-  const req = await endAttestationSchema.parseAsync(ctx.request.body());
+  const raw = await ctx.request.body().value;
+  const req = await endAttestationSchema.parseAsync(raw);
+
+  // Create a Supabase client for the current user
+  const [_, user] = await generateUserClient(ctx, true);
 
   // Get the challenge
-  const {rows} = await dbClient<{
-    id: string;
-    challenge: string;
-  }>`SELECT id, challenge FROM auth.webauthn_challenges WHERE type = 'attestation'::auth.webauthn_challenge_type AND id = ${req.challengeId};`;
+  const challengeRes = await serviceRoleClient
+    .schema("auth")
+    .from("webauthn_challenges")
+    .select("id, challenge")
+    .eq("type", "attestation")
+    .eq("id", req.challengeId)
+    .single();
 
-  if (rows.length === 0) {
-    ctx.throw(400, "Invalid challenge");
+  if (challengeRes.error !== null || challengeRes.data === null) {
+    ctx.throw(401, "Invalid challenge");
   }
 
   // Verify the attestation
@@ -117,7 +123,7 @@ export const endAttestation = async (ctx: Context) => {
       },
     },
     {
-      challenge: rows[0].challenge,
+      challenge: challengeRes.data.challenge,
       origin: `https://${rpId}`,
       factor: "either",
       rpId,
@@ -139,29 +145,23 @@ export const endAttestation = async (ctx: Context) => {
     ctx.throw(400, "Missing credential data");
   }
 
-  // Delete the challenge and store the credential
-  const transaction = await dbClient.createTransaction(
-    "add_webauthn_credential",
-  );
-  await transaction.begin(async sql => [
-    // Store the credential
-    await transaction`INSERT INTO auth.webauthn_credentials ${transaction(
-      {
-        user_id: user.id,
-        credential_id: rawId,
-        counter,
-        public_key: credentialPublicKeyPem,
-      },
-      "user_id",
-      "credential_id",
-      "counter",
-      "public_key",
-    )}`,
+  // Attest the credential
+  const attestWebauthnCrdential = await serviceRoleClient
+    .schema("auth")
+    .rpc("attest_webauthn_credential", {
+      _user_id: user.id,
+      _challenge_id: challengeRes.data.id,
+      _credential_id: rawId,
+      _counter: counter,
+      _public_key: credentialPublicKeyPem,
+    });
 
-    // Delete the challenge
-    await transaction`DELETE FROM auth.webauthn_challenges WHERE id = ${rows[0].id};`,
-  ]);
-  await transaction.commit();
+  if (attestWebauthnCrdential.error !== null) {
+    console.error(attestWebauthnCrdential.error);
+    ctx.throw(500, "Failed to store credential");
+  }
+
+  ctx.response.status = 200;
 };
 
 /**
@@ -174,25 +174,26 @@ export const beginAssertion = async (ctx: Context) => {
   const encodedChallenge = encodeBase64(assertionOptions.challenge);
 
   // Store the challenge
-  const {rows} = await dbClient<{
-    id: string;
-  }>`INSERT INTO auth.webauthn_challenges ${dbClient(
-    {
+  const challengeRes = await serviceRoleClient
+    .schema("auth")
+    .from("webauthn_challenges")
+    .insert({
       type: "assertion",
       challenge: encodedChallenge,
-    },
-    "type",
-    "challenge",
-  )} RETURNING id;`;
+    })
+    .select("id")
+    .single();
 
-  if (rows.length === 0) {
+  if (challengeRes.error !== null || challengeRes.data === null) {
+    console.error(challengeRes.error ?? "Failed to store challenge");
     ctx.throw(500, "Failed to store challenge");
   }
 
   // Return the assertion options
+  ctx.response.status = 200;
   ctx.response.body = {
     ...assertionOptions,
-    challengeId: rows[0].id,
+    challengeId: challengeRes.data.id,
     challenge: encodedChallenge,
   };
 };
@@ -216,26 +217,37 @@ const endAssertionSchema = z.object({
  */
 export const endAssertion = async (ctx: Context) => {
   // Parse and validate the request body
-  const req = await endAssertionSchema.parseAsync(ctx.request.body());
+  const raw = await ctx.request.body().value;
+  const req = await endAssertionSchema.parseAsync(raw);
 
   // Get the challenge
-  const {rows: challengeRows} = await dbClient<{
-    id: string;
-    challenge: string;
-  }>`SELECT id, challenge FROM auth.webauthn_challenges WHERE type = 'assertion'::auth.webauthn_challenge_type AND id = ${req.challengeId};`;
+  const challengeRes = await serviceRoleClient
+    .schema("auth")
+    .from("webauthn_challenges")
+    .select("id, challenge")
+    .eq("type", "assertion")
+    .eq("id", req.challengeId)
+    .single();
 
-  if (challengeRows.length === 0) {
-    ctx.throw(400, "Missing challenge");
-  }
+  const credentialRes = await serviceRoleClient
+    .schema("auth")
+    .from("webauthn_credentials")
+    .select("id, user_id, counter, public_key")
+    .eq("user_id", req.rawId)
+    .single();
 
-  // Get the credential
-  const {rows: credentialRows} = await dbClient<{
-    counter: number;
-    public_key: string;
-  }>`SELECT counter, public_key FROM auth.webauthn_credentials WHERE user_id = ${req.rawId};`;
-
-  if (credentialRows.length === 0) {
-    ctx.throw(400, "Missing credential");
+  if (
+    challengeRes.error !== null ||
+    challengeRes.data === null ||
+    credentialRes.error !== null ||
+    credentialRes.data === null
+  ) {
+    console.error(
+      challengeRes.error ??
+        credentialRes.error ??
+        "Failed to get challenge or credential",
+    );
+    ctx.throw(400, "Invalid challenge or credential");
   }
 
   // Verify the assertion
@@ -249,33 +261,35 @@ export const endAssertion = async (ctx: Context) => {
       },
     },
     {
-      challenge: challengeRows[0].challenge,
+      challenge: challengeRes.data.challenge,
       factor: "either",
       origin: `https://${rpId}`,
-      prevCounter: credentialRows[0].counter,
-      publicKey: credentialRows[0].public_key,
+      prevCounter: credentialRes.data.counter,
+      publicKey: credentialRes.data.public_key,
       rpId,
       userHandle: null,
     },
   );
 
-  // Delete the challenge and update the credential counter
-  const transaction = await dbClient.createTransaction(
-    "use_webauthn_credential",
-  );
-  await transaction.begin(async sql => [
-    // Delete the challenge
-    await sql`DELETE FROM auth.webauthn_challenges WHERE id = ${req.challengeId};`,
+  // Assert the credential
+  const assertWebauthnCrdential = await serviceRoleClient
+    .schema("auth")
+    .rpc("assert_webauthn_credential", {
+      _user_id: credentialRes.data.user_id,
+      _challenge_id: challengeRes.data.id,
+      _credential_id: credentialRes.data.id,
+    });
 
-    // Update the credential counter
-    await sql`UPDATE auth.webauthn_credentials SET counter = counter + 1 WHERE user_id = ${req.rawId};`,
-  ]);
-  await transaction.commit();
+  if (assertWebauthnCrdential.error !== null) {
+    console.error(assertWebauthnCrdential.error);
+    ctx.throw(500, "Failed to store credential");
+  }
 
   // Generate a session
-  const session = await generateSession(req.rawId);
+  const session = await generateSession(req.rawId, "webauthn");
 
   // Return the session
+  ctx.response.status = 200;
   ctx.response.body = {
     session,
   };

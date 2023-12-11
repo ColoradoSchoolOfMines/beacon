@@ -77,11 +77,16 @@ CREATE TABLE public.telecom_carriers (
   -- Carrier name (Up to 100 characters)
   name VARCHAR(100) NOT NULL,
 
-  -- SMS-SMTP gatways ({number} represents the national phone number)
+  -- SMS-SMTP gatways (Mustache templates)
   sms_gateways TEXT[] NOT NULL,
 
-  -- MMS-SMTP gatways ({number} represents the national phone number)
-  mms_gateways TEXT[] NOT NULL
+  -- MMS-SMTP gatways (Mustache templates)
+  mms_gateways TEXT[] NOT NULL,
+
+  -- Combined gateways (Mustache templates)
+  gateways TEXT[] NOT NULL GENERATED ALWAYS AS (
+    ARRAY_CAT(sms_gateways, mms_gateways)
+  ) STORED
 );
 
 -- Profiles (Modifying auth.users is considered bad practice, so additonal user data is stored here)
