@@ -11,6 +11,7 @@ import {parsePhoneNumber, isValidPhoneNumber} from "libphonenumber-js";
 import {serviceRoleClient} from "../lib/supabase.ts";
 import {smtpClient} from "~/lib/smtp.ts";
 import {z} from "zod";
+import {verifyHCaptcha} from "~/lib/hcaptcha.ts";
 
 /**
  * Maximum authentication frequency (in milliseconds)
@@ -37,8 +38,9 @@ const codeLength = 6;
  * Begin a phone-based authentication request body schema
  */
 const beginPhoneSchema = z.object({
+  hCaptchaToken: z.string(),
   telecomCarrier: z.string().uuid(),
-  phoneNumber: z.string().refine(value => isValidPhoneNumber(value, "US")),
+  number: z.string().refine(value => isValidPhoneNumber(value, "US")),
 });
 
 /**
@@ -50,12 +52,17 @@ export const beginPhone = async (ctx: Context) => {
   const raw = await ctx.request.body().value;
   const req = await beginPhoneSchema.parseAsync(raw);
 
+  // Verify the hCaptcha token
+  if (!(await verifyHCaptcha(req.hCaptchaToken))) {
+    ctx.throw(401, "Invalid hCaptcha");
+  }
+
   // Lookup the user by phone number
   const userRes1 = await serviceRoleClient
     .schema("auth")
     .from("users")
     .select("id, phone, confirmation_sent_at")
-    .eq("phone", req.phoneNumber);
+    .eq("phone", req.number);
 
   if (
     userRes1.error !== null ||
@@ -97,7 +104,7 @@ export const beginPhone = async (ctx: Context) => {
   }
 
   // Parse the phone number
-  const phoneNumber = parsePhoneNumber(req.phoneNumber, "US");
+  const phoneNumber = parsePhoneNumber(req.number, "US");
   const e164WithoutPlus = phoneNumber.format("E.164").slice(1);
 
   // Create the user if they don't exist
@@ -187,7 +194,7 @@ export const beginPhone = async (ctx: Context) => {
  */
 const endPhoneSchema = z.object({
   code: z.string().length(codeLength),
-  phoneNumber: z.string().refine(value => isValidPhoneNumber(value, "US")),
+  number: z.string().refine(value => isValidPhoneNumber(value, "US")),
 });
 
 /**
@@ -200,7 +207,7 @@ export const endPhone = async (ctx: Context) => {
   const req = await endPhoneSchema.parseAsync(raw);
 
   // Generate the token hash
-  const tokenHash = await generateTokenHash(req.phoneNumber, req.code);
+  const tokenHash = await generateTokenHash(req.number, req.code);
 
   // Lookup the user by token hash
   const userRes1 = await serviceRoleClient

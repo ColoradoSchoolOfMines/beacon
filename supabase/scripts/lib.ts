@@ -389,6 +389,11 @@ const frontendEnv = join(root, ".env");
 const functionsEnv = join(root, "supabase", "functions", ".env");
 
 /**
+ * Environment file flags
+ */
+const envFlags = constants.O_CREAT | constants.O_APPEND | constants.O_WRONLY;
+
+/**
  * Write environment files
  */
 export const writeEnvs = async () => {
@@ -399,11 +404,11 @@ export const writeEnvs = async () => {
   try {
     await writeFile(
       frontendEnv,
-      `VITE_HCAPTCHA_SITEKEY = ""
+      `VITE_HCAPTCHA_SITE_KEY = ""
 VITE_SUPABASE_URL = ${JSON.stringify(status.apiUrl)}
 VITE_SUPABASE_ANON_KEY = ${JSON.stringify(status.anonKey)}`,
       {
-        flag: constants.O_CREAT | constants.O_EXCL | constants.O_WRONLY,
+        flag: envFlags,
       },
     );
   } catch (error) {
@@ -429,20 +434,15 @@ SUPABASE_JWT_SECRET = ${JSON.stringify(status.jwtSecret)}
 SUPABASE_JWT_ISSUER = ${JSON.stringify(
         new URL("/auth/v1", status.apiUrl).toString(),
       )}`,
+      {
+        flag: envFlags,
+      },
     );
   } catch (error) {
     if ((error as any)?.code !== "EEXIST") {
       throw error;
     }
   }
-};
-
-/**
- * Delete environment files
- */
-export const deleteEnvs = async () => {
-  await unlink(frontendEnv).catch(() => {});
-  await unlink(functionsEnv).catch(() => {});
 };
 
 /**

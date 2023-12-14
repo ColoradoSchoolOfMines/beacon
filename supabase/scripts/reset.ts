@@ -2,13 +2,12 @@
  * @file Reset Supabase
  */
 
-import {deleteEnvs, resetDB, setupDB, writeEnvs} from "./lib";
+import {resetDB, setupDB, writeEnvs} from "./lib";
 
 /**
  * Main async function
  */
 const main = async () => {
-  await deleteEnvs();
   await resetDB();
   await setupDB();
   await writeEnvs();

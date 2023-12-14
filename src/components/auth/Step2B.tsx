@@ -15,7 +15,7 @@ import {z} from "zod";
 import {useStore} from "~/lib/state";
 import {client} from "~/lib/supabase";
 import {Theme} from "~/lib/types";
-import {HCAPTCHA_SITEKEY} from "~/lib/vars";
+import {HCAPTCHA_SITE_KEY} from "~/lib/vars";
 import {AuthStep} from "~/pages/Auth";
 
 /**
@@ -138,7 +138,7 @@ export const Step2B: React.FC<Step2BProps> = ({setStep}) => {
             <HCaptcha
               onVerify={token => onChange(token)}
               ref={captcha}
-              sitekey={HCAPTCHA_SITEKEY}
+              sitekey={HCAPTCHA_SITE_KEY}
               theme={theme === Theme.DARK ? "dark" : "light"}
             />
             {invalid && (

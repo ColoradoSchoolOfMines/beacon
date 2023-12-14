@@ -3,6 +3,16 @@
  */
 
 /**
+ * hCaptcha site key
+ */
+const HCAPTCHA_SITE_KEY = Deno.env.get("HCAPTCHA_SITE_KEY")!;
+
+/**
+ * hCaptcha secret key
+ */
+const HCAPTCHA_SECRET_KEY = Deno.env.get("HCAPTCHA_SECRET_KEY")!;
+
+/**
  * SMTP host
  */
 const SMTP_HOST = Deno.env.get("SMTP_HOST")!;
@@ -74,6 +84,8 @@ const SUPABASE_JWT_EXP = Number.parseInt(
 
 // Validate variables
 const vars = {
+  HCAPTCHA_SITE_KEY: HCAPTCHA_SITE_KEY,
+  HCAPTCHA_SECRET_KEY: HCAPTCHA_SECRET_KEY,
   SMTP_HOST: SMTP_HOST,
   SMTP_TLS: SMTP_TLS,
   SMTP_PORT: SMTP_PORT,
@@ -101,6 +113,8 @@ if (missing.length > 0) {
 }
 
 export {
+  HCAPTCHA_SITE_KEY,
+  HCAPTCHA_SECRET_KEY,
   SMTP_HOST,
   SMTP_TLS,
   SMTP_PORT,

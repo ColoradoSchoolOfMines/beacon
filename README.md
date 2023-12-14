@@ -56,7 +56,7 @@ npm run supabase:reset
 
 | Name                     | Description                    | Default/Required                                                                                                        |
 | ------------------------ | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| `VITE_HCAPTCHA_SITEKEY`  | The hCaptcha site key          | Required (:warning: **Must be manually set** :warning:; see [hCaptcha dashboard](https://dashboard.hcaptcha.com/sites)) |
+| `VITE_HCAPTCHA_SITE_KEY` | The hCaptcha site key          | Required (:warning: **Must be manually set** :warning:; see [hCaptcha dashboard](https://dashboard.hcaptcha.com/sites)) |
 | `VITE_SUPABASE_URL`      | The Supabase API URL           | Required (Automatically set by the setup script)                                                                        |
 | `VITE_SUPABASE_ANON_KEY` | The Supabase API anonymous key | Required (Automatically set by the setup script)                                                                        |
 
@@ -64,6 +64,8 @@ npm run supabase:reset
 
 | Name                        | Description                           | Default/Required                                                |
 | --------------------------- | ------------------------------------- | --------------------------------------------------------------- |
+| `HCAPTCHA_SITE_KEY`         | The hCaptcha site key                 | Required (:warning: **Must be manually set** :warning:)         |
+| `HCAPTCHA_SECRET_KEY`       | The hCaptcha secret key               | Required (:warning: **Must be manually set** :warning:)         |
 | `SMTP_HOST`                 | The SMTP server host                  | Required (:warning: **Must be manually set** :warning:)         |
 | `SMTP_PORT`                 | The SMTP server port                  | Defaults to `465`                                               |
 | `SMTP_TLS`                  | Whether to use TLS                    | Defaults to `true` when `SMTP_PORT` is `465`, `false` otherwise |

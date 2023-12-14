@@ -2,7 +2,7 @@ interface ImportMetaEnv {
   /**
    * hCaptcha site key
    */
-  readonly VITE_HCAPTCHA_SITEKEY: string;
+  readonly VITE_HCAPTCHA_SITE_KEY: string;
 
   /**
    * The Supabase API URL
