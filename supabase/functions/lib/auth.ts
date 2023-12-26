@@ -4,9 +4,9 @@
 
 import {JWTPayload, SignJWT} from "jose";
 import {
-  SUPABASE_JWT_SECRET,
-  SUPABASE_JWT_ISSUER,
-  SUPABASE_JWT_EXP,
+  X_SUPABASE_JWT_SECRET,
+  X_SUPABASE_JWT_ISSUER,
+  X_SUPABASE_JWT_EXP,
 } from "~/lib/vars.ts";
 import {crypto} from "std/crypto/mod.ts";
 import {encodeHex} from "std/encoding/hex.ts";
@@ -114,7 +114,9 @@ interface SupabaseJwtClaims extends JWTPayload {
 /**
  * Decoded Supabase JWT secret
  */
-const decodedSupabaseJwtSecret = new TextEncoder().encode(SUPABASE_JWT_SECRET);
+const decodedSupabaseJwtSecret = new TextEncoder().encode(
+  X_SUPABASE_JWT_SECRET,
+);
 
 /**
  * Generate a session for a user
@@ -171,7 +173,7 @@ export const generateSession = async (rawId: string, method: string) => {
    */
   const jwt = await new SignJWT({
     aud: userRes1.data.user.aud,
-    iss: SUPABASE_JWT_ISSUER,
+    iss: X_SUPABASE_JWT_ISSUER,
     sub: userRes1.data.user.id,
     email: userRes1.data.user.email ?? "",
     phone: userRes1.data.user.phone ?? "",
@@ -192,7 +194,7 @@ export const generateSession = async (rawId: string, method: string) => {
       alg: "HS256",
     })
     .setIssuedAt()
-    .setExpirationTime(SUPABASE_JWT_EXP)
+    .setExpirationTime(X_SUPABASE_JWT_EXP)
     .sign(decodedSupabaseJwtSecret);
 
   return jwt;

@@ -1,10 +1,8 @@
-/* eslint-disable unicorn/no-null */
-/* eslint-disable camelcase */
 /**
  * @file Supabase utilities
  */
 
-import {constants, unlink, writeFile} from "node:fs/promises";
+import {constants, writeFile} from "node:fs/promises";
 import {dirname, join} from "node:path";
 import {fileURLToPath} from "node:url";
 
@@ -116,7 +114,9 @@ const getCountryMetadata = async () => {
       alpha2: internationalAlpha2,
       alpha3: "XXX",
       numeric: 999,
+      // eslint-disable-next-line unicorn/no-null
       tld: null,
+      // eslint-disable-next-line camelcase
       dialing_codes: [],
     },
   ] as {
@@ -142,6 +142,7 @@ const getCountryMetadata = async () => {
         alpha3: raw["ISO3166-1-Alpha-3"],
         numeric: Number(raw["ISO3166-1-numeric"]),
         tld: raw["TLD"].startsWith(".") ? raw["TLD"].slice(1) : raw["TLD"],
+        // eslint-disable-next-line camelcase
         dialing_codes: raw["Dial"].split(","),
       });
     }),
@@ -210,12 +211,16 @@ const getTelecomCarriers = async () => {
           processed.push({
             tld: region.length === 2 ? region : undefined,
             name,
+            // eslint-disable-next-line camelcase
             sms_gateways: type === "sms" ? gateways : [],
+            // eslint-disable-next-line camelcase
             mms_gateways: type === "mms" ? gateways : [],
           });
         } else if (type === "sms") {
+          // eslint-disable-next-line camelcase
           existingCarrier.sms_gateways = gateways;
         } else if (type === "mms") {
+          // eslint-disable-next-line camelcase
           existingCarrier.mms_gateways = gateways;
         }
       }
@@ -391,7 +396,7 @@ const functionsEnv = join(root, "supabase", "functions", ".env");
 /**
  * Environment file flags
  */
-const envFlags = constants.O_CREAT | constants.O_APPEND | constants.O_WRONLY;
+const envFlags = constants.O_CREAT | constants.O_EXCL | constants.O_WRONLY;
 
 /**
  * Write environment files
@@ -404,7 +409,7 @@ export const writeEnvs = async () => {
   try {
     await writeFile(
       frontendEnv,
-      `VITE_HCAPTCHA_SITE_KEY = ""
+      `VITE_HCAPTCHA_SITE_KEY = "" # Required!
 VITE_SUPABASE_URL = ${JSON.stringify(status.apiUrl)}
 VITE_SUPABASE_ANON_KEY = ${JSON.stringify(status.anonKey)}`,
       {
@@ -420,20 +425,19 @@ VITE_SUPABASE_ANON_KEY = ${JSON.stringify(status.anonKey)}`,
   try {
     await writeFile(
       functionsEnv,
-      `SMTP_HOST = ""
+      `HCAPTCHA_SITE_KEY = "" # Required!
+HCAPTCHA_SECRET_KEY = "" # Required!
+SMTP_HOST = "" # Required!
 # SMTP_PORT = 465
 # SMTP_TLS = true # Defaults to true when SMTP_PORT is 465, false otherwise
-SMTP_USERNAME = ""
-SMTP_PASSWORD = ""
+SMTP_USERNAME = "" # Required!
+SMTP_PASSWORD = "" # Required!
 # SMTP_FROM = "" # Defaults to SMTP_USERNAME
-SUPABASE_DB_URL = ${JSON.stringify(status.dbUrl)}
-SUPABASE_URL = ${JSON.stringify(status.apiUrl)}
-SUPABASE_ANON_KEY = ${JSON.stringify(status.anonKey)}
-SUPABASE_SERVICE_ROLE_KEY = ${JSON.stringify(status.serviceRoleKey)}
-SUPABASE_JWT_SECRET = ${JSON.stringify(status.jwtSecret)}
-SUPABASE_JWT_ISSUER = ${JSON.stringify(
+X_SUPABASE_JWT_SECRET = ${JSON.stringify(status.jwtSecret)}
+X_SUPABASE_JWT_ISSUER = ${JSON.stringify(
         new URL("/auth/v1", status.apiUrl).toString(),
-      )}`,
+      )}
+# X_SUPABASE_JWT_EXP = 3600`,
       {
         flag: envFlags,
       },

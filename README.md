@@ -39,14 +39,19 @@ npm install
 npm run supabase:start
 ```
 
-5. Still inside the repository, start the development server:
+and then update [`supabase/functions/.env`](supabase/functions/.env) with the appropriate values (See [Function Environment Variables](#function-environment-variables)).
+
+5. Update [`.env`](.env) with the appropriate values (See [Frontend Environment Variables](#frontend-environment-variables)).
+
+6. Still inside the repository, start the development server:
 
 ```bash
 npm run dev
 ```
 
-6. Open [`http://localhost:3000`](http://localhost:3000) in your browser
-7. Reset the backend (optional, but recommended anytime after you change the backend schema):
+7. Open [`http://localhost:3000`](http://localhost:3000) in your browser to access the frontend and [`http://localhost:54323`](http://localhost:54323) to access the local Supabase dashboard (If you're running Supabase locally).
+
+8. Reset the backend (optional, but **strongly** recommended anytime after you change the backend schema):
 
 ```bash
 npm run supabase:reset
@@ -76,9 +81,9 @@ npm run supabase:reset
 | `SUPABASE_URL`              | The Supabase API URL                  | Required (Automatically set by the runtime)                     |
 | `SUPABASE_ANON_KEY`         | The Supabase API anonymous key        | Required (Automatically set by the runtime)                     |
 | `SUPABASE_SERVICE_ROLE_KEY` | The Supabase API service role key     | Required (Automatically set by the runtime)                     |
-| `SUPABASE_JWT_SECRET`       | The Supabase JWT secret               | Required (Automatically set by the setup script)                |
-| `SUPABASE_JWT_ISSUER`       | The Supabase JWT issuer               | Required (Automatically set by the setup script)                |
-| `SUPABASE_JWT_EXP`          | The Supabase JWT expiration (Seconds) | Defaults to `3600` seconds (`1` hour)                           |
+| `X_SUPABASE_JWT_SECRET`     | The Supabase JWT secret               | Required (Automatically set by the setup script)                |
+| `X_SUPABASE_JWT_ISSUER`     | The Supabase JWT issuer               | Required (Automatically set by the setup script)                |
+| `X_SUPABASE_JWT_EXP`        | The Supabase JWT expiration (Seconds) | Defaults to `3600` seconds (`1` hour)                           |
 
 ### Technologies
 
