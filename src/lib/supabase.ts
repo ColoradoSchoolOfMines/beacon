@@ -32,7 +32,7 @@ export const client = new SupabaseClient<Database>(
           let json: any = {};
 
           try {
-            json = await res.json();
+            json = await res.clone().json();
           } catch {
             // Empty
           }
@@ -48,11 +48,16 @@ export const client = new SupabaseClient<Database>(
             description += ` (${json.hint})`;
           }
 
-          // Set the error
-          setError({
+          const err = {
             name: "Server Error",
             description,
-          });
+          };
+
+          // Log the error
+          console.error(err);
+
+          // Set the error
+          setError(err);
         }
 
         return res;

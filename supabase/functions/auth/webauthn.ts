@@ -3,12 +3,16 @@
  */
 
 import {Context} from "oak";
-import {generateUserClient, serviceRoleClient} from "../lib/supabase.ts";
-import {encodeBase64} from "std/encoding/base64.ts";
-import {fido2, rpId} from "../lib/webauthn.ts";
+import {generateUserClient, serviceRoleClient} from "~/lib/supabase.ts";
+import {fido2, rpId} from "~/lib/webauthn.ts";
 import {generateSession} from "~/lib/auth.ts";
 import {generateUsername} from "~/lib/user.ts";
 import {z} from "zod";
+
+/**
+ * UTF-8 text decoder
+ */
+const textDecoder = new TextDecoder();
 
 /**
  * UTF-8 text encoder
@@ -41,7 +45,7 @@ export const beginAttestation = async (ctx: Context) => {
 
   // Generate the attestation options
   const attestationOptions = await fido2.attestationOptions();
-  const encodedChallenge = encodeBase64(attestationOptions.challenge);
+  const encodedChallenge = textDecoder.decode(attestationOptions.challenge);
 
   // Store the challenge
   const challengeRes = await serviceRoleClient
@@ -65,14 +69,16 @@ export const beginAttestation = async (ctx: Context) => {
   // Return the attestation options
   ctx.response.status = 200;
   ctx.response.body = {
-    ...attestationOptions,
-    user: {
-      id: user.id,
-      name: username,
-      displayName: username,
-    },
     challengeId: challengeRes.data.id,
-    challenge: encodedChallenge,
+    options: {
+      ...attestationOptions,
+      challenge: encodedChallenge,
+      user: {
+        id: user.id,
+        name: username,
+        displayName: username,
+      },
+    },
   };
 };
 
@@ -81,7 +87,7 @@ export const beginAttestation = async (ctx: Context) => {
  */
 const endAttestationSchema = z.object({
   challengeId: z.string(),
-  rawId: z.string(),
+  credentialId: z.string(),
   response: z.object({
     attestationObject: z.string(),
     clientDataJSON: z.string(),
@@ -122,7 +128,7 @@ export const endAttestation = async (ctx: Context) => {
   // Verify the attestation
   const result = await fido2.attestationResult(
     {
-      rawId: textEncoder.encode(req.rawId),
+      rawId: textEncoder.encode(req.credentialId),
       response: {
         attestationObject: req.response.attestationObject,
         clientDataJSON: req.response.clientDataJSON,
@@ -137,7 +143,7 @@ export const endAttestation = async (ctx: Context) => {
   );
 
   // Get the credential counter, raw ID, and public key
-  const rawId = result.clientData.get("rawId");
+  const credentialId = result.clientData.get("rawId");
   const counter = result.authnrData.get("counter");
   const credentialPublicKeyPem = result.authnrData.get(
     "credentialPublicKeyPem",
@@ -145,7 +151,7 @@ export const endAttestation = async (ctx: Context) => {
 
   if (
     counter === undefined ||
-    rawId === undefined ||
+    credentialId === undefined ||
     credentialPublicKeyPem === undefined
   ) {
     ctx.throw(400, "Missing credential data");
@@ -157,7 +163,7 @@ export const endAttestation = async (ctx: Context) => {
     .rpc("attest_webauthn_credential", {
       _user_id: user.id,
       _challenge_id: challengeRes.data.id,
-      _credential_id: rawId,
+      _credential_id: credentialId,
       _counter: counter,
       _public_key: credentialPublicKeyPem,
     });
@@ -177,7 +183,7 @@ export const endAttestation = async (ctx: Context) => {
 export const beginAssertion = async (ctx: Context) => {
   // Generate the assertion options
   const assertionOptions = await fido2.assertionOptions();
-  const encodedChallenge = encodeBase64(assertionOptions.challenge);
+  const encodedChallenge = textDecoder.decode(assertionOptions.challenge);
 
   // Store the challenge
   const challengeRes = await serviceRoleClient
@@ -209,7 +215,7 @@ export const beginAssertion = async (ctx: Context) => {
  */
 const endAssertionSchema = z.object({
   challengeId: z.string(),
-  rawId: z.string(),
+  credentialId: z.string(),
   response: z.object({
     authenticatorData: z.string(),
     clientDataJSON: z.string(),
@@ -245,7 +251,7 @@ export const endAssertion = async (ctx: Context) => {
     .schema("auth")
     .from("webauthn_credentials")
     .select("id, user_id, counter, public_key")
-    .eq("user_id", req.rawId)
+    .eq("user_id", req.credentialId)
     .single();
 
   if (
@@ -265,7 +271,7 @@ export const endAssertion = async (ctx: Context) => {
   // Verify the assertion
   await fido2.assertionResult(
     {
-      rawId: textEncoder.encode(req.rawId),
+      rawId: textEncoder.encode(req.credentialId),
       response: {
         authenticatorData: textEncoder.encode(req.response.authenticatorData),
         clientDataJSON: req.response.clientDataJSON,
@@ -298,7 +304,7 @@ export const endAssertion = async (ctx: Context) => {
   }
 
   // Generate a session
-  const session = await generateSession(req.rawId, "webauthn");
+  const session = await generateSession(req.credentialId, "webauthn");
 
   // Return the session
   ctx.response.status = 200;

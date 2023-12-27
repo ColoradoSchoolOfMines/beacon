@@ -2,8 +2,6 @@
  * @file Auth utilities
  */
 
-import {OTPCredential} from "~/lib/types";
-
 /**
  * Authetication action timeout (in milliseconds)
  */

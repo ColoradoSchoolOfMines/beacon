@@ -8,13 +8,14 @@ import {IonButton, IonIcon, IonInput} from "@ionic/react";
 import {paperPlaneOutline, paperPlaneSharp} from "ionicons/icons";
 import {useRef} from "react";
 import {Controller, useForm} from "react-hook-form";
+import {useHistory} from "react-router-dom";
 import {z} from "zod";
 
+import {Container} from "~/components/auth/Container";
 import {useStore} from "~/lib/state";
 import {client} from "~/lib/supabase";
 import {Theme} from "~/lib/types";
 import {HCAPTCHA_SITE_KEY} from "~/lib/vars";
-import {AuthStep} from "~/pages/Auth";
 
 /**
  * Form schema
@@ -34,18 +35,14 @@ const formSchema = z.object({
  */
 type FormSchema = z.infer<typeof formSchema>;
 
-export interface Step2AProps {
-  step: AuthStep;
-  setStep: (step: AuthStep) => void;
-}
-
 /**
  * Auth step 2A component
  * @returns JSX
  */
-export const Step2A: React.FC<Step2AProps> = ({setStep}) => {
+export const Step2A: React.FC = () => {
   // Hooks
   const captcha = useRef<HCaptcha>(null);
+  const history = useHistory();
   const setEmail = useStore(state => state.setEmail);
   const theme = useStore(state => state.theme);
 
@@ -68,7 +65,7 @@ export const Step2A: React.FC<Step2AProps> = ({setStep}) => {
       options: {
         captchaToken: form.captchaToken,
         emailRedirectTo: new URL(
-          "/auth?step=4a",
+          "/auth/step/4a",
           window.location.origin,
         ).toString(),
       },
@@ -88,60 +85,62 @@ export const Step2A: React.FC<Step2AProps> = ({setStep}) => {
     }
 
     // Go to the next step
-    setStep(AuthStep.STEP3A);
+    history.push("/auth/step/3a");
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <Controller
-        control={control}
-        name="email"
-        render={({
-          field: {onChange, onBlur, value},
-          fieldState: {error, isTouched, invalid},
-        }) => (
-          <IonInput
-            className={`min-w-64 ${(invalid || isTouched) && "ion-touched"} ${
-              invalid && "ion-invalid"
-            } ${!invalid && isTouched && "ion-valid"}`}
-            errorText={error?.message}
-            fill="outline"
-            label="Email"
-            labelPlacement="floating"
-            onIonBlur={onBlur}
-            onIonInput={onChange}
-            type="email"
-            value={value}
-          />
-        )}
-      />
-      <Controller
-        control={control}
-        name="captchaToken"
-        render={({field: {onChange}, fieldState: {error, invalid}}) => (
-          <div className="py-4">
-            <HCaptcha
-              onVerify={token => onChange(token)}
-              ref={captcha}
-              sitekey={HCAPTCHA_SITE_KEY}
-              theme={theme === Theme.DARK ? "dark" : "light"}
+    <Container>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Controller
+          control={control}
+          name="email"
+          render={({
+            field: {onChange, onBlur, value},
+            fieldState: {error, isTouched, invalid},
+          }) => (
+            <IonInput
+              className={`min-w-64 ${(invalid || isTouched) && "ion-touched"} ${
+                invalid && "ion-invalid"
+              } ${!invalid && isTouched && "ion-valid"}`}
+              errorText={error?.message}
+              fill="outline"
+              label="Email"
+              labelPlacement="floating"
+              onIonBlur={onBlur}
+              onIonInput={onChange}
+              type="email"
+              value={value}
             />
-            {invalid && (
-              <p className="!text-[12px] pt-1.5 text-[#ff4961]">
-                {error?.message}
-              </p>
-            )}
-          </div>
-        )}
-      />
-      <IonButton
-        className="mb-0 mt-4 mx-0 overflow-hidden rounded-lg w-full"
-        expand="full"
-        type="submit"
-      >
-        <IonIcon slot="start" ios={paperPlaneOutline} md={paperPlaneSharp} />
-        Send Login Link
-      </IonButton>
-    </form>
+          )}
+        />
+        <Controller
+          control={control}
+          name="captchaToken"
+          render={({field: {onChange}, fieldState: {error, invalid}}) => (
+            <div className="py-4">
+              <HCaptcha
+                onVerify={token => onChange(token)}
+                ref={captcha}
+                sitekey={HCAPTCHA_SITE_KEY}
+                theme={theme === Theme.DARK ? "dark" : "light"}
+              />
+              {invalid && (
+                <p className="!text-[12px] pt-1.5 text-[#ff4961]">
+                  {error?.message}
+                </p>
+              )}
+            </div>
+          )}
+        />
+        <IonButton
+          className="mb-0 mt-4 mx-0 overflow-hidden rounded-lg w-full"
+          expand="full"
+          type="submit"
+        >
+          <IonIcon slot="start" ios={paperPlaneOutline} md={paperPlaneSharp} />
+          Send Login Link
+        </IonButton>
+      </form>
+    </Container>
   );
 };

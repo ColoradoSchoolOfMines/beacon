@@ -9,54 +9,81 @@ import {
   closeOutline,
   closeSharp,
 } from "ionicons/icons";
-import {useHistory} from "react-router";
+import {useHistory} from "react-router-dom";
 
-import {getPasskey} from "~/lib/auth";
-import {AuthStep} from "~/pages/Auth";
-
-export interface Step4AProps {
-  step: AuthStep;
-  setStep: (step: AuthStep) => void;
-}
+import {Container} from "~/components/auth/Container";
+import {beginAttestation, endAttestation} from "~/lib/api/auth";
+import {useStore} from "~/lib/state";
 
 /**
  * Auth step 4A component
  * @returns JSX
  */
-export const Step4A: React.FC<Step4AProps> = ({setStep}) => {
+export const Step4A: React.FC = () => {
   // Hooks
   const history = useHistory();
+  const setError = useStore(state => state.setError);
 
   // Methods
   /**
    * Setup a passkey
    */
   const setup = async () => {
-    let passkey: Credential | undefined;
+    // Begin the attestation
+    let [
+      challengeId,
+      options,
+      ok,
+    ] = await beginAttestation();
 
-    try {
-      passkey = await getPasskey([
-        3,
-        4,
-        5,
-      ]);
-    } catch (error) {
-      console.warn("Failed to get passkey", error);
+    // Handle error
+    if (!ok) {
       return;
     }
 
-    console.log(passkey);
+    // Create the credential
+    const credential = (await navigator.credentials.create({
+      publicKey: options,
+    })) as PublicKeyCredential;
+
+    const credentialResponse =
+      credential.response as AuthenticatorAttestationResponse;
+
+    // Handle error
+    if (credential === null) {
+      setError({
+        name: "Passkey Error",
+        description: "Failed to create credential",
+      });
+
+      return;
+    }
+
+    // End the attestation
+    ok = await endAttestation(challengeId!, credential.id, {
+      attestationObject: credentialResponse.attestationObject,
+      clientDataJSON: credentialResponse.clientDataJSON,
+    });
+
+    // Handle error
+    if (!ok) {
+      return;
+    }
+
+    // Go to nearby
+    history.push("/nearby");
   };
 
   /**
    * Skip passkey setup
    */
   const skip = () => {
+    // Go to nearby
     history.push("/nearby");
   };
 
   return (
-    <>
+    <Container>
       <IonButton
         className="m-0 overflow-hidden rounded-lg w-full"
         color="success"
@@ -90,6 +117,6 @@ export const Step4A: React.FC<Step4AProps> = ({setStep}) => {
       <IonNote className="block mt-2 text-center">
         Continue without setting up a passkey.
       </IonNote>
-    </>
+    </Container>
   );
 };

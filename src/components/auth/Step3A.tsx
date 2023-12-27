@@ -6,11 +6,13 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {IonButton, IonIcon, IonInput} from "@ionic/react";
 import {checkmarkOutline, checkmarkSharp} from "ionicons/icons";
 import {Controller, useForm} from "react-hook-form";
+import {useHistory} from "react-router-dom";
 import {z} from "zod";
 
+import {Container} from "~/components/auth/Container";
+import {checkPasskeySupport} from "~/lib/auth";
 import {useStore} from "~/lib/state";
 import {client} from "~/lib/supabase";
-import {AuthStep} from "~/pages/Auth";
 
 /**
  * Form schema
@@ -29,19 +31,15 @@ const formSchema = z.object({
  */
 type FormSchema = z.infer<typeof formSchema>;
 
-export interface Step3AProps {
-  step: AuthStep;
-  setStep: (step: AuthStep) => void;
-}
-
 /**
  * Auth step 3A component
  * @returns JSX
  */
-export const Step3A: React.FC<Step3AProps> = ({setStep}) => {
+export const Step3A: React.FC = () => {
   // Hooks
   const email = useStore(state => state.email);
   const setError = useStore(state => state.setError);
+  const history = useHistory();
 
   const {control, handleSubmit, reset} = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
@@ -57,7 +55,7 @@ export const Step3A: React.FC<Step3AProps> = ({setStep}) => {
     const {error} = await client.auth.verifyOtp({
       email: email!,
       token: code,
-      type: "magiclink",
+      type: "email",
     });
 
     // Handle the error
@@ -71,11 +69,14 @@ export const Step3A: React.FC<Step3AProps> = ({setStep}) => {
         description: error.message,
       });
 
+      // Go back to the previous step
+      history.push("/auth/step/2a");
+
       return;
     }
 
     // Go to the next step
-    setStep(AuthStep.STEP4A);
+    history.push(checkPasskeySupport() ? "/auth/step/4a" : "/nearby");
   };
 
   /**
@@ -86,40 +87,42 @@ export const Step3A: React.FC<Step3AProps> = ({setStep}) => {
   const onSubmit = async (data: FormSchema) => await verify(data.code);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <Controller
-        control={control}
-        name="code"
-        render={({
-          field: {onChange, onBlur, value},
-          fieldState: {error, isTouched, invalid},
-        }) => (
-          <IonInput
-            className={`min-w-64 mb-4 ${
-              (invalid || isTouched) && "ion-touched"
-            } ${invalid && "ion-invalid"} ${
-              !invalid && isTouched && "ion-valid"
-            }`}
-            errorText={error?.message}
-            fill="outline"
-            label="Code"
-            labelPlacement="floating"
-            onIonBlur={onBlur}
-            onIonInput={onChange}
-            type="number"
-            value={value}
-          />
-        )}
-      />
+    <Container>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Controller
+          control={control}
+          name="code"
+          render={({
+            field: {onChange, onBlur, value},
+            fieldState: {error, isTouched, invalid},
+          }) => (
+            <IonInput
+              className={`min-w-64 mb-4 ${
+                (invalid || isTouched) && "ion-touched"
+              } ${invalid && "ion-invalid"} ${
+                !invalid && isTouched && "ion-valid"
+              }`}
+              errorText={error?.message}
+              fill="outline"
+              label="Code"
+              labelPlacement="floating"
+              onIonBlur={onBlur}
+              onIonInput={onChange}
+              type="number"
+              value={value}
+            />
+          )}
+        />
 
-      <IonButton
-        className="mb-0 mt-4 mx-0 overflow-hidden rounded-lg w-full"
-        expand="full"
-        type="submit"
-      >
-        <IonIcon slot="start" ios={checkmarkOutline} md={checkmarkSharp} />
-        Verify Code
-      </IonButton>
-    </form>
+        <IonButton
+          className="mb-0 mt-4 mx-0 overflow-hidden rounded-lg w-full"
+          expand="full"
+          type="submit"
+        >
+          <IonIcon slot="start" ios={checkmarkOutline} md={checkmarkSharp} />
+          Verify Code
+        </IonButton>
+      </form>
+    </Container>
   );
 };

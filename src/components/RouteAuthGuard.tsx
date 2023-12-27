@@ -26,7 +26,7 @@ export interface RouteAuthGuardProps extends RouteProps {
  */
 export const RouteAuthGuard: React.FC<RouteAuthGuardProps> = ({
   requiredState,
-  redirectTo = "/auth",
+  redirectTo = "/auth/step/1",
   ...props
 }) => {
   // Hooks

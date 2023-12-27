@@ -29,16 +29,23 @@ import {IonReactRouter} from "@ionic/react-router";
 import {useEffect, useRef} from "react";
 import {Route} from "react-router-dom";
 
+import {Step1} from "~/components/auth/Step1";
+import {Step2A} from "~/components/auth/Step2A";
+import {Step3A} from "~/components/auth/Step3A";
+import {Step4A} from "~/components/auth/Step4A";
 import {Menu} from "~/components/Menu";
 import {RouteAuthGuard} from "~/components/RouteAuthGuard";
 import {useStore} from "~/lib/state";
 import {client} from "~/lib/supabase";
 import {RequiredAuthState, Theme} from "~/lib/types";
-import {Auth} from "~/pages/Auth";
 import {Error} from "~/pages/Error";
 import {Home} from "~/pages/Home";
 import {Nearby} from "~/pages/Nearby";
 import {Settings} from "~/pages/Settings";
+
+// Set the user
+const session = await client.auth.getSession();
+useStore.getState().setUser(session?.data?.session?.user);
 
 // Initialize Ionic
 setupIonicReact({
@@ -85,7 +92,7 @@ export const App: React.FC = () => {
         setUser();
 
         // Redirect to the auth page
-        router.current?.history.push("/auth");
+        router.current?.history.push("/auth/step/1");
       }
     }
   });
@@ -111,16 +118,43 @@ export const App: React.FC = () => {
             </Route>
 
             {/* Unauthenticated routes */}
+
             <RouteAuthGuard
               requiredState={RequiredAuthState.UNAUTHENTICATED}
               redirectTo="/nearby"
-              path="/auth"
+              path="/auth/step/1"
               exact={true}
             >
-              <Auth />
+              <Step1 />
+            </RouteAuthGuard>
+
+            <RouteAuthGuard
+              requiredState={RequiredAuthState.UNAUTHENTICATED}
+              redirectTo="/nearby"
+              path="/auth/step/2a"
+              exact={true}
+            >
+              <Step2A />
+            </RouteAuthGuard>
+
+            <RouteAuthGuard
+              requiredState={RequiredAuthState.UNAUTHENTICATED}
+              redirectTo="/nearby"
+              path="/auth/step/3a"
+              exact={true}
+            >
+              <Step3A />
             </RouteAuthGuard>
 
             {/* Authenticated routes */}
+            <RouteAuthGuard
+              requiredState={RequiredAuthState.AUTHENTICATED}
+              path="/auth/step/4a"
+              exact={true}
+            >
+              <Step4A />
+            </RouteAuthGuard>
+
             <RouteAuthGuard
               requiredState={RequiredAuthState.AUTHENTICATED}
               path="/nearby"

@@ -27,7 +27,7 @@ export interface SearchableSelectProps<T extends object> {
    * @param open Open the selector
    * @returns JSX
    */
-  children: (open: () => void) => JSX.Element;
+  children: (open: () => void) => React.ReactNode;
 
   /**
    * Select label

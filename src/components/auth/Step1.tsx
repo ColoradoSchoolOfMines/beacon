@@ -4,20 +4,19 @@
 
 import {IonButton, IonIcon, IonNote} from "@ionic/react";
 import {callOutline, callSharp, keyOutline, keySharp} from "ionicons/icons";
+import {useHistory} from "react-router-dom";
 
+import {Container} from "~/components/auth/Container";
 import {checkPasskeySupport, getPasskey} from "~/lib/auth";
-import {AuthStep} from "~/pages/Auth";
-
-export interface Step1Props {
-  step: AuthStep;
-  setStep: (step: AuthStep) => void;
-}
 
 /**
  * Auth step 1 component
  * @returns JSX
  */
-export const Step1: React.FC<Step1Props> = ({setStep}) => {
+export const Step1: React.FC = () => {
+  // Hooks
+  const history = useHistory();
+
   // Methods
   /**
    * Attempt to use a passkey to login
@@ -39,8 +38,16 @@ export const Step1: React.FC<Step1Props> = ({setStep}) => {
     console.log(passkey);
   };
 
+  /**
+   * Attempt to use an email to login
+   */
+  const useEmail = () => {
+    // Go to the next step
+    history.push("/auth/step/2a");
+  };
+
   return (
-    <>
+    <Container>
       {checkPasskeySupport() && (
         <>
           <IonButton
@@ -66,7 +73,7 @@ export const Step1: React.FC<Step1Props> = ({setStep}) => {
         className="m-0 overflow-hidden rounded-lg w-full"
         color="secondary"
         expand="full"
-        onClick={() => setStep(AuthStep.STEP2A)}
+        onClick={useEmail}
       >
         <IonIcon slot="start" ios={callOutline} md={callSharp} />
         Authenticate With Email
@@ -76,6 +83,6 @@ export const Step1: React.FC<Step1Props> = ({setStep}) => {
         Create a <b>new</b> account or log into an <b>existing</b> account with
         an email address.
       </IonNote>
-    </>
+    </Container>
   );
 };
