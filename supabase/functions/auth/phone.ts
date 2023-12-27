@@ -105,7 +105,9 @@ export const beginPhone = async (ctx: Context) => {
 
   // Parse the phone number
   const phoneNumber = parsePhoneNumber(req.number, "US");
-  const e164WithoutPlus = phoneNumber.format("E.164").slice(1);
+
+  // Format the phone number
+  const e164WithoutPlus = phoneNumber.countryCallingCode + phoneNumber.number;
 
   // Create the user if they don't exist
   if (user === undefined) {
@@ -167,6 +169,7 @@ export const beginPhone = async (ctx: Context) => {
     countryCallingCode: phoneNumber.countryCallingCode,
     e164: phoneNumber.format("E.164"),
     e164WithoutPlus,
+    e164WithoutCountryCode: phoneNumber.nationalNumber,
     ext: phoneNumber.ext,
     idd: phoneNumber.format("IDD"),
     international: phoneNumber.format("INTERNATIONAL"),

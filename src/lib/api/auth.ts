@@ -62,6 +62,8 @@ export const endPhoneAuth = async (
     session: string;
   };
 
+  console.log(data);
+
   // // Update the session
   // client.auth["_saveSession"]({
 

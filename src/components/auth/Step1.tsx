@@ -4,7 +4,6 @@
 
 import {IonButton, IonIcon, IonNote} from "@ionic/react";
 import {callOutline, callSharp, keyOutline, keySharp} from "ionicons/icons";
-import {useEffect} from "react";
 
 import {checkPasskeySupport, getPasskey} from "~/lib/auth";
 import {AuthStep} from "~/pages/Auth";
@@ -39,19 +38,6 @@ export const Step1: React.FC<Step1Props> = ({setStep}) => {
 
     console.log(passkey);
   };
-
-  // Effects
-  useEffect(() => {
-    (async () => {
-      // Attempt to get the passkey automatically
-      if (!checkPasskeySupport()) {
-        console.warn("Automatic passkey retrieval is not supported!");
-        return;
-      }
-
-      await usePasskey();
-    })();
-  }, []);
 
   return (
     <>

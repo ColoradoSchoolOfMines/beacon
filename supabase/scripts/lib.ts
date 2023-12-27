@@ -201,11 +201,10 @@ const getTelecomCarriers = async () => {
 
         const name = carrier[0]!;
 
-        const gateways = carrier
-          .slice(1)
-          .map(gateway =>
-            gateway.replaceAll(/{\s*number\s*}/g, "{{e164WithoutPlus}}"),
-          );
+        const gateways = carrier.slice(1).flatMap(gateway => [
+          gateway.replaceAll(/{\s*number\s*}/g, "{{e164WithoutPlus}}"),
+          gateway.replaceAll(/{\s*number\s*}/g, "{{e164WithoutCountryCode}}"),
+        ]);
 
         if (existingCarrier === undefined) {
           processed.push({
