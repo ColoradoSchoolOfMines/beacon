@@ -875,6 +875,7 @@ export interface Database {
           alpha2: string
           alpha3: string
           dialing_codes: string[]
+          flag: string
           id: string
           name: string
           numeric: number
@@ -884,6 +885,7 @@ export interface Database {
           alpha2: string
           alpha3: string
           dialing_codes: string[]
+          flag?: string
           id?: string
           name: string
           numeric: number
@@ -893,6 +895,7 @@ export interface Database {
           alpha2?: string
           alpha3?: string
           dialing_codes?: string[]
+          flag?: string
           id?: string
           name?: string
           numeric?: number
@@ -1185,6 +1188,12 @@ export interface Database {
       }
     }
     Functions: {
+      alpha2_to_flag: {
+        Args: {
+          _alpha2: string
+        }
+        Returns: string
+      }
       anonymized_distance: {
         Args: {
           _a: unknown

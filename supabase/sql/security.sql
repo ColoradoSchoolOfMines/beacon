@@ -4,12 +4,6 @@
 
 /* ------------------------- Setup column-level security (CLS) policies ------------------------ */
 
--- Country metadata
-GRANT SELECT ON public.countries TO anon, authenticated;
-
--- Telecom carriers
-GRANT SELECT ON public.telecom_carriers TO anon, authenticated;
-
 -- Profiles
 GRANT SELECT ON public.profiles TO authenticated;
 
@@ -88,8 +82,6 @@ ON public.comment_reports TO authenticated;
 /* ----------------------------- Row-level security (RLS) policies ----------------------------- */
 
 -- Enable row-level security
-ALTER TABLE public.countries ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.telecom_carriers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.locations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.posts ENABLE ROW LEVEL SECURITY;
@@ -98,20 +90,6 @@ ALTER TABLE public.post_reports ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.comments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.comment_votes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.comment_reports ENABLE ROW LEVEL SECURITY;
-
--- Country metadata
-CREATE POLICY select_countries
-ON public.countries
-FOR SELECT
-TO anon, authenticated
-USING (true);
-
--- Telecom carriers
-CREATE POLICY select_telecom_carriers
-ON public.telecom_carriers
-FOR SELECT
-TO anon, authenticated
-USING (true);
 
 -- Profiles
 CREATE POLICY select_profiles

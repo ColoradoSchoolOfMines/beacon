@@ -8,29 +8,27 @@ import {client} from "~/lib/supabase";
 
 /**
  * Begin a phone-based authentication
- * @param hCaptchaToken hCaptcha token
  * @param telecomCarrier Telecom carrier ID
- * @param number E.164 phone number withouth the leading `+`
+ * @param number E.164 phone number
+ * @param hCaptchaToken hCaptcha token
+ * @returns Whether the request was successful
  */
 export const beginPhoneAuth = async (
-  hCaptchaToken: string,
   telecomCarrier: string,
   number: string,
+  hCaptchaToken: string,
 ) => {
   // Make the request
-  const res = await fetch("/api/auth/phone/begin", {
+  const {error} = await client.functions.invoke<never>("auth/phone/begin", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+    body: {
+      hCaptchaToken,
+      telecomCarrier,
+      number,
     },
-    body: JSON.stringify({hCaptchaToken, telecomCarrier, phoneNumber: number}),
   });
 
-  if (!res.ok) {
-    throw new Error(
-      `Failed to begin phone authentication: ${await res.text()}`,
-    );
-  }
+  return error !== null;
 };
 
 /**
@@ -45,22 +43,19 @@ export const endPhoneAuth = async (
   code: string,
 ) => {
   // Make the request
-  const res = await fetch("/api/auth/phone/end", {
+  const {data, error} = await client.functions.invoke<never>("auth/phone/end", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+    body: {
+      telecomCarrier,
+      number,
+      code,
     },
-    body: JSON.stringify({telecomCarrier, phoneNumber: number, code}),
   });
 
-  if (!res.ok) {
-    throw new Error(`Failed to end phone authentication: ${await res.text()}`);
+  // Handle errors
+  if (error !== null) {
+    return undefined;
   }
-
-  // Parse the response
-  const data = (await res.json()) as {
-    session: string;
-  };
 
   console.log(data);
 

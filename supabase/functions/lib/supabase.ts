@@ -6,10 +6,9 @@ import {Context} from "oak";
 import {Database} from "~/lib/schema.ts";
 import {SupabaseClient, User} from "@supabase/supabase-js";
 import {
-  SUPABASE_ANON_KEY,
-  SUPABASE_DB_URL,
-  SUPABASE_SERVICE_ROLE_KEY,
-  SUPABASE_URL,
+  X_SUPABASE_ANON_KEY,
+  X_SUPABASE_SERVICE_ROLE_KEY,
+  X_SUPABASE_URL,
 } from "~/lib/vars.ts";
 
 /**
@@ -39,13 +38,17 @@ export const generateUserClient = async <T extends boolean>(
   }
 
   // Create the client
-  const client = new SupabaseClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    global: {
-      headers: {
-        Authorization: authorization,
+  const client = new SupabaseClient<Database>(
+    X_SUPABASE_URL,
+    X_SUPABASE_ANON_KEY,
+    {
+      global: {
+        headers: {
+          Authorization: authorization,
+        },
       },
     },
-  });
+  );
 
   // Get the user
   const {data, error} = await client.auth.getUser();
@@ -73,6 +76,6 @@ export const generateUserClient = async <T extends boolean>(
  * **!!!WARNING!!! This client bypasses all security policies !!!WARNING!!!**
  */
 export const serviceRoleClient = new SupabaseClient<Database>(
-  SUPABASE_URL,
-  SUPABASE_SERVICE_ROLE_KEY,
+  X_SUPABASE_URL,
+  X_SUPABASE_SERVICE_ROLE_KEY,
 );

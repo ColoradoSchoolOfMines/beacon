@@ -1,5 +1,10 @@
 interface ImportMetaEnv {
   /**
+   * The base URL of the functions
+   */
+  readonly VITE_FUNCTIONS_URL: string;
+
+  /**
    * hCaptcha site key
    */
   readonly VITE_HCAPTCHA_SITE_KEY: string;

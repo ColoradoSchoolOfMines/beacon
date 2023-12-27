@@ -37,6 +37,9 @@ npm install
 ```bash
 # This can take a while the first time you run it because it has to download a bunch of Docker images
 npm run supabase:start
+
+# Check the status of the Supabase (Including the dashboard URL and mock email server URL)
+npm run supabase:status
 ```
 
 and then update [`supabase/functions/.env`](supabase/functions/.env) with the appropriate values (See [Function Environment Variables](#function-environment-variables)).
@@ -49,7 +52,7 @@ and then update [`supabase/functions/.env`](supabase/functions/.env) with the ap
 npm run dev
 ```
 
-7. Open [`http://localhost:3000`](http://localhost:3000) in your browser to access the frontend and [`http://localhost:54323`](http://localhost:54323) to access the local Supabase dashboard (If you're running Supabase locally).
+7. Open [`http://localhost:3000`](http://localhost:3000) in your browser to access the frontend
 
 8. Reset the backend (optional, but **strongly** recommended anytime after you change the backend schema):
 
@@ -61,29 +64,24 @@ npm run supabase:reset
 
 | Name                     | Description                    | Default/Required                                                                                                        |
 | ------------------------ | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `VITE_FUNCTIONS_URL`     | The base URL of the functions  | Defaults to `/`                                                                                                         |
 | `VITE_HCAPTCHA_SITE_KEY` | The hCaptcha site key          | Required (:warning: **Must be manually set** :warning:; see [hCaptcha dashboard](https://dashboard.hcaptcha.com/sites)) |
 | `VITE_SUPABASE_URL`      | The Supabase API URL           | Required (Automatically set by the setup script)                                                                        |
 | `VITE_SUPABASE_ANON_KEY` | The Supabase API anonymous key | Required (Automatically set by the setup script)                                                                        |
 
 ### Function Environment Variables
 
-| Name                        | Description                           | Default/Required                                                |
-| --------------------------- | ------------------------------------- | --------------------------------------------------------------- |
-| `HCAPTCHA_SITE_KEY`         | The hCaptcha site key                 | Required (:warning: **Must be manually set** :warning:)         |
-| `HCAPTCHA_SECRET_KEY`       | The hCaptcha secret key               | Required (:warning: **Must be manually set** :warning:)         |
-| `SMTP_HOST`                 | The SMTP server host                  | Required (:warning: **Must be manually set** :warning:)         |
-| `SMTP_PORT`                 | The SMTP server port                  | Defaults to `465`                                               |
-| `SMTP_TLS`                  | Whether to use TLS                    | Defaults to `true` when `SMTP_PORT` is `465`, `false` otherwise |
-| `SMTP_USERNAME`             | The SMTP server username              | Required (:warning: **Must be manually set** :warning:)         |
-| `SMTP_PASSWORD`             | The SMTP server password              | Required (:warning: **Must be manually set** :warning:)         |
-| `SMTP_FROM`                 | The SMTP server from address          | Defaults to `SMTP_USERNAME`                                     |
-| `SUPABASE_DB_URL`           | The Supabase database URL             | Required (Automatically set by the runtime)                     |
-| `SUPABASE_URL`              | The Supabase API URL                  | Required (Automatically set by the runtime)                     |
-| `SUPABASE_ANON_KEY`         | The Supabase API anonymous key        | Required (Automatically set by the runtime)                     |
-| `SUPABASE_SERVICE_ROLE_KEY` | The Supabase API service role key     | Required (Automatically set by the runtime)                     |
-| `X_SUPABASE_JWT_SECRET`     | The Supabase JWT secret               | Required (Automatically set by the setup script)                |
-| `X_SUPABASE_JWT_ISSUER`     | The Supabase JWT issuer               | Required (Automatically set by the setup script)                |
-| `X_SUPABASE_JWT_EXP`        | The Supabase JWT expiration (Seconds) | Defaults to `3600` seconds (`1` hour)                           |
+| Name                          | Description                           | Default/Required                                        |
+| ----------------------------- | ------------------------------------- | ------------------------------------------------------- |
+| `HCAPTCHA_SITE_KEY`           | The hCaptcha site key                 | Required (:warning: **Must be manually set** :warning:) |
+| `HCAPTCHA_SECRET_KEY`         | The hCaptcha secret key               | Required (:warning: **Must be manually set** :warning:) |
+| `X_SUPABASE_DB_URL`           | The Supabase database URL             | Required (Automatically set by the runtime)             |
+| `X_SUPABASE_URL`              | The Supabase API URL                  | Required (Automatically set by the runtime)             |
+| `X_SUPABASE_ANON_KEY`         | The Supabase API anonymous key        | Required (Automatically set by the runtime)             |
+| `X_SUPABASE_SERVICE_ROLE_KEY` | The Supabase API service role key     | Required (Automatically set by the runtime)             |
+| `X_SUPABASE_JWT_SECRET`       | The Supabase JWT secret               | Required (Automatically set by the setup script)        |
+| `X_SUPABASE_JWT_ISSUER`       | The Supabase JWT issuer               | Required (Automatically set by the setup script)        |
+| `X_SUPABASE_JWT_EXP`          | The Supabase JWT expiration (Seconds) | Defaults to `3600` seconds (`1` hour)                   |
 
 ### Technologies
 

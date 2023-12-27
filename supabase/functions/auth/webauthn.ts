@@ -95,7 +95,13 @@ const endAttestationSchema = z.object({
 export const endAttestation = async (ctx: Context) => {
   // Parse and validate the request body
   const raw = await ctx.request.body().value;
-  const req = await endAttestationSchema.parseAsync(raw);
+  let req: z.infer<typeof endAttestationSchema>;
+  try {
+    req = await endAttestationSchema.parseAsync(raw);
+  } catch (err) {
+    console.error(err);
+    ctx.throw(400, err);
+  }
 
   // Create a Supabase client for the current user
   const [_, user] = await generateUserClient(ctx, true);
@@ -218,7 +224,13 @@ const endAssertionSchema = z.object({
 export const endAssertion = async (ctx: Context) => {
   // Parse and validate the request body
   const raw = await ctx.request.body().value;
-  const req = await endAssertionSchema.parseAsync(raw);
+  let req: z.infer<typeof endAssertionSchema>;
+  try {
+    req = await endAssertionSchema.parseAsync(raw);
+  } catch (err) {
+    console.error(err);
+    ctx.throw(400, err);
+  }
 
   // Get the challenge
   const challengeRes = await serviceRoleClient

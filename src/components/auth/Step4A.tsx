@@ -1,5 +1,5 @@
 /**
- * @file Auth step 4B
+ * @file Auth step 4A
  */
 
 import {IonButton, IonIcon, IonNote} from "@ionic/react";
@@ -14,16 +14,16 @@ import {useHistory} from "react-router";
 import {getPasskey} from "~/lib/auth";
 import {AuthStep} from "~/pages/Auth";
 
-export interface Step4BProps {
+export interface Step4AProps {
   step: AuthStep;
   setStep: (step: AuthStep) => void;
 }
 
 /**
- * Auth step 4B component
+ * Auth step 4A component
  * @returns JSX
  */
-export const Step4B: React.FC<Step4BProps> = ({setStep}) => {
+export const Step4A: React.FC<Step4AProps> = ({setStep}) => {
   // Hooks
   const history = useHistory();
 

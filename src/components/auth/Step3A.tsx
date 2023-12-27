@@ -1,16 +1,13 @@
 /**
- * @file Auth step #B
+ * @file Auth step 3A
  */
 
 import {zodResolver} from "@hookform/resolvers/zod";
 import {IonButton, IonIcon, IonInput} from "@ionic/react";
 import {checkmarkOutline, checkmarkSharp} from "ionicons/icons";
-import {useEffect} from "react";
 import {Controller, useForm} from "react-hook-form";
-import {useHistory} from "react-router";
 import {z} from "zod";
 
-import {checkOtpSupport, checkPasskeySupport, getOtp} from "~/lib/auth";
 import {useStore} from "~/lib/state";
 import {client} from "~/lib/supabase";
 import {AuthStep} from "~/pages/Auth";
@@ -22,7 +19,7 @@ const formSchema = z.object({
   code: z
     .string()
     .min(1)
-    .refine(value => Number.isNaN(Number.parseInt(value)), {
+    .refine(value => /^\d+$/.test(value), {
       message: "Invalid code",
     }),
 });
@@ -32,48 +29,23 @@ const formSchema = z.object({
  */
 type FormSchema = z.infer<typeof formSchema>;
 
-export interface Step3BProps {
+export interface Step3AProps {
   step: AuthStep;
   setStep: (step: AuthStep) => void;
 }
 
 /**
- * Auth step 3B component
+ * Auth step 3A component
  * @returns JSX
  */
-export const Step3B: React.FC<Step3BProps> = ({setStep}) => {
+export const Step3A: React.FC<Step3AProps> = ({setStep}) => {
   // Hooks
-  const history = useHistory();
-  const phoneNumber = useStore(state => state.phoneNumber);
+  const email = useStore(state => state.email);
   const setError = useStore(state => state.setError);
 
   const {control, handleSubmit, reset} = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
   });
-
-  // Effects
-  useEffect(() => {
-    (async () => {
-      // Attempt to get the OTP automatically
-      if (!checkOtpSupport()) {
-        console.warn("Automatic OTP retrieval is not supported!");
-        return;
-      }
-
-      let otp: string | undefined;
-
-      try {
-        otp = await getOtp();
-      } catch (error) {
-        console.warn(error);
-        return;
-      }
-
-      if (otp !== undefined) {
-        await verify(otp);
-      }
-    })();
-  }, []);
 
   // Methods
   /**
@@ -83,9 +55,9 @@ export const Step3B: React.FC<Step3BProps> = ({setStep}) => {
   const verify = async (code: string) => {
     // Log in
     const {error} = await client.auth.verifyOtp({
-      phone: phoneNumber?.number as string,
+      email: email!,
       token: code,
-      type: "sms",
+      type: "magiclink",
     });
 
     // Handle the error
@@ -103,11 +75,7 @@ export const Step3B: React.FC<Step3BProps> = ({setStep}) => {
     }
 
     // Go to the next step
-    if (checkPasskeySupport()) {
-      setStep(AuthStep.STEP4B);
-    } else {
-      history.push("/nearby");
-    }
+    setStep(AuthStep.STEP4A);
   };
 
   /**

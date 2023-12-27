@@ -191,6 +191,7 @@ export interface Database {
           alpha2: string;
           alpha3: string;
           dialing_codes: string[];
+          flag: string;
           id: string;
           name: string;
           numeric: number;
@@ -200,6 +201,7 @@ export interface Database {
           alpha2: string;
           alpha3: string;
           dialing_codes: string[];
+          flag?: string;
           id?: string;
           name: string;
           numeric: number;
@@ -209,6 +211,7 @@ export interface Database {
           alpha2?: string;
           alpha3?: string;
           dialing_codes?: string[];
+          flag?: string;
           id?: string;
           name?: string;
           numeric?: number;

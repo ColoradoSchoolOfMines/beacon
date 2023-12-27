@@ -231,6 +231,7 @@
     ],
     "unicorn/filename-case": "off",
     "unicorn/no-object-as-default-parameter": "off",
+    "unicorn/no-useless-undefined": "off",
     "unicorn/numeric-separators-style": "off",
     "unicorn/prefer-query-selector": "off",
     "unicorn/prevent-abbreviations": "off",

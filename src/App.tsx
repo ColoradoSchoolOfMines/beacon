@@ -26,14 +26,14 @@ import {
   setupIonicReact,
 } from "@ionic/react";
 import {IonReactRouter} from "@ionic/react-router";
-import {useEffect} from "react";
-import {Route, useHistory} from "react-router-dom";
+import {useEffect, useRef} from "react";
+import {Route} from "react-router-dom";
 
-import {AuthenticatedRoute} from "~/components/AuthenticatedRoute";
 import {Menu} from "~/components/Menu";
+import {RouteAuthGuard} from "~/components/RouteAuthGuard";
 import {useStore} from "~/lib/state";
 import {client} from "~/lib/supabase";
-import {Theme} from "~/lib/types";
+import {RequiredAuthState, Theme} from "~/lib/types";
 import {Auth} from "~/pages/Auth";
 import {Error} from "~/pages/Error";
 import {Home} from "~/pages/Home";
@@ -52,11 +52,11 @@ setupIonicReact({
  */
 export const App: React.FC = () => {
   // Hooks
+  const router = useRef<IonReactRouter>(null);
   const error = useStore(state => state.error);
   const setError = useStore(state => state.setError);
   const setUser = useStore(state => state.setUser);
   const theme = useStore(state => state.theme);
-  const history = useHistory();
 
   // Effects
   useEffect(() => {
@@ -85,14 +85,14 @@ export const App: React.FC = () => {
         setUser();
 
         // Redirect to the auth page
-        history.push("/auth");
+        router.current?.history.push("/auth");
       }
     }
   });
 
   return (
     <IonApp>
-      <IonReactRouter>
+      <IonReactRouter ref={router}>
         <IonAlert
           isOpen={error !== undefined}
           header={error?.name}
@@ -105,23 +105,37 @@ export const App: React.FC = () => {
           <Menu />
 
           <IonRouterOutlet id="main">
-            {/* Unauthenticated routes */}
+            {/* Routes that are always available */}
             <Route path="/" exact={true}>
               <Home />
             </Route>
 
-            <Route path="/auth" exact={true}>
+            {/* Unauthenticated routes */}
+            <RouteAuthGuard
+              requiredState={RequiredAuthState.UNAUTHENTICATED}
+              redirectTo="/nearby"
+              path="/auth"
+              exact={true}
+            >
               <Auth />
-            </Route>
+            </RouteAuthGuard>
 
             {/* Authenticated routes */}
-            <AuthenticatedRoute path="/nearby" exact={true}>
+            <RouteAuthGuard
+              requiredState={RequiredAuthState.AUTHENTICATED}
+              path="/nearby"
+              exact={true}
+            >
               <Nearby />
-            </AuthenticatedRoute>
+            </RouteAuthGuard>
 
-            <AuthenticatedRoute path="/settings" exact={true}>
+            <RouteAuthGuard
+              requiredState={RequiredAuthState.AUTHENTICATED}
+              path="/settings"
+              exact={true}
+            >
               <Settings />
-            </AuthenticatedRoute>
+            </RouteAuthGuard>
 
             {/* Catch-all route */}
             <Route>

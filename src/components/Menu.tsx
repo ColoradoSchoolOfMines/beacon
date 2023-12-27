@@ -3,6 +3,7 @@
  */
 
 import {
+  IonButton,
   IonContent,
   IonIcon,
   IonImg,
@@ -20,17 +21,22 @@ import {
   homeSharp,
   lockClosedOutline,
   lockClosedSharp,
+  logOutOutline,
+  logOutSharp,
   settingsOutline,
   settingsSharp,
 } from "ionicons/icons";
+import {useRef} from "react";
 import {useLocation} from "react-router-dom";
 
 import logo from "~/assets/logo.png";
 import {useStore} from "~/lib/state";
+import {client} from "~/lib/supabase";
+import {checkRequiredAuthState, RequiredAuthState} from "~/lib/types";
 
 interface NavItem {
   url: string;
-  authenticated: boolean;
+  requiredState: RequiredAuthState;
   iosIcon: string;
   mdIcon: string;
   title: string;
@@ -39,28 +45,28 @@ interface NavItem {
 const navItems: NavItem[] = [
   {
     title: "Home",
-    authenticated: false,
+    requiredState: RequiredAuthState.ANY,
     url: "/",
     iosIcon: homeOutline,
     mdIcon: homeSharp,
   },
   {
     title: "Authentication",
-    authenticated: false,
+    requiredState: RequiredAuthState.UNAUTHENTICATED,
     url: "/auth",
     iosIcon: lockClosedOutline,
     mdIcon: lockClosedSharp,
   },
   {
     title: "Nearby",
-    authenticated: true,
+    requiredState: RequiredAuthState.AUTHENTICATED,
     url: "/nearby",
     iosIcon: compassOutline,
     mdIcon: compassSharp,
   },
   {
     title: "Settings",
-    authenticated: true,
+    requiredState: RequiredAuthState.AUTHENTICATED,
     url: "/settings",
     iosIcon: settingsOutline,
     mdIcon: settingsSharp,
@@ -75,9 +81,22 @@ export const Menu: React.FC = () => {
   // Hooks
   const user = useStore(state => state.user);
   const location = useLocation();
+  const menu = useRef<HTMLIonMenuElement>(null);
+
+  // Methods
+  /**
+   * Sign out
+   */
+  const signOut = async () => {
+    // Sign out
+    await client.auth.signOut();
+
+    // Close the menu
+    menu.current?.close();
+  };
 
   return (
-    <IonMenu contentId="main" type="overlay">
+    <IonMenu contentId="main" type="overlay" ref={menu}>
       <IonContent forceOverscroll={false}>
         <IonList className="flex flex-col h-full">
           {/* Header */}
@@ -90,7 +109,9 @@ export const Menu: React.FC = () => {
 
           {/* Navigation items */}
           {navItems
-            .filter(navItem => !navItem.authenticated || user !== undefined)
+            .filter(navItem =>
+              checkRequiredAuthState(user, navItem.requiredState),
+            )
             .map((navItem, index) => {
               return (
                 <IonMenuToggle key={index} autoHide={false}>
@@ -115,6 +136,22 @@ export const Menu: React.FC = () => {
                 </IonMenuToggle>
               );
             })}
+
+          {/* Spacer */}
+          <div className="flex-1" />
+
+          {/* Footer */}
+          <IonItem>
+            <IonButton
+              className="mx-0 my-4 overflow-hidden rounded-lg w-full"
+              size="default"
+              expand="full"
+              onClick={signOut}
+            >
+              <IonIcon slot="start" ios={logOutOutline} md={logOutSharp} />
+              <IonLabel>Sign out</IonLabel>
+            </IonButton>
+          </IonItem>
         </IonList>
       </IonContent>
     </IonMenu>

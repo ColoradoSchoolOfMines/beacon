@@ -9,44 +9,7 @@ import {
   X_SUPABASE_JWT_EXP,
 } from "~/lib/vars.ts";
 import {crypto} from "std/crypto/mod.ts";
-import {encodeHex} from "std/encoding/hex.ts";
 import {serviceRoleClient} from "~/lib/supabase.ts";
-
-/**
- * Generate a random numeric code
- * @param length Code length
- * @returns Random numeric code
- */
-export const generateCode = (length: number) => {
-  // Get random data
-  const random = crypto.getRandomValues(new Uint8Array(length));
-
-  // Encode the data (We lose some entropy here, but it's fine)
-  const view = new DataView(random.buffer);
-  let code = "";
-  for (let i = 0; i < length; i++) {
-    code += Math.round((10 * view.getUint8(i)) / 0xff).toString(10);
-  }
-
-  return code;
-};
-
-/**
- * Generate a token hash
- * @param emailOrPhone User email or phone number
- * @param code Verification code
- * @see https://github.com/supabase/gotrue/blob/c03ae091ab69c20afcd98577fb96a59719777c1b/internal/crypto/crypto.go#L41
- */
-export const generateTokenHash = async (emailOrPhone: string, code: string) => {
-  // Hash the token
-  const hash = await crypto.subtle.digest(
-    "SHA-224",
-    new TextEncoder().encode(emailOrPhone + code),
-  );
-
-  // Encode the hash
-  return encodeHex(hash);
-};
 
 /**
  * Supabase JWT claims

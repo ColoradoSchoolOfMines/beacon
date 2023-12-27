@@ -1,13 +1,11 @@
 /**
- * @file Auth step 2B
+ * @file Auth step 2A
  */
 
 import HCaptcha from "@hcaptcha/react-hcaptcha";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {IonButton, IonIcon, IonInput} from "@ionic/react";
 import {paperPlaneOutline, paperPlaneSharp} from "ionicons/icons";
-import {isValidPhoneNumber, parsePhoneNumber} from "libphonenumber-js/core";
-import metadata from "libphonenumber-js/metadata.min.json";
 import {useRef} from "react";
 import {Controller, useForm} from "react-hook-form";
 import {z} from "zod";
@@ -22,12 +20,7 @@ import {AuthStep} from "~/pages/Auth";
  * Form schema
  */
 const formSchema = z.object({
-  phoneNumber: z
-    .string()
-    .min(1)
-    .refine(value => isValidPhoneNumber(value, "US", metadata), {
-      message: "Invalid phone number",
-    }),
+  email: z.string().email(),
   captchaToken: z
     .string({
       // eslint-disable-next-line camelcase
@@ -41,20 +34,19 @@ const formSchema = z.object({
  */
 type FormSchema = z.infer<typeof formSchema>;
 
-export interface Step2BProps {
+export interface Step2AProps {
   step: AuthStep;
   setStep: (step: AuthStep) => void;
 }
 
 /**
- * Auth step 2B component
+ * Auth step 2A component
  * @returns JSX
  */
-export const Step2B: React.FC<Step2BProps> = ({setStep}) => {
+export const Step2A: React.FC<Step2AProps> = ({setStep}) => {
   // Hooks
   const captcha = useRef<HCaptcha>(null);
-  const setError = useStore(state => state.setError);
-  const setPhoneNumber = useStore(state => state.setPhoneNumber);
+  const setEmail = useStore(state => state.setEmail);
   const theme = useStore(state => state.theme);
 
   const {control, handleSubmit, reset} = useForm<FormSchema>({
@@ -64,19 +56,21 @@ export const Step2B: React.FC<Step2BProps> = ({setStep}) => {
   // Methods
   /**
    * Form submit handler
-   * @param data Form data
+   * @param form Form data
    */
-  const onSubmit = async (data: FormSchema) => {
-    // Parse the phone number
-    const phoneNumber = parsePhoneNumber(data.phoneNumber, "US", metadata);
-    setPhoneNumber(phoneNumber);
+  const onSubmit = async (form: FormSchema) => {
+    // Store the email for later
+    setEmail(form.email);
 
-    // Log in
+    // Begin the log in process
     const {error} = await client.auth.signInWithOtp({
-      phone: phoneNumber!.number,
+      email: form.email,
       options: {
-        captchaToken: data.captchaToken,
-        shouldCreateUser: true,
+        captchaToken: form.captchaToken,
+        emailRedirectTo: new URL(
+          "/auth?step=4a",
+          window.location.origin,
+        ).toString(),
       },
     });
 
@@ -84,57 +78,48 @@ export const Step2B: React.FC<Step2BProps> = ({setStep}) => {
     if (error !== null) {
       // Partially reset the form
       reset({
-        phoneNumber: data.phoneNumber,
+        email: form.email,
       });
 
       // Reset the captcha
       captcha.current?.resetCaptcha();
 
-      // Show the error
-      setError({
-        name: "Failed to log in",
-        description: error.message,
-      });
-
       return;
     }
 
     // Go to the next step
-    setStep(AuthStep.STEP3B);
+    setStep(AuthStep.STEP3A);
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Controller
         control={control}
-        name="phoneNumber"
+        name="email"
         render={({
           field: {onChange, onBlur, value},
           fieldState: {error, isTouched, invalid},
         }) => (
           <IonInput
-            className={`min-w-64 mb-4 ${
-              (invalid || isTouched) && "ion-touched"
-            } ${invalid && "ion-invalid"} ${
-              !invalid && isTouched && "ion-valid"
-            }`}
+            className={`min-w-64 ${(invalid || isTouched) && "ion-touched"} ${
+              invalid && "ion-invalid"
+            } ${!invalid && isTouched && "ion-valid"}`}
             errorText={error?.message}
             fill="outline"
-            label="Phone Number"
+            label="Email"
             labelPlacement="floating"
             onIonBlur={onBlur}
             onIonInput={onChange}
-            type="tel"
+            type="email"
             value={value}
           />
         )}
       />
-
       <Controller
         control={control}
         name="captchaToken"
-        render={({field: {onChange}, fieldState: {invalid, error}}) => (
-          <>
+        render={({field: {onChange}, fieldState: {error, invalid}}) => (
+          <div className="py-4">
             <HCaptcha
               onVerify={token => onChange(token)}
               ref={captcha}
@@ -146,17 +131,16 @@ export const Step2B: React.FC<Step2BProps> = ({setStep}) => {
                 {error?.message}
               </p>
             )}
-          </>
+          </div>
         )}
       />
-
       <IonButton
         className="mb-0 mt-4 mx-0 overflow-hidden rounded-lg w-full"
         expand="full"
         type="submit"
       >
         <IonIcon slot="start" ios={paperPlaneOutline} md={paperPlaneSharp} />
-        Send Code
+        Send Login Link
       </IonButton>
     </form>
   );

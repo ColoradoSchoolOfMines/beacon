@@ -18,26 +18,57 @@ import {
 import {useState} from "react";
 
 import {Step1} from "~/components/auth/Step1";
-import {Step2B} from "~/components/auth/Step2B";
-import {Step3B} from "~/components/auth/Step3B";
-import {Step4B} from "~/components/auth/Step4B";
+import {Step2A} from "~/components/auth/Step2A";
+import {Step3A} from "~/components/auth/Step3A";
+import {Step4A} from "~/components/auth/Step4A";
 
 /**
  * Auth step
  */
 export enum AuthStep {
-  STEP1,
-  STEP2B,
-  STEP3B,
-  STEP4B,
+  STEP1 = "1",
+  STEP2A = "2A",
+  STEP3A = "3A",
+  STEP4A = "4A",
 }
+
+/**
+ * Get step from raw string
+ * @param raw Raw string
+ * @returns Step or undefined
+ */
+const getStep = (raw: string) => {
+  switch (raw.toUpperCase()) {
+    case AuthStep.STEP1:
+      return AuthStep.STEP1;
+
+    case AuthStep.STEP2A:
+      return AuthStep.STEP2A;
+
+    case AuthStep.STEP3A:
+      return AuthStep.STEP3A;
+
+    case AuthStep.STEP4A:
+      return AuthStep.STEP4A;
+
+    default:
+      return undefined;
+  }
+};
 
 /**
  * Auth page component
  * @returns JSX
  */
 export const Auth: React.FC = () => {
-  const [step, setStep] = useState<AuthStep>(AuthStep.STEP1);
+  // Constants
+  const defaultStep =
+    new URLSearchParams(window.location.search).get("step") ?? "";
+
+  // Hooks
+  const [step, setStep] = useState<AuthStep>(
+    getStep(defaultStep) ?? AuthStep.STEP1,
+  );
 
   return (
     <IonPage>
@@ -64,14 +95,14 @@ export const Auth: React.FC = () => {
                   case AuthStep.STEP1:
                     return <Step1 step={step} setStep={setStep} />;
 
-                  case AuthStep.STEP2B:
-                    return <Step2B step={step} setStep={setStep} />;
+                  case AuthStep.STEP2A:
+                    return <Step2A step={step} setStep={setStep} />;
 
-                  case AuthStep.STEP3B:
-                    return <Step3B step={step} setStep={setStep} />;
+                  case AuthStep.STEP3A:
+                    return <Step3A step={step} setStep={setStep} />;
 
-                  case AuthStep.STEP4B:
-                    return <Step4B step={step} setStep={setStep} />;
+                  case AuthStep.STEP4A:
+                    return <Step4A step={step} setStep={setStep} />;
 
                   default:
                     return <p>Unknown step {step}</p>;

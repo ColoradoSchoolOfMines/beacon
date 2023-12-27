@@ -18,6 +18,11 @@ const GIT_COMMIT = import.meta.env.GIT_COMMIT;
 const GIT_BRANCH = import.meta.env.GIT_BRANCH;
 
 /**
+ * Functions base URL
+ */
+const FUNCTIONS_URL = import.meta.env.VITE_FUNCTIONS_URL ?? "/";
+
+/**
  * hCaptcha site key
  */
 const HCAPTCHA_SITE_KEY = import.meta.env.VITE_HCAPTCHA_SITE_KEY;
@@ -34,12 +39,13 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Validate variables
 const vars = {
-  VERSION: VERSION,
-  GIT_COMMIT: GIT_COMMIT,
-  GIT_BRANCH: GIT_BRANCH,
-  HCAPTCHA_SITE_KEY: HCAPTCHA_SITE_KEY,
-  SUPABASE_URL: SUPABASE_URL,
-  SUPABASE_ANON_KEY: SUPABASE_ANON_KEY,
+  VERSION,
+  GIT_COMMIT,
+  GIT_BRANCH,
+  FUNCTIONS_URL,
+  HCAPTCHA_SITE_KEY,
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY,
 };
 
 const missing = [];
@@ -55,6 +61,7 @@ if (missing.length > 0) {
 }
 
 export {
+  FUNCTIONS_URL,
   GIT_BRANCH,
   GIT_COMMIT,
   HCAPTCHA_SITE_KEY,

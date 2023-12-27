@@ -66,15 +66,15 @@ export const Step1: React.FC<Step1Props> = ({setStep}) => {
         className="m-0 overflow-hidden rounded-lg w-full"
         color="secondary"
         expand="full"
-        onClick={() => setStep(AuthStep.STEP2B)}
+        onClick={() => setStep(AuthStep.STEP2A)}
       >
         <IonIcon slot="start" ios={callOutline} md={callSharp} />
-        Authenticate With Phone
+        Authenticate With Email
       </IonButton>
 
       <IonNote className="block mt-2 text-center">
         Create a <b>new</b> account or log into an <b>existing</b> account with
-        a phone.
+        an email address.
       </IonNote>
     </>
   );

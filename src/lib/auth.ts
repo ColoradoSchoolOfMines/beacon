@@ -101,28 +101,3 @@ export const getPasskey = async (
       userVerification: "preferred",
     },
   })) ?? undefined;
-
-/**
- * Check if OTP is supported
- * @returns Whether or not OTP is supported
- */
-export const checkOtpSupport = () =>
-  navigator.credentials !== undefined &&
-  (window as Record<string, any>).OTPCredential !== undefined;
-
-/**
- * Get an OTP
- * @returns OTP
- */
-export const getOtp = async () =>
-  (
-    (await navigator.credentials.get({
-      mediation: "optional",
-      otp: {
-        transport: [
-          "sms",
-        ],
-      },
-      signal: AbortSignal.timeout(timeout),
-    } as CredentialRequestOptions)) as OTPCredential | null
-  )?.code ?? undefined;

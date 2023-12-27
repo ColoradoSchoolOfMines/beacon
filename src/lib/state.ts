@@ -4,7 +4,6 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
 import {User} from "@supabase/supabase-js";
-import {PhoneNumber} from "libphonenumber-js/core";
 import {merge} from "lodash-es";
 import {create} from "zustand";
 import {createJSONStorage, devtools, persist} from "zustand/middleware";
@@ -28,15 +27,15 @@ interface Store {
   setError: (newError?: GlobalError) => void;
 
   /**
-   * Temporary phone number
+   * Temporary email address
    */
-  phoneNumber?: PhoneNumber;
+  email?: string;
 
   /**
-   * Set the temporary phone number
-   * @param newPhoneNumber New phone number
+   * Set the temporary email address
+   * @param newEmail New email address or undefined to clear the email address
    */
-  setPhoneNumber: (newPhoneNumber?: PhoneNumber) => void;
+  setEmail: (newEmail?: string) => void;
 
   /**
    * Current user
@@ -101,11 +100,11 @@ export const useStore = create<Store>()(
               ...state,
               error,
             })),
-          phoneNumber: undefined,
-          setPhoneNumber: (phoneNumber?: PhoneNumber) =>
+          email: undefined,
+          setEmail: (email?: string) =>
             set(state => ({
               ...state,
-              phoneNumber,
+              email,
             })),
           user: undefined,
           setUser: (user: User) =>
