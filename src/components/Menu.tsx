@@ -32,7 +32,8 @@ import {useLocation} from "react-router-dom";
 import logo from "~/assets/logo.png";
 import {useStore} from "~/lib/state";
 import {client} from "~/lib/supabase";
-import {checkRequiredAuthState, RequiredAuthState} from "~/lib/types";
+import {RequiredAuthState} from "~/lib/types";
+import {checkRequiredAuthState} from "~/lib/utils";
 
 interface NavItem {
   url: string;

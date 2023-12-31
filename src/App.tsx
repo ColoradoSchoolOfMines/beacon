@@ -2,77 +2,37 @@
  * @file App shell
  */
 
-// Styles
-import "@ionic/react/css/core.css";
-import "@ionic/react/css/normalize.css";
-import "@ionic/react/css/structure.css";
-import "@ionic/react/css/typography.css";
-import "@ionic/react/css/padding.css";
-import "@ionic/react/css/float-elements.css";
-import "@ionic/react/css/text-alignment.css";
-import "@ionic/react/css/text-transformation.css";
-import "@ionic/react/css/flex-utils.css";
-import "@ionic/react/css/display.css";
-import "@unocss/reset/tailwind.css";
-import "virtual:uno.css";
-import "~/styles/theme.css";
-
-import {
-  IonAlert,
-  IonApp,
-  IonRouterOutlet,
-  IonSplitPane,
-  isPlatform,
-  setupIonicReact,
-} from "@ionic/react";
-import {IonReactRouter} from "@ionic/react-router";
-import {useEffect, useRef} from "react";
-import {Route} from "react-router-dom";
+import {IonAlert, IonRouterOutlet, IonSplitPane} from "@ionic/react";
+import {User} from "@supabase/supabase-js";
+import {useEffect} from "react";
+import {Route, useHistory, useLocation} from "react-router-dom";
 
 import {Step1} from "~/components/auth/Step1";
 import {Step2A} from "~/components/auth/Step2A";
 import {Step3A} from "~/components/auth/Step3A";
 import {Step4A} from "~/components/auth/Step4A";
 import {Menu} from "~/components/Menu";
-import {RouteAuthGuard} from "~/components/RouteAuthGuard";
 import {useStore} from "~/lib/state";
 import {client} from "~/lib/supabase";
 import {RequiredAuthState, Theme} from "~/lib/types";
+import {checkRequiredAuthState} from "~/lib/utils";
 import {Error} from "~/pages/Error";
 import {Home} from "~/pages/Home";
 import {Nearby} from "~/pages/Nearby";
 import {Settings} from "~/pages/Settings";
 
-// Set the user from the session (Block because this doesn't make a request to the backend)
-const session = await client.auth.getSession();
-useStore.getState().setUser(session?.data?.session?.user);
-
-// Set the user from the backend (Don't block because this makes a request to the backend)
-// eslint-disable-next-line unicorn/prefer-top-level-await
-(async () => {
-  // If there is no user, return
-  if (useStore.getState().user === undefined) {
-    return;
-  }
-
-  // Get the user
-  const {data, error} = await client.auth.getUser();
-
-  // If the backend returns an error or the user is null, sign out
-  if (data.user === null || error !== null) {
-    await client.auth.signOut();
-    return;
-  }
-
-  // Set the user
-  useStore.getState().setUser(data.user);
-})();
-
-// Initialize Ionic
-setupIonicReact({
-  animated: true,
-  mode: isPlatform("ios") ? "ios" : "md",
-});
+/**
+ * Route authentication states
+ */
+const routeAuthStates: Record<string, RequiredAuthState> = {
+  "/": RequiredAuthState.ANY,
+  "/auth/step/1": RequiredAuthState.UNAUTHENTICATED,
+  "/auth/step/2a": RequiredAuthState.UNAUTHENTICATED,
+  "/auth/step/3a": RequiredAuthState.UNAUTHENTICATED,
+  "/auth/step/4a": RequiredAuthState.AUTHENTICATED,
+  "/nearby": RequiredAuthState.AUTHENTICATED,
+  "/settings": RequiredAuthState.AUTHENTICATED,
+};
 
 /**
  * App shell
@@ -80,128 +40,141 @@ setupIonicReact({
  */
 export const App: React.FC = () => {
   // Hooks
-  const router = useRef<IonReactRouter>(null);
+  const history = useHistory();
+  const location = useLocation();
+
   const message = useStore(state => state.message);
   const setMessage = useStore(state => state.setMessage);
+  const user = useStore(state => state.user);
   const setUser = useStore(state => state.setUser);
   const theme = useStore(state => state.theme);
+
+  // Methods
+  /**
+   * Guard the current route
+   * @param pathname Current route pathname
+   * @param user Current user
+   */
+  const guardRoute = (pathname: string, user: User | undefined) => {
+    // Get the required authentication state
+    const requiredState = routeAuthStates[pathname];
+
+    // Check the required authentication state
+    if (
+      requiredState !== undefined &&
+      !checkRequiredAuthState(user, requiredState)
+    ) {
+      // Redirect
+      switch (requiredState) {
+        case RequiredAuthState.UNAUTHENTICATED:
+          history.push("/nearby");
+          break;
+
+        case RequiredAuthState.AUTHENTICATED:
+          history.push("/auth/step/1");
+          break;
+      }
+    }
+  };
 
   // Effects
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === Theme.DARK);
   }, [theme]);
 
+  useEffect(() => guardRoute(location.pathname, user), [location, user]);
+
   // Subscribe to auth changes
-  client.auth.onAuthStateChange((event, session) => {
-    switch (event) {
-      case "INITIAL_SESSION":
-      case "SIGNED_IN":
-      case "TOKEN_REFRESHED":
-      case "USER_UPDATED":
-        // Set the user
-        setUser(session?.user);
-        break;
+  useEffect(() => {
+    client.auth.onAuthStateChange((event, session) => {
+      let newUser = user;
 
-      case "SIGNED_OUT": {
-        // Display the message
-        setMessage({
-          name: "Signed out",
-          description: "You have been signed out",
-        });
+      switch (event) {
+        case "INITIAL_SESSION":
+        case "SIGNED_IN":
+        case "TOKEN_REFRESHED":
+        case "USER_UPDATED":
+          // Set the user
+          newUser = session?.user;
+          break;
 
-        // Clear the user
-        setUser();
+        case "SIGNED_OUT": {
+          // Display the message
+          setMessage({
+            name: "Signed out",
+            description: "You have been signed out",
+          });
 
-        // Redirect to the auth page
-        router.current?.history.push("/auth/step/1");
+          // Clear the user
+          newUser = undefined;
+        }
       }
-    }
-  });
+
+      // Set the user
+      if (newUser !== user) {
+        setUser(newUser);
+      }
+
+      // Guard the route against the new authentication state
+      guardRoute(location.pathname, newUser);
+    });
+  }, []);
 
   return (
-    <IonApp>
-      <IonReactRouter ref={router}>
-        <IonAlert
-          isOpen={message !== undefined}
-          header={message?.name}
-          subHeader={message?.description}
-          buttons={["OK"]}
-          onIonAlertDidDismiss={() => setMessage()}
-        />
+    <>
+      <IonAlert
+        isOpen={message !== undefined}
+        header={message?.name}
+        subHeader={message?.description}
+        buttons={["OK"]}
+        onIonAlertDidDismiss={() => setMessage()}
+      />
 
-        <IonSplitPane contentId="main">
-          <Menu />
+      <IonSplitPane contentId="main">
+        <Menu />
 
-          <IonRouterOutlet id="main">
-            {/* Routes that are always available */}
-            <Route path="/" exact={true}>
-              <Home />
-            </Route>
+        <IonRouterOutlet id="main">
+          {/* Routes that are always available */}
+          <Route path="/" exact={true}>
+            <Home />
+          </Route>
 
-            {/* Unauthenticated routes */}
-            <RouteAuthGuard
-              requiredState={RequiredAuthState.UNAUTHENTICATED}
-              redirectTo="/nearby"
-              path="/auth/step/1"
-              exact={true}
-            >
-              <Step1 />
-            </RouteAuthGuard>
+          {/* Unauthenticated routes */}
+          <Route path="/auth/step/1" exact={true}>
+            <Step1 />
+          </Route>
 
-            <RouteAuthGuard
-              requiredState={RequiredAuthState.UNAUTHENTICATED}
-              redirectTo="/nearby"
-              path="/auth/step/2a"
-              exact={true}
-            >
-              <Step2A />
-            </RouteAuthGuard>
+          <Route path="/auth/step/2a" exact={true}>
+            <Step2A />
+          </Route>
 
-            <RouteAuthGuard
-              requiredState={RequiredAuthState.UNAUTHENTICATED}
-              redirectTo="/nearby"
-              path="/auth/step/3a"
-              exact={true}
-            >
-              <Step3A />
-            </RouteAuthGuard>
+          <Route path="/auth/step/3a" exact={true}>
+            <Step3A />
+          </Route>
 
-            {/* Authenticated routes */}
-            <RouteAuthGuard
-              requiredState={RequiredAuthState.AUTHENTICATED}
-              path="/auth/step/4a"
-              exact={true}
-            >
-              <Step4A />
-            </RouteAuthGuard>
+          {/* Authenticated routes */}
+          <Route path="/auth/step/4a" exact={true}>
+            <Step4A />
+          </Route>
 
-            <RouteAuthGuard
-              requiredState={RequiredAuthState.AUTHENTICATED}
-              path="/nearby"
-              exact={true}
-            >
-              <Nearby />
-            </RouteAuthGuard>
+          <Route path="/nearby" exact={true}>
+            <Nearby />
+          </Route>
 
-            <RouteAuthGuard
-              requiredState={RequiredAuthState.AUTHENTICATED}
-              path="/settings"
-              exact={true}
-            >
-              <Settings />
-            </RouteAuthGuard>
+          <Route path="/settings" exact={true}>
+            <Settings />
+          </Route>
 
-            {/* Catch-all route */}
-            <Route>
-              <Error
-                name="404"
-                description="The requested page was not found!"
-                homeButton={true}
-              />
-            </Route>
-          </IonRouterOutlet>
-        </IonSplitPane>
-      </IonReactRouter>
-    </IonApp>
+          {/* Catch-all route */}
+          <Route>
+            <Error
+              name="404"
+              description="The requested page was not found!"
+              homeButton={true}
+            />
+          </Route>
+        </IonRouterOutlet>
+      </IonSplitPane>
+    </>
   );
 };
