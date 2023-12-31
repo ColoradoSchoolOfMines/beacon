@@ -9,7 +9,6 @@ import {create} from "zustand";
 import {createJSONStorage, devtools, persist} from "zustand/middleware";
 
 import {stateStorage} from "~/lib/storage";
-import {client} from "~/lib/supabase";
 import {DeepPartial, GlobalError, Theme} from "~/lib/types";
 
 /**

@@ -62,17 +62,20 @@ npm run supabase:reset
 
 ### Frontend Environment Variables
 
-| Name                     | Description                    | Default/Required                                                                                                        |
-| ------------------------ | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| `VITE_FUNCTIONS_URL`     | The base URL of the functions  | Defaults to `/`                                                                                                         |
-| `VITE_HCAPTCHA_SITE_KEY` | The hCaptcha site key          | Required (:warning: **Must be manually set** :warning:; see [hCaptcha dashboard](https://dashboard.hcaptcha.com/sites)) |
-| `VITE_SUPABASE_URL`      | The Supabase API URL           | Required (Automatically set by the setup script)                                                                        |
-| `VITE_SUPABASE_ANON_KEY` | The Supabase API anonymous key | Required (Automatically set by the setup script)                                                                        |
+| Name                     | Description                            | Default/Required                                                                                                        |
+| ------------------------ | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `VITE_FUNCTIONS_URL`     | The absolute base URL of the functions | Defaults to the Supabase API URL                                                                                        |
+| `VITE_HCAPTCHA_SITE_KEY` | The hCaptcha site key                  | Required (:warning: **Must be manually set** :warning:; see [hCaptcha dashboard](https://dashboard.hcaptcha.com/sites)) |
+| `VITE_SUPABASE_URL`      | The Supabase API URL                   | Required (Automatically set by the setup script)                                                                        |
+| `VITE_SUPABASE_ANON_KEY` | The Supabase API anonymous key         | Required (Automatically set by the setup script)                                                                        |
 
 ### Function Environment Variables
 
 | Name                          | Description                           | Default/Required                                        |
 | ----------------------------- | ------------------------------------- | ------------------------------------------------------- |
+| `WEBAUTHN_RP_ID`              | The WebAuthn Relying Party ID         | Defaults `beacon.localhost`                             |
+| `WEBAUTHN_RP_ORIGIN`          | The WebAuthn Relying Party origin     | Defaults to `https://WEBAUTHN_RP_ID`                    |
+| `WEBAUTHN_RP_NAME`            | The WebAuthn Relying Party name       | Defaults to `Beacon Social Network`                     |
 | `HCAPTCHA_SITE_KEY`           | The hCaptcha site key                 | Required (:warning: **Must be manually set** :warning:) |
 | `HCAPTCHA_SECRET_KEY`         | The hCaptcha secret key               | Required (:warning: **Must be manually set** :warning:) |
 | `X_SUPABASE_DB_URL`           | The Supabase database URL             | Required (Automatically set by the runtime)             |

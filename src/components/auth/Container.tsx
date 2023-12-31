@@ -17,12 +17,16 @@ import {
 } from "@ionic/react";
 
 export interface ContainerProps {
+  /**
+   * Children
+   */
   children: React.ReactNode;
 }
 
 /**
  * Auth page container component
  * @param props Props
+ * @param props.children Children
  * @returns JSX
  */
 export const Container: React.FC<ContainerProps> = ({children}) => (

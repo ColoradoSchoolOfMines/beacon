@@ -3,6 +3,23 @@
  */
 
 /**
+ * WebAuthn Relaying Party ID
+ */
+const WEBAUTHN_RP_ID = Deno.env.get("WEBAUTHN_RP_ID") ?? "beacon.localhost";
+
+/**
+ * WebAuthn Relaying Party origin
+ */
+const WEBAUTHN_RP_ORIGIN =
+  Deno.env.get("WEBAUTHN_RP_ORIGIN") ?? `https://${WEBAUTHN_RP_ID}`;
+
+/**
+ * WebAuthn Relaying Party name
+ */
+const WEBAUTHN_RP_NAME =
+  Deno.env.get("WEBAUTHN_RP_NAME") ?? "Beacon Social Network";
+
+/**
  * hCaptcha site key
  */
 const HCAPTCHA_SITE_KEY = Deno.env.get("HCAPTCHA_SITE_KEY")!;
@@ -56,6 +73,9 @@ const X_SUPABASE_JWT_EXP = Number.parseInt(
 
 // Validate variables
 const vars = {
+  WEBAUTHN_RP_ID,
+  WEBAUTHN_RP_ORIGIN,
+  WEBAUTHN_RP_NAME,
   HCAPTCHA_SITE_KEY,
   HCAPTCHA_SECRET_KEY,
   X_SUPABASE_DB_URL,
@@ -79,6 +99,9 @@ if (missing.length > 0) {
 }
 
 export {
+  WEBAUTHN_RP_ID,
+  WEBAUTHN_RP_ORIGIN,
+  WEBAUTHN_RP_NAME,
   HCAPTCHA_SITE_KEY,
   HCAPTCHA_SECRET_KEY,
   X_SUPABASE_DB_URL,

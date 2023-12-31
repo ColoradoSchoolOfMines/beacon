@@ -92,6 +92,7 @@ const dbSetupFiles = [
   join(root, "supabase", "sql", "triggers.sql"),
   join(root, "supabase", "sql", "security.sql"),
   join(root, "supabase", "sql", "views.sql"),
+  join(root, "supabase", "sql", "after.sql"),
 ];
 
 /**
@@ -230,7 +231,7 @@ export const writeEnvs = async () => {
   try {
     await writeFile(
       frontendEnv,
-      `# VITE_FUNCTIONS_URL = "/"
+      `# VITE_FUNCTIONS_URL = ""
 VITE_HCAPTCHA_SITE_KEY = "" # Required!
 VITE_SUPABASE_URL = ${JSON.stringify(status.apiUrl)}
 VITE_SUPABASE_ANON_KEY = ${JSON.stringify(status.anonKey)}`,
@@ -247,7 +248,10 @@ VITE_SUPABASE_ANON_KEY = ${JSON.stringify(status.anonKey)}`,
   try {
     await writeFile(
       functionsEnv,
-      `HCAPTCHA_SITE_KEY = "" # Required!
+      `# WEBAUTHN_RP_ID = "beacon.localhost"
+# WEBAUTHN_RP_ORIGIN = "https://beacon.localhost"
+# WEBAUTHN_RP_NAME = "Beacon Social Network"
+HCAPTCHA_SITE_KEY = "" # Required!
 HCAPTCHA_SECRET_KEY = "" # Required!
 X_SUPABASE_DB_URL = ${JSON.stringify(status.dbUrl)}
 X_SUPABASE_URL = ${JSON.stringify(status.apiUrl)}

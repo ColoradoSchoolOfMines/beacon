@@ -22,6 +22,8 @@ export interface RouteAuthGuardProps extends RouteProps {
 /**
  * Route auth guard wrapper component
  * @param props Route props
+ * @param props.requiredState Required authentication state
+ * @param props.redirectTo Where to redirect to if the current authentication state does not match the required authentication state
  * @returns JSX
  */
 export const RouteAuthGuard: React.FC<RouteAuthGuardProps> = ({

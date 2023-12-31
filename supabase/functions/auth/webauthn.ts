@@ -3,27 +3,44 @@
  */
 
 import {Context} from "oak";
-import {generateUserClient, serviceRoleClient} from "~/lib/supabase.ts";
-import {fido2, rpId} from "~/lib/webauthn.ts";
+import {
+  WEBAUTHN_RP_ID,
+  WEBAUTHN_RP_NAME,
+  WEBAUTHN_RP_ORIGIN,
+} from "~/lib/vars.ts";
+import {decodeBase64Url, encodeBase64Url} from "std/encoding/base64url.ts";
 import {generateSession} from "~/lib/auth.ts";
+import {generateUserClient, serviceRoleClient} from "~/lib/supabase.ts";
 import {generateUsername} from "~/lib/user.ts";
 import {z} from "zod";
+import {
+  generateAuthenticationOptions,
+  generateRegistrationOptions,
+  verifyAuthenticationResponse,
+  verifyRegistrationResponse,
+  VerifiedAuthenticationResponse,
+  VerifiedRegistrationResponse,
+} from "@simplewebauthn/server";
 
 /**
- * UTF-8 text decoder
+ * Supported algorithm IDs
+ * @see https://www.iana.org/assignments/cose/cose.xhtml#algorithms
  */
-const textDecoder = new TextDecoder();
+const algorithmIDs = [
+  -8, // EdDSA
+  -36, // ES512
+  -35, // ES384
+  -7, // ES256
+  -259, // RS512
+  -258, // RS384
+  -257, // RS256
+];
 
 /**
- * UTF-8 text encoder
- */
-const textEncoder = new TextEncoder();
-
-/**
- * Begin a WebAuthn attestation
+ * Begin a WebAuthn registration
  * @param ctx Router context
  */
-export const beginAttestation = async (ctx: Context) => {
+export const beginRegistration = async (ctx: Context) => {
   // Create a Supabase client for the current user
   const [userClient, user] = await generateUserClient(ctx, true);
 
@@ -43,67 +60,103 @@ export const beginAttestation = async (ctx: Context) => {
     ctx.throw(400, "Missing profile");
   }
 
-  // Generate the attestation options
-  const attestationOptions = await fido2.attestationOptions();
-  const encodedChallenge = textDecoder.decode(attestationOptions.challenge);
+  // Generate the username
+  const username = generateUsername(data[0].color, data[0].emoji);
+
+  // Generate the registration options
+  const registrationOptions = await generateRegistrationOptions({
+    rpID: WEBAUTHN_RP_ID,
+    rpName: WEBAUTHN_RP_NAME,
+    userID: user.id,
+    userName: username,
+    userDisplayName: username,
+    authenticatorSelection: {
+      requireResidentKey: true,
+      residentKey: "required",
+      userVerification: "preferred",
+    },
+    supportedAlgorithmIDs: algorithmIDs,
+    timeout: 60000,
+  });
 
   // Store the challenge
   const challengeRes = await serviceRoleClient
     .schema("auth")
     .from("webauthn_challenges")
     .insert({
-      type: "assertion",
-      challenge: encodedChallenge,
+      type: "registration",
+      challenge: registrationOptions.challenge,
     })
     .select("id")
-    .single();
+    .single<{
+      id: string;
+    }>();
 
   if (challengeRes.error !== null || challengeRes.data === null) {
     console.error(challengeRes.error ?? "Failed to store challenge");
     ctx.throw(500, "Failed to store challenge");
   }
 
-  // Generate the username
-  const username = generateUsername(data[0].color, data[0].emoji);
-
-  // Return the attestation options
+  // Return the registration options
   ctx.response.status = 200;
   ctx.response.body = {
-    challengeId: challengeRes.data.id,
-    options: {
-      ...attestationOptions,
-      challenge: encodedChallenge,
-      user: {
-        id: user.id,
-        name: username,
-        displayName: username,
-      },
-    },
+    challengeId: challengeRes.data!.id,
+    options: registrationOptions,
   };
 };
 
 /**
- * End a WebAuthn attestation request body schema
+ * End a WebAuthn registration request body schema
  */
-const endAttestationSchema = z.object({
+const endRegistrationSchema = z.object({
   challengeId: z.string(),
-  credentialId: z.string(),
   response: z.object({
-    attestationObject: z.string(),
-    clientDataJSON: z.string(),
+    id: z.string(),
+    rawId: z.string(),
+    response: z.object({
+      clientDataJSON: z.string(),
+      attestationObject: z.string(),
+      authenticatorData: z.string().optional(),
+      transports: z
+        .array(
+          z.enum([
+            "ble",
+            "cable",
+            "hybrid",
+            "internal",
+            "nfc",
+            "smart-card",
+            "usb",
+          ]),
+        )
+        .optional(),
+      publicKeyAlgorithm: z.number().optional(),
+      publicKey: z.string().optional(),
+    }),
+    authenticatorAttachment: z.enum(["cross-platform", "platform"]).optional(),
+    clientExtensionResults: z.object({
+      appid: z.boolean().optional(),
+      credProps: z
+        .object({
+          rk: z.boolean().optional(),
+        })
+        .optional(),
+      hmacCreateSecret: z.boolean().optional(),
+    }),
+    type: z.enum(["public-key"]),
   }),
 });
 
 /**
- * End a WebAuthn attestation
+ * End a WebAuthn registration
  * @param ctx Router context
  */
-export const endAttestation = async (ctx: Context) => {
+export const endRegistration = async (ctx: Context) => {
   // Parse and validate the request body
   const raw = await ctx.request.body().value;
-  let req: z.infer<typeof endAttestationSchema>;
+  let req: z.infer<typeof endRegistrationSchema>;
   try {
-    req = await endAttestationSchema.parseAsync(raw);
+    req = await endRegistrationSchema.parseAsync(raw);
   } catch (err) {
     console.error(err);
     ctx.throw(400, err);
@@ -117,50 +170,59 @@ export const endAttestation = async (ctx: Context) => {
     .schema("auth")
     .from("webauthn_challenges")
     .select("id, challenge")
-    .eq("type", "attestation")
+    .eq("type", "registration")
     .eq("id", req.challengeId)
-    .single();
+    .single<{
+      id: string;
+      challenge: string;
+    }>();
 
   if (challengeRes.error !== null || challengeRes.data === null) {
     ctx.throw(401, "Invalid challenge");
   }
 
-  // Verify the attestation
-  const result = await fido2.attestationResult(
-    {
-      rawId: textEncoder.encode(req.credentialId),
-      response: {
-        attestationObject: req.response.attestationObject,
-        clientDataJSON: req.response.clientDataJSON,
-      },
-    },
-    {
-      challenge: challengeRes.data.challenge,
-      origin: `https://${rpId}`,
-      factor: "either",
-      rpId,
-    },
-  );
-
-  // Get the credential counter, raw ID, and public key
-  const credentialId = result.clientData.get("rawId");
-  const counter = result.authnrData.get("counter");
-  const credentialPublicKeyPem = result.authnrData.get(
-    "credentialPublicKeyPem",
-  );
+  // Verify the registration
+  let result: VerifiedRegistrationResponse | undefined = undefined;
+  try {
+    result = await verifyRegistrationResponse({
+      response: req.response,
+      expectedChallenge: challengeRes.data.challenge,
+      expectedOrigin: WEBAUTHN_RP_ORIGIN,
+      expectedRPID: WEBAUTHN_RP_ID,
+      requireUserVerification: true,
+      supportedAlgorithmIDs: algorithmIDs,
+    });
+  } catch (error) {
+    console.error(error);
+  }
 
   if (
-    counter === undefined ||
+    result === undefined ||
+    result.verified === false ||
+    result.registrationInfo === undefined
+  ) {
+    ctx.throw(401, "Invalid registration");
+  }
+
+  // Encode the credential data
+  const credentialId = req.response.id;
+  const credentialPublicKeyPem = encodeBase64Url(
+    result.registrationInfo.credentialPublicKey,
+  );
+  const counter = result.registrationInfo.counter;
+
+  if (
     credentialId === undefined ||
-    credentialPublicKeyPem === undefined
+    credentialPublicKeyPem === undefined ||
+    counter === undefined
   ) {
     ctx.throw(400, "Missing credential data");
   }
 
-  // Attest the credential
-  const attestWebauthnCrdential = await serviceRoleClient
+  // Register the credential
+  const registerWebauthnCrdential = await serviceRoleClient
     .schema("auth")
-    .rpc("attest_webauthn_credential", {
+    .rpc("register_webauthn_credential", {
       _user_id: user.id,
       _challenge_id: challengeRes.data.id,
       _credential_id: credentialId,
@@ -168,8 +230,8 @@ export const endAttestation = async (ctx: Context) => {
       _public_key: credentialPublicKeyPem,
     });
 
-  if (attestWebauthnCrdential.error !== null) {
-    console.error(attestWebauthnCrdential.error);
+  if (registerWebauthnCrdential.error !== null) {
+    console.error(registerWebauthnCrdential.error);
     ctx.throw(500, "Failed to store credential");
   }
 
@@ -177,62 +239,82 @@ export const endAttestation = async (ctx: Context) => {
 };
 
 /**
- * Begin a WebAuthn assertion
+ * Begin a WebAuthn authentication
  * @param ctx Router context
  */
-export const beginAssertion = async (ctx: Context) => {
-  // Generate the assertion options
-  const assertionOptions = await fido2.assertionOptions();
-  const encodedChallenge = textDecoder.decode(assertionOptions.challenge);
+export const beginAuthentication = async (ctx: Context) => {
+  // Generate the authentication options
+  const authenticationOptions = await generateAuthenticationOptions({
+    rpID: WEBAUTHN_RP_ID,
+    userVerification: "preferred",
+    timeout: 60000,
+  });
 
   // Store the challenge
   const challengeRes = await serviceRoleClient
     .schema("auth")
     .from("webauthn_challenges")
     .insert({
-      type: "assertion",
-      challenge: encodedChallenge,
+      type: "authentication",
+      challenge: authenticationOptions.challenge,
     })
     .select("id")
-    .single();
+    .single<{
+      id: string;
+    }>();
 
   if (challengeRes.error !== null || challengeRes.data === null) {
     console.error(challengeRes.error ?? "Failed to store challenge");
     ctx.throw(500, "Failed to store challenge");
   }
 
-  // Return the assertion options
+  // Return the authentication options
   ctx.response.status = 200;
   ctx.response.body = {
-    ...assertionOptions,
     challengeId: challengeRes.data.id,
-    challenge: encodedChallenge,
+    options: authenticationOptions,
   };
 };
 
 /**
- * End a WebAuthn assertion request body schema
+ * End a WebAuthn authentication request body schema
  */
-const endAssertionSchema = z.object({
+const endAuthenticationSchema = z.object({
   challengeId: z.string(),
   credentialId: z.string(),
   response: z.object({
-    authenticatorData: z.string(),
-    clientDataJSON: z.string(),
-    signature: z.string(),
+    id: z.string(),
+    rawId: z.string(),
+    response: z.object({
+      clientDataJSON: z.string(),
+      authenticatorData: z.string(),
+      signature: z.string(),
+      userHandle: z.string().optional(),
+    }),
+    authenticatorAttachment: z.enum(["cross-platform", "platform"]).optional(),
+    clientExtensionResults: z.object({
+      appid: z.boolean().optional(),
+      credProps: z
+        .object({
+          rk: z.boolean().optional(),
+        })
+        .optional(),
+      hmacCreateSecret: z.boolean().optional(),
+    }),
+    type: z.enum(["public-key"]),
   }),
 });
 
 /**
- * End a WebAuthn assertion
+ * End a WebAuthn authentication
  * @param ctx Router context
  */
-export const endAssertion = async (ctx: Context) => {
+export const endAuthentication = async (ctx: Context) => {
   // Parse and validate the request body
   const raw = await ctx.request.body().value;
-  let req: z.infer<typeof endAssertionSchema>;
+  let req: z.infer<typeof endAuthenticationSchema>;
   try {
-    req = await endAssertionSchema.parseAsync(raw);
+    req = await endAuthenticationSchema.parseAsync(raw);
   } catch (err) {
     console.error(err);
     ctx.throw(400, err);
@@ -243,16 +325,25 @@ export const endAssertion = async (ctx: Context) => {
     .schema("auth")
     .from("webauthn_challenges")
     .select("id, challenge")
-    .eq("type", "assertion")
+    .eq("type", "authentication")
     .eq("id", req.challengeId)
-    .single();
+    .single<{
+      id: string;
+      challenge: string;
+    }>();
 
   const credentialRes = await serviceRoleClient
     .schema("auth")
     .from("webauthn_credentials")
-    .select("id, user_id, counter, public_key")
-    .eq("user_id", req.credentialId)
-    .single();
+    .select("id, user_id, credential_id, counter, public_key")
+    .eq("credential_id", req.credentialId)
+    .single<{
+      id: string;
+      user_id: string;
+      credential_id: string;
+      counter: number;
+      public_key: string;
+    }>();
 
   if (
     challengeRes.error !== null ||
@@ -268,47 +359,54 @@ export const endAssertion = async (ctx: Context) => {
     ctx.throw(400, "Invalid challenge or credential");
   }
 
-  // Verify the assertion
-  await fido2.assertionResult(
-    {
-      rawId: textEncoder.encode(req.credentialId),
-      response: {
-        authenticatorData: textEncoder.encode(req.response.authenticatorData),
-        clientDataJSON: req.response.clientDataJSON,
-        signature: req.response.signature,
+  // Verify the authentication
+  let result: VerifiedAuthenticationResponse | undefined = undefined;
+  try {
+    result = await verifyAuthenticationResponse({
+      authenticator: {
+        counter: credentialRes.data.counter,
+        credentialID: decodeBase64Url(credentialRes.data.credential_id),
+        credentialPublicKey: decodeBase64Url(credentialRes.data.public_key),
       },
-    },
-    {
-      challenge: challengeRes.data.challenge,
-      factor: "either",
-      origin: `https://${rpId}`,
-      prevCounter: credentialRes.data.counter,
-      publicKey: credentialRes.data.public_key,
-      rpId,
-      userHandle: null,
-    },
-  );
+      expectedChallenge: challengeRes.data.challenge,
+      expectedOrigin: WEBAUTHN_RP_ORIGIN,
+      expectedRPID: WEBAUTHN_RP_ID,
+      response: req.response,
+    });
+  } catch (error) {
+    console.error(error);
+  }
 
-  // Assert the credential
-  const assertWebauthnCrdential = await serviceRoleClient
+  if (
+    result === undefined ||
+    result.verified === false ||
+    result.authenticationInfo === undefined
+  ) {
+    ctx.throw(401, "Invalid authentication");
+  }
+
+  // Extract the result
+  const newCounter = result.authenticationInfo.newCounter;
+
+  // Authenticate the credential
+  const authenticateWebauthnCrdential = await serviceRoleClient
     .schema("auth")
-    .rpc("assert_webauthn_credential", {
+    .rpc("authenticate_webauthn_credential", {
       _user_id: credentialRes.data.user_id,
       _challenge_id: challengeRes.data.id,
       _credential_id: credentialRes.data.id,
+      _new_counter: newCounter,
     });
 
-  if (assertWebauthnCrdential.error !== null) {
-    console.error(assertWebauthnCrdential.error);
+  if (authenticateWebauthnCrdential.error !== null) {
+    console.error(authenticateWebauthnCrdential.error);
     ctx.throw(500, "Failed to store credential");
   }
 
   // Generate a session
-  const session = await generateSession(req.credentialId, "webauthn");
+  const session = await generateSession(credentialRes.data.user_id, "webauthn");
 
   // Return the session
   ctx.response.status = 200;
-  ctx.response.body = {
-    session,
-  };
+  ctx.response.body = session;
 };

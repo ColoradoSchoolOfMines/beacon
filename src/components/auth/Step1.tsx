@@ -3,11 +3,19 @@
  */
 
 import {IonButton, IonIcon, IonNote} from "@ionic/react";
+import {startAuthentication} from "@simplewebauthn/browser";
+import {AuthenticationResponseJSON} from "@simplewebauthn/typescript-types";
 import {callOutline, callSharp, keyOutline, keySharp} from "ionicons/icons";
 import {useHistory} from "react-router-dom";
 
 import {Container} from "~/components/auth/Container";
-import {checkPasskeySupport, getPasskey} from "~/lib/auth";
+import {
+  beginAuthentication,
+  checkPasskeySupport,
+  endAuthentication,
+} from "~/lib/api/auth";
+import {useStore} from "~/lib/state";
+import {client} from "~/lib/supabase";
 
 /**
  * Auth step 1 component
@@ -16,26 +24,61 @@ import {checkPasskeySupport, getPasskey} from "~/lib/auth";
 export const Step1: React.FC = () => {
   // Hooks
   const history = useHistory();
+  const setError = useStore(state => state.setError);
 
   // Methods
   /**
    * Attempt to use a passkey to login
    */
   const usePasskey = async () => {
-    let passkey: Credential | undefined;
+    // Begin the authentication
+    const beginRes = await beginAuthentication();
 
-    try {
-      passkey = await getPasskey([
-        3,
-        4,
-        5,
-      ]);
-    } catch (error) {
-      console.warn("Failed to get passkey", error);
+    // Handle error
+    if (!beginRes.ok) {
       return;
     }
 
-    console.log(passkey);
+    // Generate the credential
+    let response: AuthenticationResponseJSON | undefined = undefined;
+
+    try {
+      response = await startAuthentication(beginRes.options!);
+    } catch {
+      // Empty
+    }
+
+    if (response === undefined) {
+      setError({
+        name: "Passkey Error",
+        description: "Failed to create credential",
+      });
+
+      return;
+    }
+
+    // End the authentication
+    const endRes = await endAuthentication(
+      beginRes.challengeId!,
+      response.id,
+      response,
+    );
+
+    // Handle error
+    if (!endRes) {
+      return;
+    }
+
+    // Update the session
+    await client.auth.setSession({
+      // eslint-disable-next-line camelcase
+      access_token: endRes.session!.access_token,
+      // eslint-disable-next-line camelcase
+      refresh_token: endRes.session!.refresh_token,
+    });
+
+    // Go to nearby
+    history.push("/nearby");
   };
 
   /**

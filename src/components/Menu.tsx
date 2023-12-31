@@ -141,17 +141,19 @@ export const Menu: React.FC = () => {
           <div className="flex-1" />
 
           {/* Footer */}
-          <IonItem>
-            <IonButton
-              className="mx-0 my-4 overflow-hidden rounded-lg w-full"
-              size="default"
-              expand="full"
-              onClick={signOut}
-            >
-              <IonIcon slot="start" ios={logOutOutline} md={logOutSharp} />
-              <IonLabel>Sign out</IonLabel>
-            </IonButton>
-          </IonItem>
+          {checkRequiredAuthState(user, RequiredAuthState.AUTHENTICATED) && (
+            <IonItem>
+              <IonButton
+                className="mx-0 my-4 overflow-hidden rounded-lg w-full"
+                size="default"
+                expand="full"
+                onClick={signOut}
+              >
+                <IonIcon slot="start" ios={logOutOutline} md={logOutSharp} />
+                <IonLabel>Sign out</IonLabel>
+              </IonButton>
+            </IonItem>
+          )}
         </IonList>
       </IonContent>
     </IonMenu>

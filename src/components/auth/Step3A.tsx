@@ -10,7 +10,7 @@ import {useHistory} from "react-router-dom";
 import {z} from "zod";
 
 import {Container} from "~/components/auth/Container";
-import {checkPasskeySupport} from "~/lib/auth";
+import {checkPasskeySupport} from "~/lib/api/auth";
 import {useStore} from "~/lib/state";
 import {client} from "~/lib/supabase";
 

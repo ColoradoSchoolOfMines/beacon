@@ -3,6 +3,8 @@
  */
 
 import {IonButton, IonIcon, IonNote} from "@ionic/react";
+import {startRegistration} from "@simplewebauthn/browser";
+import {RegistrationResponseJSON} from "@simplewebauthn/typescript-types";
 import {
   checkmarkOutline,
   checkmarkSharp,
@@ -12,7 +14,7 @@ import {
 import {useHistory} from "react-router-dom";
 
 import {Container} from "~/components/auth/Container";
-import {beginAttestation, endAttestation} from "~/lib/api/auth";
+import {beginRegistration, endRegistration} from "~/lib/api/auth";
 import {useStore} from "~/lib/state";
 
 /**
@@ -29,28 +31,24 @@ export const Step4A: React.FC = () => {
    * Setup a passkey
    */
   const setup = async () => {
-    // Begin the attestation
-    let [
-      challengeId,
-      options,
-      ok,
-    ] = await beginAttestation();
+    // Begin the registration
+    const beginRes = await beginRegistration();
 
     // Handle error
-    if (!ok) {
+    if (!beginRes.ok) {
       return;
     }
 
-    // Create the credential
-    const credential = (await navigator.credentials.create({
-      publicKey: options,
-    })) as PublicKeyCredential;
+    // Generate the credential
+    let response: RegistrationResponseJSON | undefined = undefined;
 
-    const credentialResponse =
-      credential.response as AuthenticatorAttestationResponse;
+    try {
+      response = await startRegistration(beginRes.options!);
+    } catch {
+      // Empty
+    }
 
-    // Handle error
-    if (credential === null) {
+    if (response === undefined) {
       setError({
         name: "Passkey Error",
         description: "Failed to create credential",
@@ -59,14 +57,11 @@ export const Step4A: React.FC = () => {
       return;
     }
 
-    // End the attestation
-    ok = await endAttestation(challengeId!, credential.id, {
-      attestationObject: credentialResponse.attestationObject,
-      clientDataJSON: credentialResponse.clientDataJSON,
-    });
+    // End the registration
+    const endRes = await endRegistration(beginRes.challengeId!, response);
 
     // Handle error
-    if (!ok) {
+    if (!endRes) {
       return;
     }
 

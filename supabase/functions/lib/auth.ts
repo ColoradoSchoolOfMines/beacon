@@ -3,12 +3,14 @@
  */
 
 import {JWTPayload, SignJWT} from "jose";
+import {Session} from "@supabase/supabase-js";
 import {
   X_SUPABASE_JWT_SECRET,
   X_SUPABASE_JWT_ISSUER,
   X_SUPABASE_JWT_EXP,
 } from "~/lib/vars.ts";
 import {crypto} from "std/crypto/mod.ts";
+import {encodeBase64Url} from "std/encoding/base64url.ts";
 import {serviceRoleClient} from "~/lib/supabase.ts";
 
 /**
@@ -82,12 +84,27 @@ const decodedSupabaseJwtSecret = new TextEncoder().encode(
 );
 
 /**
+ * Generate a cryptographically secure token
+ * @see https://github.com/supabase/gotrue/blob/41aac695029a8e8ae6aeed87e71abea63030c799/internal/crypto/crypto.go#L17C13-L17C13
+ * @returns Token
+ */
+const generateToken = () => {
+  const raw = crypto.getRandomValues(new Uint8Array(16));
+  const encoded = encodeBase64Url(raw);
+
+  return encoded;
+};
+
+/**
  * Generate a session for a user
  * @param rawId Raw user ID
  * @param method Authentication method
  * @returns Minted JWT session
  */
-export const generateSession = async (rawId: string, method: string) => {
+export const generateSession = async (
+  rawId: string,
+  method: string,
+): Promise<Session> => {
   // Get the user
   const userRes1 = await serviceRoleClient.auth.admin.getUserById(rawId);
 
@@ -129,12 +146,31 @@ export const generateSession = async (rawId: string, method: string) => {
     throw new Error("Failed to create session");
   }
 
+  // Create a refresh token entry
+  const refreshToken = generateToken();
+  const refreshTokenRes = await serviceRoleClient
+    .schema("auth")
+    .from("refresh_tokens")
+    .insert({
+      instance_id: "00000000-0000-0000-0000-000000000000",
+      token: refreshToken,
+      user_id: userRes1.data.user.id,
+      revoked: false,
+      created_at: now.toISOString(),
+      updated_at: now.toISOString(),
+      session_id: sessionRes.data.id,
+    });
+
+  if (refreshTokenRes.error !== null) {
+    throw new Error("Failed to create refresh token");
+  }
+
   /**
-   * Mint a JWT
+   * Mint an access token JWT
    *
    * @see https://github.com/supabase/gotrue/blob/af83b34850dfe7d983a41a8fb5d02d325ee72985/internal/api/token.go#L295
    */
-  const jwt = await new SignJWT({
+  const accessToken = await new SignJWT({
     aud: userRes1.data.user.aud,
     iss: X_SUPABASE_JWT_ISSUER,
     sub: userRes1.data.user.id,
@@ -147,7 +183,6 @@ export const generateSession = async (rawId: string, method: string) => {
     amr: [
       {
         method,
-        // Sure hope this isn't running in 2038 :)
         timestamp: Math.floor(now.getTime() / 1000),
       },
     ],
@@ -156,9 +191,18 @@ export const generateSession = async (rawId: string, method: string) => {
     .setProtectedHeader({
       alg: "HS256",
     })
-    .setIssuedAt()
+    .setIssuedAt(now)
     .setExpirationTime(X_SUPABASE_JWT_EXP)
     .sign(decodedSupabaseJwtSecret);
 
-  return jwt;
+  return {
+    access_token: accessToken,
+    token_type: "bearer",
+    expires_in: X_SUPABASE_JWT_EXP,
+    expires_at: Math.floor(
+      new Date(now.getTime() + X_SUPABASE_JWT_EXP).getTime() / 1000,
+    ),
+    refresh_token: refreshToken,
+    user: userRes1.data.user,
+  };
 };

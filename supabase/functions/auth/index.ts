@@ -5,19 +5,19 @@
 import {Application, Router, isHttpError} from "oak";
 import {CORS} from "oak_cors";
 import {
-  beginAttestation,
-  endAttestation,
-  beginAssertion,
-  endAssertion,
+  beginRegistration,
+  endRegistration,
+  beginAuthentication,
+  endAuthentication,
 } from "~/auth/webauthn.ts";
 // Initialize the router
 const router = new Router();
 
 // Register routes
-router.post("/auth/webauthn/attestate/begin", beginAttestation);
-router.post("/auth/webauthn/attestate/end", endAttestation);
-router.post("/auth/webauthn/assertion/begin", beginAssertion);
-router.post("/auth/webauthn/assertion/end", endAssertion);
+router.post("/auth/webauthn/registration/begin", beginRegistration);
+router.post("/auth/webauthn/registration/end", endRegistration);
+router.post("/auth/webauthn/authentication/begin", beginAuthentication);
+router.post("/auth/webauthn/authentication/end", endAuthentication);
 
 // Initialize the app
 const app = new Application();
@@ -25,16 +25,18 @@ const app = new Application();
 app.use(async (ctx, next) => {
   try {
     await next();
-  } catch (err) {
-    if (isHttpError(err)) {
-      ctx.response.status = err.status;
+  } catch (error) {
+    console.error(error);
+
+    if (isHttpError(error)) {
+      ctx.response.status = error.status;
     } else {
       ctx.response.status = 500;
     }
 
     ctx.response.body = {
-      name: err.name,
-      description: err.message,
+      name: error.name,
+      description: error.message,
     };
     ctx.response.type = "json";
   }

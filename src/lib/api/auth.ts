@@ -2,100 +2,92 @@
  * @file Backend authentication API
  */
 
+import {
+  AuthenticationResponseJSON,
+  PublicKeyCredentialCreationOptionsJSON,
+  PublicKeyCredentialRequestOptionsJSON,
+  RegistrationResponseJSON,
+} from "@simplewebauthn/typescript-types";
 import {Session} from "@supabase/supabase-js";
 
 import {client} from "~/lib/supabase";
 
 /**
- * UTF-8 text decoder
+ * Check if passkey is supported
+ * @returns Whether or not passkey is supported
  */
-const textDecoder = new TextDecoder();
+export const checkPasskeySupport = () =>
+  navigator.credentials !== undefined &&
+  window.PublicKeyCredential !== undefined;
 
 /**
- * UTF-8 text encoder
- */
-const textEncoder = new TextEncoder();
-
-/**
- * Begin a WebAuthn attestation response
+ * Begin a WebAuthn registration response
  * @param T Whether or not the request was successful
  */
-type beginAttestationResponse<T extends boolean> = [
-  T extends true ? string : undefined,
-  T extends true ? PublicKeyCredentialCreationOptions : undefined,
-  T,
-];
+interface beginRegistrationResponse<T extends boolean> {
+  /**
+   * Challenge ID
+   */
+  challengeId: T extends true ? string : undefined;
+
+  /**
+   * Credential creation options
+   */
+  options: T extends true ? PublicKeyCredentialCreationOptionsJSON : undefined;
+
+  /**
+   * Whether or not the request was successful
+   */
+  ok: T;
+}
 
 /**
- * Begin a WebAuthn attestation
+ * Begin a WebAuthn registration
  * @returns Challenge ID, credential creation options, and whether or not the request was successful
  */
-export const beginAttestation = async (): Promise<
-  beginAttestationResponse<boolean>
+export const beginRegistration = async (): Promise<
+  beginRegistrationResponse<boolean>
 > => {
   // Make the request
   const {data, error} = await client.functions.invoke<{
     challengeId: string;
-    options: PublicKeyCredentialCreationOptions & {
-      challenge: string;
-      user: {
-        id: string;
-        name: string;
-        displayName: string;
-      };
-    };
-  }>("auth/webauthn/attestate/begin", {method: "POST"});
+    options: PublicKeyCredentialCreationOptionsJSON;
+  }>("auth/webauthn/registration/begin", {method: "POST"});
 
   // Handle error
   if (data === null || error !== null) {
-    return [
-      undefined,
-      undefined,
-      false,
-    ] as beginAttestationResponse<false>;
+    return {
+      challengeId: undefined,
+      options: undefined,
+      ok: false,
+    } as beginRegistrationResponse<false>;
   }
 
-  return [
-    data.challengeId,
-    {
-      ...data.options,
-      challenge: textEncoder.encode(data.options.challenge).buffer,
-      user: {
-        ...data.options.user,
-        id: textEncoder.encode(data.options.user.id).buffer,
-      },
-    },
-    true,
-  ] as beginAttestationResponse<true>;
+  return {
+    challengeId: data.challengeId,
+    options: data.options,
+    ok: true,
+  } as beginRegistrationResponse<true>;
 };
 
 /**
- * End a WebAuthn attestation
+ * End a WebAuthn registration
  * @param challengeId Challenge ID
- * @param credentialID Credential ID
- * @param response Attestation response
- * @returns Whether or not the attestation was successful
+ * @param response Registration response
+ * @returns Whether or not the registration was successful
  */
-export const endAttestation = async (
+export const endRegistration = async (
   challengeId: string,
-  credentialID: string,
-  response: {
-    attestationObject: ArrayBufferLike;
-    clientDataJSON: ArrayBufferLike;
-  },
+  response: RegistrationResponseJSON,
 ) => {
   // Make the request
   const {error} = await client.functions.invoke<never>(
-    "auth/webauthn/attestate/end",
+    "auth/webauthn/registration/end",
     {
       method: "POST",
       body: {
         challengeId,
-        credentialID,
-        response: {
-          attestationObject: textDecoder.decode(response.attestationObject),
-          clientDataJSON: textDecoder.decode(response.clientDataJSON),
-        },
+        response,
       },
     },
   );
@@ -104,64 +96,86 @@ export const endAttestation = async (
 };
 
 /**
- * Begin a WebAuthn assertion response
+ * Begin a WebAuthn authentication response
  * @param T Whether or not the request was successful
  */
-type beginAssertionResponse<T extends boolean> = [
-  T extends true ? PublicKeyCredentialRequestOptions : undefined,
-  T,
-];
+interface beginAuthenticationResponse<T extends boolean> {
+  /**
+   * Challenge ID
+   */
+  challengeId: T extends true ? string : undefined;
+
+  /**
+   * Credential request options
+   */
+  options: T extends true ? PublicKeyCredentialRequestOptionsJSON : undefined;
+
+  /**
+   * Whether or not the request was successful
+   */
+  ok: T;
+}
 
 /**
- * Begin a WebAuthn assertion
- * @returns Credential request options
+ * Begin a WebAuthn authentication
+ * @returns Challenge ID, credential request options, and whether or not the request was successful
  */
-export const beginAssertion = async (): Promise<
-  beginAssertionResponse<boolean>
+export const beginAuthentication = async (): Promise<
+  beginAuthenticationResponse<boolean>
 > => {
   // Make the request
-  const {data, error} =
-    await client.functions.invoke<PublicKeyCredentialRequestOptions>(
-      "auth/webauthn/assertion/begin",
-      {method: "POST"},
-    );
+  const {data, error} = await client.functions.invoke<{
+    challengeId: string;
+    options: PublicKeyCredentialRequestOptionsJSON;
+  }>("auth/webauthn/authentication/begin", {method: "POST"});
 
   // Handle error
   if (data === null || error !== null) {
-    return [undefined, false] as beginAssertionResponse<false>;
+    return {
+      challengeId: undefined,
+      options: undefined,
+      ok: false,
+    } as beginAuthenticationResponse<false>;
   }
 
-  return [data, true] as beginAssertionResponse<true>;
+  return {
+    challengeId: data.challengeId,
+    options: data.options,
+    ok: true,
+  } as beginAuthenticationResponse<true>;
 };
 
 /**
- * End a WebAuthn assertion response
+ * End a WebAuthn authentication response
  * @param T Whether or not the request was successful
  */
-type endAssertionResponse<T extends boolean> = [
-  T extends true ? Session : undefined,
-  T,
-];
+interface endAuthenticationResponse<T extends boolean> {
+  /**
+   * Session
+   */
+  session: T extends true ? Session : undefined;
+
+  /**
+   * Whether or not the request was successful
+   */
+  ok: T;
+}
 
 /**
- * End a WebAuthn assertion
+ * End a WebAuthn authentication
  * @param challengeId Challenge ID
  * @param credentialId Credential ID
- * @param response Assertion response
- * @returns Whether or not the assertion was successful
+ * @param response Authentication response
+ * @returns Session and whether or not the request was successful
  */
-export const endAssertion = async (
+export const endAuthentication = async (
   challengeId: string,
   credentialId: string,
-  response: {
-    authenticatorData: string;
-    clientDataJSON: string;
-    signature: string;
-  },
-): Promise<endAssertionResponse<boolean>> => {
+  response: AuthenticationResponseJSON,
+): Promise<endAuthenticationResponse<boolean>> => {
   // Make the request
   const {data, error} = await client.functions.invoke<Session>(
-    "auth/webauthn/assertion/end",
+    "auth/webauthn/authentication/end",
     {
       method: "POST",
       body: {
@@ -174,8 +188,14 @@ export const endAssertion = async (
 
   // Handle error
   if (data === null || error !== null) {
-    return [undefined, false] as endAssertionResponse<false>;
+    return {
+      session: undefined,
+      ok: false,
+    } as endAuthenticationResponse<false>;
   }
 
-  return [data, true] as endAssertionResponse<true>;
+  return {
+    session: data,
+    ok: true,
+  } as endAuthenticationResponse<true>;
 };

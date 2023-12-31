@@ -4,8 +4,8 @@
  * Prerequisites: before.sql
  */
 
--- Create the webauthn credential after a challenge has been attested
-CREATE OR REPLACE FUNCTION auth.attest_webauthn_credential(
+-- Register the webauthn credential after a challenge has been successfully verified
+CREATE OR REPLACE FUNCTION auth.register_webauthn_credential(
   -- User ID
   _user_id UUID,
 
@@ -46,8 +46,8 @@ BEGIN
 END;
 $$;
 
--- Update the webauthn credential after a challenge has been asserted
-CREATE OR REPLACE FUNCTION auth.assert_webauthn_credential(
+-- Update the webauthn credential after a challenge has been successfully verified
+CREATE OR REPLACE FUNCTION auth.authenticate_webauthn_credential(
   -- User ID
   _user_id UUID,
 
@@ -55,7 +55,10 @@ CREATE OR REPLACE FUNCTION auth.assert_webauthn_credential(
   _challenge_id UUID,
 
   -- Credential ID
-  _credential_id TEXT
+  _credential_id TEXT,
+
+  -- New credential counter
+  _new_counter INTEGER
 )
 RETURNS VOID
 SECURITY DEFINER
@@ -64,7 +67,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
   -- Update the credential
-  UPDATE auth.webauthn_credentials SET counter = counter + 1 WHERE user_id = _user_id AND credential_id = _credential_id;
+  UPDATE auth.webauthn_credentials SET counter = _new_counter WHERE user_id = _user_id AND credential_id = _credential_id;
 
   -- Delete the challenge
   DELETE FROM auth.webauthn_challenges

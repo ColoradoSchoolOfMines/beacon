@@ -89,16 +89,18 @@ export interface Database {
           identity_data: Json
           last_sign_in_at: string | null
           provider: string
+          provider_id: string
           updated_at: string | null
           user_id: string
         }
         Insert: {
           created_at?: string | null
           email?: string | null
-          id: string
+          id?: string
           identity_data: Json
           last_sign_in_at?: string | null
           provider: string
+          provider_id: string
           updated_at?: string | null
           user_id: string
         }
@@ -109,6 +111,7 @@ export interface Database {
           identity_data?: Json
           last_sign_in_at?: string | null
           provider?: string
+          provider_id?: string
           updated_at?: string | null
           user_id?: string
         }
@@ -116,6 +119,7 @@ export interface Database {
           {
             foreignKeyName: "identities_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           }
@@ -171,6 +175,7 @@ export interface Database {
           {
             foreignKeyName: "mfa_amr_claims_session_id_fkey"
             columns: ["session_id"]
+            isOneToOne: false
             referencedRelation: "sessions"
             referencedColumns: ["id"]
           }
@@ -202,6 +207,7 @@ export interface Database {
           {
             foreignKeyName: "mfa_challenges_auth_factor_id_fkey"
             columns: ["factor_id"]
+            isOneToOne: false
             referencedRelation: "mfa_factors"
             referencedColumns: ["id"]
           }
@@ -242,6 +248,7 @@ export interface Database {
           {
             foreignKeyName: "mfa_factors_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           }
@@ -285,6 +292,7 @@ export interface Database {
           {
             foreignKeyName: "refresh_tokens_session_id_fkey"
             columns: ["session_id"]
+            isOneToOne: false
             referencedRelation: "sessions"
             referencedColumns: ["id"]
           }
@@ -325,6 +333,7 @@ export interface Database {
           {
             foreignKeyName: "saml_providers_sso_provider_id_fkey"
             columns: ["sso_provider_id"]
+            isOneToOne: false
             referencedRelation: "sso_providers"
             referencedColumns: ["id"]
           }
@@ -368,12 +377,14 @@ export interface Database {
           {
             foreignKeyName: "saml_relay_states_flow_state_id_fkey"
             columns: ["flow_state_id"]
+            isOneToOne: false
             referencedRelation: "flow_state"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "saml_relay_states_sso_provider_id_fkey"
             columns: ["sso_provider_id"]
+            isOneToOne: false
             referencedRelation: "sso_providers"
             referencedColumns: ["id"]
           }
@@ -397,8 +408,12 @@ export interface Database {
           created_at: string | null
           factor_id: string | null
           id: string
+          ip: unknown | null
           not_after: string | null
+          refreshed_at: string | null
+          tag: string | null
           updated_at: string | null
+          user_agent: string | null
           user_id: string
         }
         Insert: {
@@ -406,8 +421,12 @@ export interface Database {
           created_at?: string | null
           factor_id?: string | null
           id: string
+          ip?: unknown | null
           not_after?: string | null
+          refreshed_at?: string | null
+          tag?: string | null
           updated_at?: string | null
+          user_agent?: string | null
           user_id: string
         }
         Update: {
@@ -415,14 +434,19 @@ export interface Database {
           created_at?: string | null
           factor_id?: string | null
           id?: string
+          ip?: unknown | null
           not_after?: string | null
+          refreshed_at?: string | null
+          tag?: string | null
           updated_at?: string | null
+          user_agent?: string | null
           user_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "sessions_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           }
@@ -454,6 +478,7 @@ export interface Database {
           {
             foreignKeyName: "sso_domains_sso_provider_id_fkey"
             columns: ["sso_provider_id"]
+            isOneToOne: false
             referencedRelation: "sso_providers"
             referencedColumns: ["id"]
           }
@@ -641,6 +666,7 @@ export interface Database {
           {
             foreignKeyName: "webauthn_credentials_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           }
@@ -651,21 +677,12 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
-      assert_webauthn_credential: {
+      authenticate_webauthn_credential: {
         Args: {
           _user_id: string
           _challenge_id: string
           _credential_id: string
-        }
-        Returns: undefined
-      }
-      attest_webauthn_credential: {
-        Args: {
-          _user_id: string
-          _challenge_id: string
-          _credential_id: string
-          _counter: number
-          _public_key: string
+          _new_counter: number
         }
         Returns: undefined
       }
@@ -676,6 +693,16 @@ export interface Database {
       jwt: {
         Args: Record<PropertyKey, never>
         Returns: Json
+      }
+      register_webauthn_credential: {
+        Args: {
+          _user_id: string
+          _challenge_id: string
+          _credential_id: string
+          _counter: number
+          _public_key: string
+        }
+        Returns: undefined
       }
       role: {
         Args: Record<PropertyKey, never>
@@ -691,7 +718,7 @@ export interface Database {
       code_challenge_method: "s256" | "plain"
       factor_status: "unverified" | "verified"
       factor_type: "totp" | "webauthn"
-      webauthn_challenge_type: "attestation" | "assertion"
+      webauthn_challenge_type: "registration" | "authentication"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -719,24 +746,28 @@ export interface Database {
           {
             foreignKeyName: "comment_reports_comment_id_fkey"
             columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "cached_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comment_reports_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
             referencedRelation: "comments"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "comment_reports_comment_id_fkey"
             columns: ["comment_id"]
+            isOneToOne: false
             referencedRelation: "public_comments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "comment_reports_comment_id_fkey"
-            columns: ["comment_id"]
-            referencedRelation: "cached_comments"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "comment_reports_reporter_id_fkey"
             columns: ["reporter_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           }
@@ -765,24 +796,28 @@ export interface Database {
           {
             foreignKeyName: "comment_votes_comment_id_fkey"
             columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "cached_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comment_votes_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
             referencedRelation: "comments"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "comment_votes_comment_id_fkey"
             columns: ["comment_id"]
+            isOneToOne: false
             referencedRelation: "public_comments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "comment_votes_comment_id_fkey"
-            columns: ["comment_id"]
-            referencedRelation: "cached_comments"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "comment_votes_voter_id_fkey"
             columns: ["voter_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           }
@@ -829,79 +864,53 @@ export interface Database {
           {
             foreignKeyName: "comments_parent_id_fkey"
             columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "cached_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
             referencedRelation: "comments"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "comments_parent_id_fkey"
             columns: ["parent_id"]
+            isOneToOne: false
             referencedRelation: "public_comments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "comments_parent_id_fkey"
-            columns: ["parent_id"]
-            referencedRelation: "cached_comments"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "comments_post_id_fkey"
             columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "cached_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
             referencedRelation: "posts"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "comments_post_id_fkey"
             columns: ["post_id"]
+            isOneToOne: false
             referencedRelation: "public_posts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "comments_post_id_fkey"
-            columns: ["post_id"]
-            referencedRelation: "cached_posts"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "comments_private_commenter_id_fkey"
             columns: ["private_commenter_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           }
         ]
-      }
-      countries: {
-        Row: {
-          alpha2: string
-          alpha3: string
-          dialing_codes: string[]
-          flag: string
-          id: string
-          name: string
-          numeric: number
-          tld: string | null
-        }
-        Insert: {
-          alpha2: string
-          alpha3: string
-          dialing_codes: string[]
-          flag?: string
-          id?: string
-          name: string
-          numeric: number
-          tld?: string | null
-        }
-        Update: {
-          alpha2?: string
-          alpha3?: string
-          dialing_codes?: string[]
-          flag?: string
-          id?: string
-          name?: string
-          numeric?: number
-          tld?: string | null
-        }
-        Relationships: []
       }
       locations: {
         Row: {
@@ -926,6 +935,7 @@ export interface Database {
           {
             foreignKeyName: "locations_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           }
@@ -951,24 +961,28 @@ export interface Database {
           {
             foreignKeyName: "post_reports_post_id_fkey"
             columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "cached_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_reports_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
             referencedRelation: "posts"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "post_reports_post_id_fkey"
             columns: ["post_id"]
+            isOneToOne: false
             referencedRelation: "public_posts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "post_reports_post_id_fkey"
-            columns: ["post_id"]
-            referencedRelation: "cached_posts"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "post_reports_reporter_id_fkey"
             columns: ["reporter_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           }
@@ -997,24 +1011,28 @@ export interface Database {
           {
             foreignKeyName: "post_votes_post_id_fkey"
             columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "cached_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_votes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
             referencedRelation: "posts"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "post_votes_post_id_fkey"
             columns: ["post_id"]
+            isOneToOne: false
             referencedRelation: "public_posts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "post_votes_post_id_fkey"
-            columns: ["post_id"]
-            referencedRelation: "cached_posts"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "post_votes_voter_id_fkey"
             columns: ["voter_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           }
@@ -1064,6 +1082,7 @@ export interface Database {
           {
             foreignKeyName: "posts_private_poster_id_fkey"
             columns: ["private_poster_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           }
@@ -1089,41 +1108,8 @@ export interface Database {
           {
             foreignKeyName: "profiles_id_fkey"
             columns: ["id"]
+            isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      telecom_carriers: {
-        Row: {
-          country_id: string
-          gateways: string[]
-          id: string
-          mms_gateways: string[]
-          name: string
-          sms_gateways: string[]
-        }
-        Insert: {
-          country_id: string
-          gateways?: string[]
-          id?: string
-          mms_gateways: string[]
-          name: string
-          sms_gateways: string[]
-        }
-        Update: {
-          country_id?: string
-          gateways?: string[]
-          id?: string
-          mms_gateways?: string[]
-          name?: string
-          sms_gateways?: string[]
-        }
-        Relationships: [
-          {
-            foreignKeyName: "telecom_carriers_country_id_fkey"
-            columns: ["country_id"]
-            referencedRelation: "countries"
             referencedColumns: ["id"]
           }
         ]
@@ -1188,12 +1174,6 @@ export interface Database {
       }
     }
     Functions: {
-      alpha2_to_flag: {
-        Args: {
-          _alpha2: string
-        }
-        Returns: string
-      }
       anonymized_distance: {
         Args: {
           _a: unknown
@@ -1250,3 +1230,83 @@ export interface Database {
     }
   }
 }
+
+export type Tables<
+  PublicTableNameOrOptions extends
+    | keyof (Database["public"]["Tables"] & Database["public"]["Views"])
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+        Database[PublicTableNameOrOptions["schema"]]["Views"])
+    : never = never
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : PublicTableNameOrOptions extends keyof (Database["public"]["Tables"] &
+      Database["public"]["Views"])
+  ? (Database["public"]["Tables"] &
+      Database["public"]["Views"])[PublicTableNameOrOptions] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : never
+
+export type TablesInsert<
+  PublicTableNameOrOptions extends
+    | keyof Database["public"]["Tables"]
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    : never = never
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : PublicTableNameOrOptions extends keyof Database["public"]["Tables"]
+  ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : never
+
+export type TablesUpdate<
+  PublicTableNameOrOptions extends
+    | keyof Database["public"]["Tables"]
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    : never = never
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : PublicTableNameOrOptions extends keyof Database["public"]["Tables"]
+  ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : never
+
+export type Enums<
+  PublicEnumNameOrOptions extends
+    | keyof Database["public"]["Enums"]
+    | { schema: keyof Database },
+  EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
+    : never = never
+> = PublicEnumNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : PublicEnumNameOrOptions extends keyof Database["public"]["Enums"]
+  ? Database["public"]["Enums"][PublicEnumNameOrOptions]
+  : never

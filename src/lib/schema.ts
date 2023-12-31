@@ -35,24 +35,28 @@ export interface Database {
           {
             foreignKeyName: "comment_reports_comment_id_fkey";
             columns: ["comment_id"];
+            isOneToOne: false;
+            referencedRelation: "cached_comments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comment_reports_comment_id_fkey";
+            columns: ["comment_id"];
+            isOneToOne: false;
             referencedRelation: "comments";
             referencedColumns: ["id"];
           },
           {
             foreignKeyName: "comment_reports_comment_id_fkey";
             columns: ["comment_id"];
+            isOneToOne: false;
             referencedRelation: "public_comments";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "comment_reports_comment_id_fkey";
-            columns: ["comment_id"];
-            referencedRelation: "cached_comments";
             referencedColumns: ["id"];
           },
           {
             foreignKeyName: "comment_reports_reporter_id_fkey";
             columns: ["reporter_id"];
+            isOneToOne: false;
             referencedRelation: "users";
             referencedColumns: ["id"];
           },
@@ -81,24 +85,28 @@ export interface Database {
           {
             foreignKeyName: "comment_votes_comment_id_fkey";
             columns: ["comment_id"];
+            isOneToOne: false;
+            referencedRelation: "cached_comments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comment_votes_comment_id_fkey";
+            columns: ["comment_id"];
+            isOneToOne: false;
             referencedRelation: "comments";
             referencedColumns: ["id"];
           },
           {
             foreignKeyName: "comment_votes_comment_id_fkey";
             columns: ["comment_id"];
+            isOneToOne: false;
             referencedRelation: "public_comments";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "comment_votes_comment_id_fkey";
-            columns: ["comment_id"];
-            referencedRelation: "cached_comments";
             referencedColumns: ["id"];
           },
           {
             foreignKeyName: "comment_votes_voter_id_fkey";
             columns: ["voter_id"];
+            isOneToOne: false;
             referencedRelation: "users";
             referencedColumns: ["id"];
           },
@@ -145,79 +153,53 @@ export interface Database {
           {
             foreignKeyName: "comments_parent_id_fkey";
             columns: ["parent_id"];
+            isOneToOne: false;
+            referencedRelation: "cached_comments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comments_parent_id_fkey";
+            columns: ["parent_id"];
+            isOneToOne: false;
             referencedRelation: "comments";
             referencedColumns: ["id"];
           },
           {
             foreignKeyName: "comments_parent_id_fkey";
             columns: ["parent_id"];
+            isOneToOne: false;
             referencedRelation: "public_comments";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "comments_parent_id_fkey";
-            columns: ["parent_id"];
-            referencedRelation: "cached_comments";
             referencedColumns: ["id"];
           },
           {
             foreignKeyName: "comments_post_id_fkey";
             columns: ["post_id"];
+            isOneToOne: false;
+            referencedRelation: "cached_posts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comments_post_id_fkey";
+            columns: ["post_id"];
+            isOneToOne: false;
             referencedRelation: "posts";
             referencedColumns: ["id"];
           },
           {
             foreignKeyName: "comments_post_id_fkey";
             columns: ["post_id"];
+            isOneToOne: false;
             referencedRelation: "public_posts";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "comments_post_id_fkey";
-            columns: ["post_id"];
-            referencedRelation: "cached_posts";
             referencedColumns: ["id"];
           },
           {
             foreignKeyName: "comments_private_commenter_id_fkey";
             columns: ["private_commenter_id"];
+            isOneToOne: false;
             referencedRelation: "users";
             referencedColumns: ["id"];
           },
         ];
-      };
-      countries: {
-        Row: {
-          alpha2: string;
-          alpha3: string;
-          dialing_codes: string[];
-          flag: string;
-          id: string;
-          name: string;
-          numeric: number;
-          tld: string | null;
-        };
-        Insert: {
-          alpha2: string;
-          alpha3: string;
-          dialing_codes: string[];
-          flag?: string;
-          id?: string;
-          name: string;
-          numeric: number;
-          tld?: string | null;
-        };
-        Update: {
-          alpha2?: string;
-          alpha3?: string;
-          dialing_codes?: string[];
-          flag?: string;
-          id?: string;
-          name?: string;
-          numeric?: number;
-          tld?: string | null;
-        };
-        Relationships: [];
       };
       locations: {
         Row: {
@@ -242,6 +224,7 @@ export interface Database {
           {
             foreignKeyName: "locations_user_id_fkey";
             columns: ["user_id"];
+            isOneToOne: false;
             referencedRelation: "users";
             referencedColumns: ["id"];
           },
@@ -267,24 +250,28 @@ export interface Database {
           {
             foreignKeyName: "post_reports_post_id_fkey";
             columns: ["post_id"];
+            isOneToOne: false;
+            referencedRelation: "cached_posts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "post_reports_post_id_fkey";
+            columns: ["post_id"];
+            isOneToOne: false;
             referencedRelation: "posts";
             referencedColumns: ["id"];
           },
           {
             foreignKeyName: "post_reports_post_id_fkey";
             columns: ["post_id"];
+            isOneToOne: false;
             referencedRelation: "public_posts";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "post_reports_post_id_fkey";
-            columns: ["post_id"];
-            referencedRelation: "cached_posts";
             referencedColumns: ["id"];
           },
           {
             foreignKeyName: "post_reports_reporter_id_fkey";
             columns: ["reporter_id"];
+            isOneToOne: false;
             referencedRelation: "users";
             referencedColumns: ["id"];
           },
@@ -313,24 +300,28 @@ export interface Database {
           {
             foreignKeyName: "post_votes_post_id_fkey";
             columns: ["post_id"];
+            isOneToOne: false;
+            referencedRelation: "cached_posts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "post_votes_post_id_fkey";
+            columns: ["post_id"];
+            isOneToOne: false;
             referencedRelation: "posts";
             referencedColumns: ["id"];
           },
           {
             foreignKeyName: "post_votes_post_id_fkey";
             columns: ["post_id"];
+            isOneToOne: false;
             referencedRelation: "public_posts";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "post_votes_post_id_fkey";
-            columns: ["post_id"];
-            referencedRelation: "cached_posts";
             referencedColumns: ["id"];
           },
           {
             foreignKeyName: "post_votes_voter_id_fkey";
             columns: ["voter_id"];
+            isOneToOne: false;
             referencedRelation: "users";
             referencedColumns: ["id"];
           },
@@ -380,6 +371,7 @@ export interface Database {
           {
             foreignKeyName: "posts_private_poster_id_fkey";
             columns: ["private_poster_id"];
+            isOneToOne: false;
             referencedRelation: "users";
             referencedColumns: ["id"];
           },
@@ -405,41 +397,8 @@ export interface Database {
           {
             foreignKeyName: "profiles_id_fkey";
             columns: ["id"];
+            isOneToOne: false;
             referencedRelation: "users";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      telecom_carriers: {
-        Row: {
-          country_id: string;
-          gateways: string[];
-          id: string;
-          mms_gateways: string[];
-          name: string;
-          sms_gateways: string[];
-        };
-        Insert: {
-          country_id: string;
-          gateways?: string[];
-          id?: string;
-          mms_gateways: string[];
-          name: string;
-          sms_gateways: string[];
-        };
-        Update: {
-          country_id?: string;
-          gateways?: string[];
-          id?: string;
-          mms_gateways?: string[];
-          name?: string;
-          sms_gateways?: string[];
-        };
-        Relationships: [
-          {
-            foreignKeyName: "telecom_carriers_country_id_fkey";
-            columns: ["country_id"];
-            referencedRelation: "countries";
             referencedColumns: ["id"];
           },
         ];
@@ -482,3 +441,83 @@ export interface Database {
     };
   };
 }
+
+export type Tables<
+  PublicTableNameOrOptions extends
+    | keyof (Database["public"]["Tables"] & Database["public"]["Views"])
+    | {schema: keyof Database},
+  TableName extends PublicTableNameOrOptions extends {schema: keyof Database}
+    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+        Database[PublicTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = PublicTableNameOrOptions extends {schema: keyof Database}
+  ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R;
+    }
+    ? R
+    : never
+  : PublicTableNameOrOptions extends keyof (Database["public"]["Tables"] &
+        Database["public"]["Views"])
+    ? (Database["public"]["Tables"] &
+        Database["public"]["Views"])[PublicTableNameOrOptions] extends {
+        Row: infer R;
+      }
+      ? R
+      : never
+    : never;
+
+export type TablesInsert<
+  PublicTableNameOrOptions extends
+    | keyof Database["public"]["Tables"]
+    | {schema: keyof Database},
+  TableName extends PublicTableNameOrOptions extends {schema: keyof Database}
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = PublicTableNameOrOptions extends {schema: keyof Database}
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I;
+    }
+    ? I
+    : never
+  : PublicTableNameOrOptions extends keyof Database["public"]["Tables"]
+    ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
+        Insert: infer I;
+      }
+      ? I
+      : never
+    : never;
+
+export type TablesUpdate<
+  PublicTableNameOrOptions extends
+    | keyof Database["public"]["Tables"]
+    | {schema: keyof Database},
+  TableName extends PublicTableNameOrOptions extends {schema: keyof Database}
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = PublicTableNameOrOptions extends {schema: keyof Database}
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U;
+    }
+    ? U
+    : never
+  : PublicTableNameOrOptions extends keyof Database["public"]["Tables"]
+    ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
+        Update: infer U;
+      }
+      ? U
+      : never
+    : never;
+
+export type Enums<
+  PublicEnumNameOrOptions extends
+    | keyof Database["public"]["Enums"]
+    | {schema: keyof Database},
+  EnumName extends PublicEnumNameOrOptions extends {schema: keyof Database}
+    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = PublicEnumNameOrOptions extends {schema: keyof Database}
+  ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : PublicEnumNameOrOptions extends keyof Database["public"]["Enums"]
+    ? Database["public"]["Enums"][PublicEnumNameOrOptions]
+    : never;

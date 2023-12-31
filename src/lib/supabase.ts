@@ -6,7 +6,12 @@ import {SupabaseClient} from "@supabase/supabase-js";
 
 import {Database} from "~/lib/schema";
 import {useStore} from "~/lib/state";
-import {SUPABASE_ANON_KEY, SUPABASE_URL} from "~/lib/vars";
+import {FUNCTIONS_URL, SUPABASE_ANON_KEY, SUPABASE_URL} from "~/lib/vars";
+
+/**
+ * Functions URL prefix
+ */
+const FUNCTIONS_PREFIX = "/functions/v1";
 
 const setError = useStore.getState().setError;
 
@@ -25,6 +30,40 @@ export const client = new SupabaseClient<Database>(
        * @returns Fetch response
        */
       fetch: async (input, init) => {
+        // Rewrite functions URLs
+        if (FUNCTIONS_URL !== undefined) {
+          let url: URL;
+
+          if (typeof input === "string") {
+            url = new URL(input);
+          } else if (input instanceof Request) {
+            url = new URL(input.url);
+          } else if (input instanceof URL) {
+            url = input;
+          } else {
+            console.error("Invalid input", input);
+            throw new TypeError("Invalid input");
+          }
+
+          const prefixIndex = url.pathname.indexOf(FUNCTIONS_PREFIX);
+
+          if (prefixIndex === 0) {
+            url = new URL(
+              FUNCTIONS_URL +
+                url.pathname.slice(FUNCTIONS_PREFIX.length) +
+                url.search,
+            );
+
+            if (typeof input === "string") {
+              input = url.toString();
+            } else if (input instanceof Request) {
+              input = new Request(url.toString(), input);
+            } else if (input instanceof URL) {
+              input = url;
+            }
+          }
+        }
+
         const res = await fetch(input as any, init);
 
         if (!res.ok) {

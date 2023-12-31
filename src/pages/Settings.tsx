@@ -100,7 +100,7 @@ export const Settings: React.FC = () => {
             <IonItemDivider>
               <IonLabel>Miscellaneous</IonLabel>
             </IonItemDivider>
-            <IonItem onClick={resetSettings}>
+            <IonItem className="cursor-pointer" onClick={resetSettings}>
               <IonLabel>Reset all settings</IonLabel>
               <IonIcon slot="end" ios={refreshOutline} md={refreshSharp} />
             </IonItem>
