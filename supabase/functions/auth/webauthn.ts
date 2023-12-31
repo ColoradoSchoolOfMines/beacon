@@ -23,6 +23,11 @@ import {
 } from "@simplewebauthn/server";
 
 /**
+ * Challenge expiration time (In milliseconds)
+ */
+const expiresAfter = 300000;
+
+/**
  * Supported algorithm IDs
  * @see https://www.iana.org/assignments/cose/cose.xhtml#algorithms
  */
@@ -172,6 +177,7 @@ export const endRegistration = async (ctx: Context) => {
     .select("id, challenge")
     .eq("type", "registration")
     .eq("id", req.challengeId)
+    .gt("created_at", new Date(Date.now() - expiresAfter).toISOString())
     .single<{
       id: string;
       challenge: string;
@@ -327,6 +333,7 @@ export const endAuthentication = async (ctx: Context) => {
     .select("id, challenge")
     .eq("type", "authentication")
     .eq("id", req.challengeId)
+    .gt("created_at", new Date(Date.now() - expiresAfter).toISOString())
     .single<{
       id: string;
       challenge: string;

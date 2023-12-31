@@ -139,7 +139,6 @@ export const App: React.FC = () => {
             </Route>
 
             {/* Unauthenticated routes */}
-
             <RouteAuthGuard
               requiredState={RequiredAuthState.UNAUTHENTICATED}
               redirectTo="/nearby"

@@ -16,6 +16,14 @@ CREATE EXTENSION
 IF NOT EXISTS postgis
 WITH SCHEMA extensions;
 
+-- pg_cron
+CREATE EXTENSION
+IF NOT EXISTS pg_cron
+WITH SCHEMA extensions;
+
+GRANT USAGE ON SCHEMA cron TO postgres;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA cron TO postgres;
+
 /* --------------------------------------- Setup buckets --------------------------------------- */
 
 -- Media

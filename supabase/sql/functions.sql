@@ -75,6 +75,23 @@ BEGIN
 END;
 $$;
 
+-- Clean expired webauthn challenges
+CREATE OR REPLACE FUNCTION auth.clean_challenges()
+RETURNS VOID
+SECURITY DEFINER
+VOLATILE
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  -- Expiration interval
+  _interval CONSTANT INTERVAL := INTERVAL '1 hour';
+BEGIN
+  -- Delete expired challenges
+  DELETE FROM auth.webauthn_challenges
+  WHERE created_at < (NOW() - _interval);
+END;
+$$;
+
 -- Generate a random double precision number between 0 (inclusive) and 1 (exclusive), using crypto-safe random data
 CREATE OR REPLACE FUNCTION utilities.safe_random()
 RETURNS DOUBLE PRECISION

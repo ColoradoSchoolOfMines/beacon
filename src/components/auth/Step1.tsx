@@ -65,7 +65,7 @@ export const Step1: React.FC = () => {
     );
 
     // Handle error
-    if (!endRes) {
+    if (!endRes.ok) {
       return;
     }
 

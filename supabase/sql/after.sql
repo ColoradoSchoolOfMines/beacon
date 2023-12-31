@@ -15,3 +15,12 @@ REVOKE ALL ON SCHEMA public FROM anon, authenticated;
 
 -- Utilities (Non-public helpers)
 REVOKE ALL ON SCHEMA utilities FROM anon, authenticated;
+
+/* -------------------------------------- Setup cron jobs -------------------------------------- */
+
+-- Clean expired WebAuthn challenges
+SELECT cron.schedule(
+  'hourly-webauthn-challenge-cleanup',
+  '0 * * * *',
+  'SELECT auth.clean_expired_webauthn_challenges()'
+);
