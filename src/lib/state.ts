@@ -9,22 +9,22 @@ import {create} from "zustand";
 import {createJSONStorage, devtools, persist} from "zustand/middleware";
 
 import {stateStorage} from "~/lib/storage";
-import {DeepPartial, GlobalError, Theme} from "~/lib/types";
+import {DeepPartial, GlobalMessage, Theme} from "~/lib/types";
 
 /**
  * Store state and actions
  */
 interface Store {
   /**
-   * Global error
+   * Global message
    */
-  error?: GlobalError;
+  message?: GlobalMessage;
 
   /**
-   * Set the global error
-   * @param newError Global error or undefined to clear the error
+   * Set the global message
+   * @param newMessage Global message or undefined to clear the message
    */
-  setError: (newError?: GlobalError) => void;
+  setMessage: (newMessage?: GlobalMessage) => void;
 
   /**
    * Temporary email address
@@ -94,11 +94,11 @@ export const useStore = create<Store>()(
     persist<Store, [], [], DeepPartial<Store>>(
       set =>
         merge({}, defaultState, {
-          error: undefined,
-          setError: (error?: GlobalError) =>
+          message: undefined,
+          setMessage: (message?: GlobalMessage) =>
             set(state => ({
               ...state,
-              error,
+              message: message,
             })),
           email: undefined,
           setEmail: (email?: string) =>

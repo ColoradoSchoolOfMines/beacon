@@ -43,16 +43,16 @@ export enum Theme {
 }
 
 /**
- * Global error
+ * Global information message modal
  */
-export interface GlobalError {
+export interface GlobalMessage {
   /**
-   * Error name
+   * Message name
    */
   name: string;
 
   /**
-   * Error description
+   * Message description
    */
   description: string;
 }

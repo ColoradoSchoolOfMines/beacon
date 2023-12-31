@@ -13,7 +13,7 @@ import {FUNCTIONS_URL, SUPABASE_ANON_KEY, SUPABASE_URL} from "~/lib/vars";
  */
 const FUNCTIONS_PREFIX = "/functions/v1";
 
-const setError = useStore.getState().setError;
+const setMessage = useStore.getState().setMessage;
 
 /**
  * Supabase client singleton
@@ -95,8 +95,8 @@ export const client = new SupabaseClient<Database>(
           // Log the error
           console.error(err);
 
-          // Set the error
-          setError(err);
+          // Display the message
+          setMessage(err);
         }
 
         return res;

@@ -231,8 +231,8 @@ export const writeEnvs = async () => {
   try {
     await writeFile(
       frontendEnv,
-      `# VITE_FUNCTIONS_URL = ""
-VITE_HCAPTCHA_SITE_KEY = "" # Required!
+      `VITE_HCAPTCHA_SITE_KEY = "" # Required!
+# VITE_SUPABASE_FUNCTIONS_URL = ""
 VITE_SUPABASE_URL = ${JSON.stringify(status.apiUrl)}
 VITE_SUPABASE_ANON_KEY = ${JSON.stringify(status.anonKey)}`,
       {

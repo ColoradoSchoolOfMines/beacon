@@ -81,8 +81,8 @@ setupIonicReact({
 export const App: React.FC = () => {
   // Hooks
   const router = useRef<IonReactRouter>(null);
-  const error = useStore(state => state.error);
-  const setError = useStore(state => state.setError);
+  const message = useStore(state => state.message);
+  const setMessage = useStore(state => state.setMessage);
   const setUser = useStore(state => state.setUser);
   const theme = useStore(state => state.theme);
 
@@ -103,8 +103,8 @@ export const App: React.FC = () => {
         break;
 
       case "SIGNED_OUT": {
-        // Set the error
-        setError({
+        // Display the message
+        setMessage({
           name: "Signed out",
           description: "You have been signed out",
         });
@@ -122,11 +122,11 @@ export const App: React.FC = () => {
     <IonApp>
       <IonReactRouter ref={router}>
         <IonAlert
-          isOpen={error !== undefined}
-          header={error?.name}
-          subHeader={error?.description}
+          isOpen={message !== undefined}
+          header={message?.name}
+          subHeader={message?.description}
           buttons={["OK"]}
-          onIonAlertDidDismiss={() => setError()}
+          onIonAlertDidDismiss={() => setMessage()}
         />
 
         <IonSplitPane contentId="main">

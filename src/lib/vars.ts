@@ -20,7 +20,9 @@ const GIT_BRANCH = import.meta.env.GIT_BRANCH;
 /**
  * Functions absolute base URL
  */
-const FUNCTIONS_URL = import.meta.env.VITE_FUNCTIONS_URL as string | undefined;
+const FUNCTIONS_URL = import.meta.env.VITE_SUPABASE_FUNCTIONS_URL as
+  | string
+  | undefined;
 
 /**
  * hCaptcha site key

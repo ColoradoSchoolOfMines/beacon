@@ -3,6 +3,7 @@
  */
 
 import {Context} from "oak";
+import {STATUS_CODE} from "std/http/status.ts";
 import {
   WEBAUTHN_RP_ID,
   WEBAUTHN_RP_NAME,
@@ -58,11 +59,11 @@ export const beginRegistration = async (ctx: Context) => {
 
   if (error) {
     console.error(error);
-    ctx.throw(500, "Failed to get profile");
+    ctx.throw(STATUS_CODE.InternalServerError, "Failed to get profile");
   }
 
   if (data === null || data.length === 0) {
-    ctx.throw(400, "Missing profile");
+    ctx.throw(STATUS_CODE.BadRequest, "Missing profile");
   }
 
   // Generate the username
@@ -99,7 +100,7 @@ export const beginRegistration = async (ctx: Context) => {
 
   if (challengeRes.error !== null || challengeRes.data === null) {
     console.error(challengeRes.error ?? "Failed to store challenge");
-    ctx.throw(500, "Failed to store challenge");
+    ctx.throw(STATUS_CODE.InternalServerError, "Failed to store challenge");
   }
 
   // Return the registration options
@@ -164,7 +165,7 @@ export const endRegistration = async (ctx: Context) => {
     req = await endRegistrationSchema.parseAsync(raw);
   } catch (err) {
     console.error(err);
-    ctx.throw(400, err);
+    ctx.throw(STATUS_CODE.BadRequest, err);
   }
 
   // Create a Supabase client for the current user
@@ -184,7 +185,7 @@ export const endRegistration = async (ctx: Context) => {
     }>();
 
   if (challengeRes.error !== null || challengeRes.data === null) {
-    ctx.throw(401, "Invalid challenge");
+    ctx.throw(STATUS_CODE.Forbidden, "Invalid challenge");
   }
 
   // Verify the registration
@@ -207,7 +208,7 @@ export const endRegistration = async (ctx: Context) => {
     result.verified === false ||
     result.registrationInfo === undefined
   ) {
-    ctx.throw(401, "Invalid registration");
+    ctx.throw(STATUS_CODE.Forbidden, "Invalid registration");
   }
 
   // Encode the credential data
@@ -222,7 +223,7 @@ export const endRegistration = async (ctx: Context) => {
     credentialPublicKeyPem === undefined ||
     counter === undefined
   ) {
-    ctx.throw(400, "Missing credential data");
+    ctx.throw(STATUS_CODE.BadRequest, "Missing credential data");
   }
 
   // Register the credential
@@ -238,7 +239,7 @@ export const endRegistration = async (ctx: Context) => {
 
   if (registerWebauthnCrdential.error !== null) {
     console.error(registerWebauthnCrdential.error);
-    ctx.throw(500, "Failed to store credential");
+    ctx.throw(STATUS_CODE.InternalServerError, "Failed to store credential");
   }
 
   ctx.response.status = 200;
@@ -271,7 +272,7 @@ export const beginAuthentication = async (ctx: Context) => {
 
   if (challengeRes.error !== null || challengeRes.data === null) {
     console.error(challengeRes.error ?? "Failed to store challenge");
-    ctx.throw(500, "Failed to store challenge");
+    ctx.throw(STATUS_CODE.InternalServerError, "Failed to store challenge");
   }
 
   // Return the authentication options
@@ -323,7 +324,7 @@ export const endAuthentication = async (ctx: Context) => {
     req = await endAuthenticationSchema.parseAsync(raw);
   } catch (err) {
     console.error(err);
-    ctx.throw(400, err);
+    ctx.throw(STATUS_CODE.BadRequest, err);
   }
 
   // Get the challenge
@@ -363,7 +364,7 @@ export const endAuthentication = async (ctx: Context) => {
         credentialRes.error ??
         "Failed to get challenge or credential",
     );
-    ctx.throw(400, "Invalid challenge or credential");
+    ctx.throw(STATUS_CODE.BadRequest, "Invalid challenge or credential");
   }
 
   // Verify the authentication
@@ -389,7 +390,7 @@ export const endAuthentication = async (ctx: Context) => {
     result.verified === false ||
     result.authenticationInfo === undefined
   ) {
-    ctx.throw(401, "Invalid authentication");
+    ctx.throw(STATUS_CODE.Forbidden, "Invalid authentication");
   }
 
   // Extract the result
@@ -407,7 +408,7 @@ export const endAuthentication = async (ctx: Context) => {
 
   if (authenticateWebauthnCrdential.error !== null) {
     console.error(authenticateWebauthnCrdential.error);
-    ctx.throw(500, "Failed to store credential");
+    ctx.throw(STATUS_CODE.InternalServerError, "Failed to store credential");
   }
 
   // Generate a session

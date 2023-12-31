@@ -33,26 +33,26 @@ const HCAPTCHA_SECRET_KEY = Deno.env.get("HCAPTCHA_SECRET_KEY")!;
  * Supabase database URL
  */
 const X_SUPABASE_DB_URL =
-  Deno.env.get("X_SUPABASE_DB_URL") ?? Deno.env.get("SUPABASE_DB_URL")!;
+  Deno.env.get("SUPABASE_DB_URL") ?? Deno.env.get("X_SUPABASE_DB_URL")!;
 
 /**
  * Supabase API URL
  */
 const X_SUPABASE_URL =
-  Deno.env.get("X_SUPABASE_URL") ?? Deno.env.get("SUPABASE_URL")!;
+  Deno.env.get("SUPABASE_URL") ?? Deno.env.get("X_SUPABASE_URL")!;
 
 /**
  * Supabase anonymous key
  */
 const X_SUPABASE_ANON_KEY =
-  Deno.env.get("X_SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_ANON_KEY")!;
+  Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("X_SUPABASE_ANON_KEY")!;
 
 /**
  * Supabase service role key
  */
 const X_SUPABASE_SERVICE_ROLE_KEY =
-  Deno.env.get("X_SUPABASE_SERVICE_ROLE_KEY") ??
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ??
+  Deno.env.get("X_SUPABASE_SERVICE_ROLE_KEY")!;
 
 /**
  * Supabase JWT secret

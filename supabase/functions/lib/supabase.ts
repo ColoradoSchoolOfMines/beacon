@@ -5,6 +5,7 @@
 import {Context} from "oak";
 import {Database} from "~/lib/schema.ts";
 import {SupabaseClient, User} from "@supabase/supabase-js";
+import {STATUS_CODE} from "std/http/status.ts";
 import {
   X_SUPABASE_ANON_KEY,
   X_SUPABASE_SERVICE_ROLE_KEY,
@@ -30,7 +31,7 @@ export const generateUserClient = async <T extends boolean>(
   const authorization = ctx.request.headers.get("Authorization");
   if (authorization === null) {
     if (requireAuth) {
-      ctx.throw(401, "Authorization header is required");
+      ctx.throw(STATUS_CODE.BadRequest, "Authorization header is required");
     } else {
       // deno-lint-ignore no-explicit-any
       return [undefined, undefined] as any;
@@ -54,12 +55,12 @@ export const generateUserClient = async <T extends boolean>(
   const {data, error} = await client.auth.getUser();
 
   if (error !== null) {
-    ctx.throw(error.status ?? 500, error.message);
+    ctx.throw(STATUS_CODE.InternalServerError, error.message);
   }
 
   if (data === null) {
     if (requireAuth) {
-      ctx.throw(401, "Authorization header is invalid");
+      ctx.throw(STATUS_CODE.Unauthorized, "Authorization header is invalid");
     } else {
       // deno-lint-ignore no-explicit-any
       return [undefined, undefined] as any;

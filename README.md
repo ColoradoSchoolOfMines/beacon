@@ -62,12 +62,12 @@ npm run supabase:reset
 
 ### Frontend Environment Variables
 
-| Name                     | Description                            | Default/Required                                                                                                        |
-| ------------------------ | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `VITE_FUNCTIONS_URL`     | The absolute base URL of the functions | Defaults to the Supabase API URL                                                                                        |
-| `VITE_HCAPTCHA_SITE_KEY` | The hCaptcha site key                  | Required (:warning: **Must be manually set** :warning:; see [hCaptcha dashboard](https://dashboard.hcaptcha.com/sites)) |
-| `VITE_SUPABASE_URL`      | The Supabase API URL                   | Required (Automatically set by the setup script)                                                                        |
-| `VITE_SUPABASE_ANON_KEY` | The Supabase API anonymous key         | Required (Automatically set by the setup script)                                                                        |
+| Name                          | Description                                     | Default/Required                                                                                                        |
+| ----------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `VITE_HCAPTCHA_SITE_KEY`      | The hCaptcha site key                           | Required (:warning: **Must be manually set** :warning:; see [hCaptcha dashboard](https://dashboard.hcaptcha.com/sites)) |
+| `VITE_SUPABASE_FUNCTIONS_URL` | The absolute base URL of the Supabase functions | Defaults to the Supabase API URL                                                                                        |
+| `VITE_SUPABASE_URL`           | The Supabase API URL                            | Required (Automatically set by the setup script)                                                                        |
+| `VITE_SUPABASE_ANON_KEY`      | The Supabase API anonymous key                  | Required (Automatically set by the setup script)                                                                        |
 
 ### Function Environment Variables
 

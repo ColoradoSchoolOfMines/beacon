@@ -24,7 +24,7 @@ import {client} from "~/lib/supabase";
 export const Step1: React.FC = () => {
   // Hooks
   const history = useHistory();
-  const setError = useStore(state => state.setError);
+  const setMessage = useStore(state => state.setMessage);
 
   // Methods
   /**
@@ -49,7 +49,8 @@ export const Step1: React.FC = () => {
     }
 
     if (response === undefined) {
-      setError({
+      // Display the message
+      setMessage({
         name: "Passkey Error",
         description: "Failed to create credential",
       });

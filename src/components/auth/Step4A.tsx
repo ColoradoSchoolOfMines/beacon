@@ -24,7 +24,7 @@ import {useStore} from "~/lib/state";
 export const Step4A: React.FC = () => {
   // Hooks
   const history = useHistory();
-  const setError = useStore(state => state.setError);
+  const setMessage = useStore(state => state.setMessage);
 
   // Methods
   /**
@@ -49,7 +49,8 @@ export const Step4A: React.FC = () => {
     }
 
     if (response === undefined) {
-      setError({
+      // Display the message
+      setMessage({
         name: "Passkey Error",
         description: "Failed to create credential",
       });
@@ -64,6 +65,12 @@ export const Step4A: React.FC = () => {
     if (!endRes) {
       return;
     }
+
+    // Display the message
+    setMessage({
+      name: "Passkey Registered",
+      description: "The passkey has been successfully registered",
+    });
 
     // Go to nearby
     history.push("/nearby");

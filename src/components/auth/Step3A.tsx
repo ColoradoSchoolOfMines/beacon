@@ -38,7 +38,7 @@ type FormSchema = z.infer<typeof formSchema>;
 export const Step3A: React.FC = () => {
   // Hooks
   const email = useStore(state => state.email);
-  const setError = useStore(state => state.setError);
+  const setMessage = useStore(state => state.setMessage);
   const history = useHistory();
 
   const {control, handleSubmit, reset} = useForm<FormSchema>({
@@ -63,8 +63,8 @@ export const Step3A: React.FC = () => {
       // Reset the form
       reset();
 
-      // Show the error
-      setError({
+      // Display the message
+      setMessage({
         name: "Failed to log in",
         description: error.message,
       });

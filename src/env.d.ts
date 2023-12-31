@@ -1,13 +1,13 @@
 interface ImportMetaEnv {
   /**
-   * The base URL of the functions
-   */
-  readonly VITE_FUNCTIONS_URL: string;
-
-  /**
    * hCaptcha site key
    */
   readonly VITE_HCAPTCHA_SITE_KEY: string;
+
+  /**
+   * The base URL of the Supabase functions
+   */
+  readonly VITE_SUPABASE_FUNCTIONS_URL: string;
 
   /**
    * The Supabase API URL
