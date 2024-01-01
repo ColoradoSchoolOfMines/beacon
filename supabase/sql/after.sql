@@ -22,5 +22,5 @@ REVOKE ALL ON SCHEMA utilities FROM anon, authenticated;
 SELECT cron.schedule(
   'hourly-webauthn-challenge-cleanup',
   '0 * * * *',
-  'SELECT auth.clean_expired_webauthn_challenges()'
+  'SELECT auth.prune_webauthn_challenges()'
 );

@@ -1,5 +1,5 @@
 /**
- * @file Auth step 1
+ * @file Auth step 1 component
  */
 
 import {IonButton, IonIcon, IonNote} from "@ionic/react";
@@ -44,15 +44,11 @@ export const Step1: React.FC = () => {
 
     try {
       response = await startAuthentication(beginRes.options!);
-    } catch {
-      // Empty
-    }
-
-    if (response === undefined) {
+    } catch (error) {
       // Display the message
       setMessage({
         name: "Passkey Error",
-        description: "Failed to create credential",
+        description: `Failed to use credential: ${error}`,
       });
 
       return;

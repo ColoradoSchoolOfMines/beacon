@@ -115,7 +115,7 @@ export const beginRegistration = async (ctx: Context) => {
  * End a WebAuthn registration request body schema
  */
 const endRegistrationSchema = z.object({
-  challengeId: z.string(),
+  challengeId: z.string().uuid(),
   response: z.object({
     id: z.string(),
     rawId: z.string(),
@@ -212,14 +212,14 @@ export const endRegistration = async (ctx: Context) => {
   }
 
   // Encode the credential data
-  const credentialId = req.response.id;
+  const clientCredentialId = req.response.id;
   const credentialPublicKeyPem = encodeBase64Url(
     result.registrationInfo.credentialPublicKey,
   );
   const counter = result.registrationInfo.counter;
 
   if (
-    credentialId === undefined ||
+    clientCredentialId === undefined ||
     credentialPublicKeyPem === undefined ||
     counter === undefined
   ) {
@@ -232,7 +232,7 @@ export const endRegistration = async (ctx: Context) => {
     .rpc("register_webauthn_credential", {
       _user_id: user.id,
       _challenge_id: challengeRes.data.id,
-      _credential_id: credentialId,
+      _client_credential_id: clientCredentialId,
       _counter: counter,
       _public_key: credentialPublicKeyPem,
     });
@@ -287,8 +287,8 @@ export const beginAuthentication = async (ctx: Context) => {
  * End a WebAuthn authentication request body schema
  */
 const endAuthenticationSchema = z.object({
-  challengeId: z.string(),
-  credentialId: z.string(),
+  challengeId: z.string().uuid(),
+  clientCredentialId: z.string(),
   response: z.object({
     id: z.string(),
     rawId: z.string(),
@@ -343,12 +343,12 @@ export const endAuthentication = async (ctx: Context) => {
   const credentialRes = await serviceRoleClient
     .schema("auth")
     .from("webauthn_credentials")
-    .select("id, user_id, credential_id, counter, public_key")
-    .eq("credential_id", req.credentialId)
+    .select("id, user_id, client_credential_id, counter, public_key")
+    .eq("client_credential_id", req.clientCredentialId)
     .single<{
       id: string;
       user_id: string;
-      credential_id: string;
+      client_credential_id: string;
       counter: number;
       public_key: string;
     }>();
@@ -373,7 +373,7 @@ export const endAuthentication = async (ctx: Context) => {
     result = await verifyAuthenticationResponse({
       authenticator: {
         counter: credentialRes.data.counter,
-        credentialID: decodeBase64Url(credentialRes.data.credential_id),
+        credentialID: decodeBase64Url(credentialRes.data.client_credential_id),
         credentialPublicKey: decodeBase64Url(credentialRes.data.public_key),
       },
       expectedChallenge: challengeRes.data.challenge,

@@ -639,25 +639,25 @@ export interface Database {
       }
       webauthn_credentials: {
         Row: {
+          client_credential_id: string
           counter: number
           created_at: string
-          credential_id: string
           id: string
           public_key: string
           user_id: string
         }
         Insert: {
+          client_credential_id: string
           counter?: number
           created_at?: string
-          credential_id: string
           id?: string
           public_key: string
           user_id: string
         }
         Update: {
+          client_credential_id?: string
           counter?: number
           created_at?: string
-          credential_id?: string
           id?: string
           public_key?: string
           user_id?: string
@@ -686,6 +686,10 @@ export interface Database {
         }
         Returns: undefined
       }
+      clean_expired_webauthn_challenges: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       email: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -698,7 +702,7 @@ export interface Database {
         Args: {
           _user_id: string
           _challenge_id: string
-          _credential_id: string
+          _client_credential_id: string
           _counter: number
           _public_key: string
         }

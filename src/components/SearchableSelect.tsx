@@ -1,3 +1,7 @@
+/**
+ * @file Searchable select component
+ */
+
 import {
   CheckboxCustomEvent,
   IonButton,
@@ -21,6 +25,9 @@ import {useEffect, useRef, useState} from "react";
 
 import {KeysOfType} from "~/lib/types";
 
+/**
+ * Searchable select component props
+ */
 export interface SearchableSelectProps<T extends object> {
   /**
    * Component children

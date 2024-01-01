@@ -27,7 +27,7 @@ import {useStore} from "~/lib/state";
 import {GIT_BRANCH, GIT_COMMIT, VERSION} from "~/lib/vars";
 
 /**
- * Settings page component
+ * Settings page
  * @returns JSX
  */
 export const Settings: React.FC = () => {
@@ -112,19 +112,27 @@ export const Settings: React.FC = () => {
             </IonItemDivider>
             <IonItem>
               <IonLabel>Version</IonLabel>
-              <IonNote slot="end">{VERSION}</IonNote>
+              <IonNote className="text-[1rem]" slot="end">
+                {VERSION}
+              </IonNote>
             </IonItem>
             <IonItem>
               <IonLabel>Branch</IonLabel>
-              <IonNote slot="end">{GIT_BRANCH}</IonNote>
+              <IonNote className="text-[1rem]" slot="end">
+                {GIT_BRANCH}
+              </IonNote>
             </IonItem>
             <IonItem>
               <IonLabel>Commit</IonLabel>
-              <IonNote slot="end">{GIT_COMMIT}</IonNote>
+              <IonNote className="text-[1rem]" slot="end">
+                {GIT_COMMIT}
+              </IonNote>
             </IonItem>
             <IonItem href="https://github.com/ColoradoSchoolOfMines/Beacon">
               <IonLabel>Project</IonLabel>
-              <IonNote slot="end">github.com</IonNote>
+              <IonNote className="text-[1rem]" slot="end">
+                github.com
+              </IonNote>
             </IonItem>
           </IonItemGroup>
         </IonList>

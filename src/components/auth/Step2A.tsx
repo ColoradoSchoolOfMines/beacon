@@ -1,5 +1,5 @@
 /**
- * @file Auth step 2A
+ * @file Auth step 2A component
  */
 
 import HCaptcha from "@hcaptcha/react-hcaptcha";

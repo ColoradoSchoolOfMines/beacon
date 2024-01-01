@@ -2,20 +2,11 @@
  * @file Home page
  */
 
-import {
-  IonButton,
-  IonButtons,
-  IonContent,
-  IonHeader,
-  IonIcon,
-  IonMenuButton,
-  IonPage,
-  IonTitle,
-  IonToolbar,
-} from "@ionic/react";
+import {IonButton, IonContent, IonIcon, IonPage} from "@ionic/react";
 import {compassOutline, compassSharp} from "ionicons/icons";
 import {useMeasure} from "react-use";
 
+import {Header} from "~/components/Header";
 import {useStore} from "~/lib/state";
 import {Theme} from "~/lib/types";
 import styles from "~/pages/Home.module.css";
@@ -26,7 +17,7 @@ import styles from "~/pages/Home.module.css";
 const FRAME_COUNT = 5;
 
 /**
- * Home page component
+ * Home page
  * @returns JSX
  */
 export const Home: React.FC = () => {
@@ -36,15 +27,7 @@ export const Home: React.FC = () => {
 
   return (
     <IonPage ref={content}>
-      <IonHeader className="absolute ion-no-border" translucent={true}>
-        <IonToolbar color="none">
-          <IonButtons slot="start">
-            <IonMenuButton />
-          </IonButtons>
-
-          <IonTitle>Home</IonTitle>
-        </IonToolbar>
-      </IonHeader>
+      <Header />
 
       <IonContent
         className={styles.snapContent}

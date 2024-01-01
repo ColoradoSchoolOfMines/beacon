@@ -33,7 +33,7 @@ CREATE TABLE auth.webauthn_credentials (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
   -- Client-side credential ID (Up to 1000 characters)
-  credential_id VARCHAR(1000) NOT NULL,
+  client_credential_id VARCHAR(1000) NOT NULL,
 
   -- Crdential use counter (To prevent replay attacks)
   counter INTEGER NOT NULL DEFAULT 0,

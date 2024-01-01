@@ -1,5 +1,5 @@
 /**
- * @file Menu
+ * @file Menu component
  */
 
 import {
@@ -35,14 +35,39 @@ import {client} from "~/lib/supabase";
 import {RequiredAuthState} from "~/lib/types";
 import {checkRequiredAuthState} from "~/lib/utils";
 
+/**
+ * Menu navigation item
+ */
 interface NavItem {
+  /**
+   * Item URL
+   */
   url: string;
+
+  /**
+   * Required authentication state to show this item
+   */
   requiredState: RequiredAuthState;
+
+  /**
+   * iOS icon
+   */
   iosIcon: string;
+
+  /**
+   * Material Design icon
+   */
   mdIcon: string;
+
+  /**
+   * Item title
+   */
   title: string;
 }
 
+/**
+ * Menu navigation items
+ */
 const navItems: NavItem[] = [
   {
     title: "Home",

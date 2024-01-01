@@ -4,6 +4,7 @@
 
 import {IonAlert, IonRouterOutlet, IonSplitPane} from "@ionic/react";
 import {User} from "@supabase/supabase-js";
+import {isEqual} from "lodash-es";
 import {useEffect} from "react";
 import {Route, useHistory, useLocation} from "react-router-dom";
 
@@ -33,6 +34,31 @@ const routeAuthStates: Record<string, RequiredAuthState> = {
   "/nearby": RequiredAuthState.AUTHENTICATED,
   "/settings": RequiredAuthState.AUTHENTICATED,
 };
+
+// Set the user from the session (Block because this doesn't make a request to the backend)
+const session = await client.auth.getSession();
+useStore.getState().setUser(session?.data?.session?.user);
+
+// Set the user from the backend (Don't block because this makes a request to the backend)
+// eslint-disable-next-line unicorn/prefer-top-level-await
+(async () => {
+  // If there is no user, return
+  if (useStore.getState().user === undefined) {
+    return;
+  }
+
+  // Get the user
+  const {data, error} = await client.auth.getUser();
+
+  // If the backend returns an error or the user is null, sign out
+  if (data.user === null || error !== null) {
+    await client.auth.signOut();
+    return;
+  }
+
+  // Set the user
+  useStore.getState().setUser(data.user);
+})();
 
 /**
  * App shell
@@ -102,7 +128,7 @@ export const App: React.FC = () => {
           // Display the message
           setMessage({
             name: "Signed out",
-            description: "You have been signed out",
+            description: "You have been signed out.",
           });
 
           // Clear the user
@@ -111,7 +137,7 @@ export const App: React.FC = () => {
       }
 
       // Set the user
-      if (newUser !== user) {
+      if (!isEqual(user, newUser)) {
         setUser(newUser);
       }
 

@@ -1,5 +1,5 @@
 /**
- * @file iOS PWA installer
+ * @file iOS PWA installer component
  */
 
 import * as React from "react";
@@ -21,7 +21,7 @@ import TextFormatSize from "~/assets/sf-symbols/textformat.size.svg?react";
 import styles from "~/components/pwa-installer/Ios.module.css";
 
 /**
- * Props for the iOS PWA installer
+ * iOS PWA installer component props
  */
 interface IosProps {
   /**

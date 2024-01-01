@@ -164,13 +164,13 @@ interface endAuthenticationResponse<T extends boolean> {
 /**
  * End a WebAuthn authentication
  * @param challengeId Challenge ID
- * @param credentialId Credential ID
+ * @param clientCredentialId Client credential ID
  * @param response Authentication response
  * @returns Session and whether or not the request was successful
  */
 export const endAuthentication = async (
   challengeId: string,
-  credentialId: string,
+  clientCredentialId: string,
   response: AuthenticationResponseJSON,
 ): Promise<endAuthenticationResponse<boolean>> => {
   // Make the request
@@ -180,7 +180,7 @@ export const endAuthentication = async (
       method: "POST",
       body: {
         challengeId,
-        credentialId,
+        clientCredentialId,
         response,
       },
     },

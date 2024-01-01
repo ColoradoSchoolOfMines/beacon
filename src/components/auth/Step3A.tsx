@@ -1,5 +1,5 @@
 /**
- * @file Auth step 3A
+ * @file Auth step 3A component
  */
 
 import {zodResolver} from "@hookform/resolvers/zod";

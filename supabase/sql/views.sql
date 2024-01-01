@@ -18,7 +18,8 @@ AS (
 -- Posts with additional, public information
 CREATE VIEW public.public_posts
 WITH (
-  security_invoker = TRUE
+  security_barrier = TRUE,
+  security_invoker = FALSE
 )
 AS (
   SELECT
@@ -56,7 +57,8 @@ AS (
 -- Comments with additional, public information
 CREATE VIEW public.public_comments
 WITH (
-  security_invoker = TRUE
+  security_barrier = TRUE,
+  security_invoker = FALSE
 )
 AS (
   SELECT

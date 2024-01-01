@@ -1,21 +1,21 @@
 /**
- * @file Auth page container
+ * @file Auth page container component
  */
 
 import {
-  IonButtons,
   IonCard,
   IonCardContent,
   IonCardHeader,
   IonCardTitle,
   IonContent,
-  IonHeader,
-  IonMenuButton,
   IonPage,
-  IonTitle,
-  IonToolbar,
 } from "@ionic/react";
 
+import {Header} from "~/components/Header";
+
+/**
+ * Auth page container component props
+ */
 export interface ContainerProps {
   /**
    * Children
@@ -31,15 +31,7 @@ export interface ContainerProps {
  */
 export const Container: React.FC<ContainerProps> = ({children}) => (
   <IonPage>
-    <IonHeader className="ion-no-border" translucent={true}>
-      <IonToolbar>
-        <IonButtons slot="start">
-          <IonMenuButton />
-        </IonButtons>
-
-        <IonTitle>Authentication</IonTitle>
-      </IonToolbar>
-    </IonHeader>
+    <Header />
 
     <IonContent forceOverscroll={false}>
       <div className="flex flex-col items-center justify-center h-full w-full">

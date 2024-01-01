@@ -12,8 +12,8 @@ CREATE OR REPLACE FUNCTION auth.register_webauthn_credential(
   -- Challenge ID
   _challenge_id UUID,
 
-  -- Credential ID
-  _credential_id TEXT,
+  -- Client-side credential ID
+  _client_credential_id TEXT,
 
   -- Credential counter
   _counter INTEGER,
@@ -30,12 +30,12 @@ BEGIN
   -- Insert the credential
   INSERT INTO auth.webauthn_credentials (
     user_id,
-    credential_id,
+    client_credential_id,
     counter,
     public_key
   ) VALUES (
     _user_id,
-    _credential_id,
+    _client_credential_id,
     _counter,
     _public_key
   );
@@ -55,7 +55,7 @@ CREATE OR REPLACE FUNCTION auth.authenticate_webauthn_credential(
   _challenge_id UUID,
 
   -- Credential ID
-  _credential_id TEXT,
+  _credential_id UUID,
 
   -- New credential counter
   _new_counter INTEGER
@@ -67,7 +67,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
   -- Update the credential
-  UPDATE auth.webauthn_credentials SET counter = _new_counter WHERE user_id = _user_id AND credential_id = _credential_id;
+  UPDATE auth.webauthn_credentials SET counter = _new_counter WHERE id = _credential_id AND user_id = _user_id;
 
   -- Delete the challenge
   DELETE FROM auth.webauthn_challenges
@@ -75,8 +75,8 @@ BEGIN
 END;
 $$;
 
--- Clean expired webauthn challenges
-CREATE OR REPLACE FUNCTION auth.clean_challenges()
+-- Prune old webauthn challenges
+CREATE OR REPLACE FUNCTION auth.prune_webauthn_challenges()
 RETURNS VOID
 SECURITY DEFINER
 VOLATILE
@@ -93,6 +93,13 @@ END;
 $$;
 
 -- Generate a random double precision number between 0 (inclusive) and 1 (exclusive), using crypto-safe random data
+--
+-- This function has been verified to produce a uniform distribution of values using a one-sample Kolmogorov-Smirnov
+-- test with a null hypothesis of perfect uniform distribution with a p value of exactly 0.0 (Less round-off errors)
+-- for a sample size of 1 million. See safe_random_analysis.py for more information.
+--
+-- Note that because this function uses rejection-sampling, timing attacks are hypothetically possible, especially
+-- if the RNG is predictable (Though that in itself represents a rather grave security concern).
 CREATE OR REPLACE FUNCTION utilities.safe_random()
 RETURNS DOUBLE PRECISION
 VOLATILE
@@ -109,7 +116,7 @@ BEGIN
     -- Generate 8 crypto-safe random bytes, convert them to a bit string, set the MSB to 0 (Make positive), convert to a double, and normalize
     _value = SET_BIT(RIGHT(extensions.gen_random_bytes(8)::TEXT, -1)::BIT(64), 0, 0)::BIGINT::DOUBLE PRECISION / _max;
 
-    -- Return if the value is not 1 (The probability of this happening is near 0, but this guarentees the returned value is never 1)
+    -- Return if the value is not 1 (The probability of this happening is very close to 0, but this guarentees the returned value is never 1)
     IF _value < 1 THEN
       RETURN _value;
     END IF;
@@ -272,12 +279,12 @@ BEGIN
 
   -- No previous location
   IF _created_at IS NULL AND _location IS NULL THEN
-    RAISE EXCEPTION 'NO_PREVIOUS_LOCATION';
+    RAISE EXCEPTION 'You do not have a location set';
   END IF;
 
   -- Previous location too old
   IF _created_at < (NOW() - INTERVAL '1 hour') THEN
-    RAISE EXCEPTION 'PREVIOUS_LOCATION_TOO_OLD';
+    RAISE EXCEPTION 'Your location is too old';
   END IF;
 
   RETURN _location;
@@ -340,8 +347,8 @@ BEGIN
   SELECT extensions.ST_Distance(NEW.location, _previous_location) INTO _distance;
 
   -- Prevent the user from moving too fast (> 1200 km/h ~= 333.333 m/s)
-  IF (_distance / _elapsed::DOUBLE PRECISION) > 333.333 THEN
-    RAISE EXCEPTION 'VELOCITY_TOO_HIGH';
+  IF (_elapsed = 0::BIGINT) OR ((_distance / _elapsed::DOUBLE PRECISION) > 333.333) THEN
+    RAISE EXCEPTION 'You are moving too fast';
   END IF;
 
   RETURN NEW;
@@ -498,12 +505,12 @@ BEGIN
       FROM public.comments
       WHERE id = _ancestor_id
     ) != _post_id THEN
-      RAISE EXCEPTION 'ANCESOR_COMMENT_DIFFERENT_POST';
+      RAISE EXCEPTION 'The ancestor''s comment''s post does not match the child comment''s post';
     END IF;
 
     -- Check for repeated comments
     IF _ancestor_id = ANY(_ancestor_ids) THEN
-      RAISE EXCEPTION 'ANCESTOR_COMMENT_REPEATED';
+      RAISE EXCEPTION 'The ancestor comment is repeated';
     END IF;
 
     -- Add the parent ID to the ancestor IDs
@@ -516,7 +523,7 @@ BEGIN
   END LOOP;
 
   -- Comment depth too deep
-  RAISE EXCEPTION 'COMMENT_DEPTH_TOO_DEEP';
+  RAISE EXCEPTION 'This comment is too many levels deep';
 END;
 $$;
 

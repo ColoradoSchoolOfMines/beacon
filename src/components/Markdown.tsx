@@ -1,5 +1,5 @@
 /**
- * @file WYSIWYG markdown editor
+ * @file WYSIWYG markdown editor component
  */
 
 import {Schema} from "hast-util-sanitize";
@@ -52,7 +52,7 @@ const schema = {
 } as Schema;
 
 /**
- * Props for WYSIWYG markdown editor
+ * WYSIWYG markdown editor component props
  */
 interface MarkdownProps {
   /**

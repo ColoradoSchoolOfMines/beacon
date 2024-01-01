@@ -23,41 +23,12 @@ import React from "react";
 import {createRoot} from "react-dom/client";
 
 import {App} from "~/App";
-import {useStore} from "~/lib/state";
-import {client} from "~/lib/supabase";
 
-/* ---------------------------------------- Setup React ---------------------------------------- */
+// Setup React
 const container = document.getElementById("root");
 const root = createRoot(container!);
 
-/* --------------------------------------- Setup Supabase -------------------------------------- */
-
-// Set the user from the session (Block because this doesn't make a request to the backend)
-const session = await client.auth.getSession();
-useStore.getState().setUser(session?.data?.session?.user);
-
-// Set the user from the backend (Don't block because this makes a request to the backend)
-// eslint-disable-next-line unicorn/prefer-top-level-await
-(async () => {
-  // If there is no user, return
-  if (useStore.getState().user === undefined) {
-    return;
-  }
-
-  // Get the user
-  const {data, error} = await client.auth.getUser();
-
-  // If the backend returns an error or the user is null, sign out
-  if (data.user === null || error !== null) {
-    await client.auth.signOut();
-    return;
-  }
-
-  // Set the user
-  useStore.getState().setUser(data.user);
-})();
-
-/* ---------------------------------------- Setup Ionic ---------------------------------------- */
+// Setup Ionic
 setupIonicReact({
   animated: true,
   mode: isPlatform("ios") ? "ios" : "md",
