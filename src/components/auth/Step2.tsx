@@ -1,21 +1,23 @@
 /**
- * @file Auth step 2A component
+ * @file Auth step 2 component
  */
 
 import HCaptcha from "@hcaptcha/react-hcaptcha";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {IonButton, IonIcon, IonInput} from "@ionic/react";
 import {paperPlaneOutline, paperPlaneSharp} from "ionicons/icons";
-import {useRef} from "react";
+import {useContext, useRef} from "react";
 import {Controller, useForm} from "react-hook-form";
-import {useHistory} from "react-router-dom";
 import {z} from "zod";
 
-import {Container} from "~/components/auth/Container";
+import {AuthContainer} from "~/components/auth/Container";
+import {Step3} from "~/components/auth/Step3";
+import {SupplementalError} from "~/components/SupplementalError";
 import {useStore} from "~/lib/state";
 import {client} from "~/lib/supabase";
 import {Theme} from "~/lib/types";
 import {HCAPTCHA_SITE_KEY} from "~/lib/vars";
+import {AuthNavContext} from "~/pages/Auth";
 
 /**
  * Form schema
@@ -36,13 +38,13 @@ const formSchema = z.object({
 type FormSchema = z.infer<typeof formSchema>;
 
 /**
- * Auth step 2A component
+ * Auth step 2 component
  * @returns JSX
  */
-export const Step2A: React.FC = () => {
+export const Step2: React.FC = () => {
   // Hooks
   const captcha = useRef<HCaptcha>(null);
-  const history = useHistory();
+  const nav = useContext(AuthNavContext);
   const setEmail = useStore(state => state.setEmail);
   const theme = useStore(state => state.theme);
 
@@ -64,10 +66,7 @@ export const Step2A: React.FC = () => {
       email: form.email,
       options: {
         captchaToken: form.captchaToken,
-        emailRedirectTo: new URL(
-          "/auth/step/4a",
-          window.location.origin,
-        ).toString(),
+        emailRedirectTo: new URL("/nearby", window.location.origin).toString(),
       },
     });
 
@@ -85,11 +84,11 @@ export const Step2A: React.FC = () => {
     }
 
     // Go to the next step
-    history.push("/auth/step/3a");
+    nav?.push(() => <Step3 />);
   };
 
   return (
-    <Container>
+    <AuthContainer back={true}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Controller
           control={control}
@@ -116,7 +115,7 @@ export const Step2A: React.FC = () => {
         <Controller
           control={control}
           name="captchaToken"
-          render={({field: {onChange}, fieldState: {error, invalid}}) => (
+          render={({field: {onChange}, fieldState: {error}}) => (
             <div className="py-4">
               <HCaptcha
                 onVerify={token => onChange(token)}
@@ -124,11 +123,7 @@ export const Step2A: React.FC = () => {
                 sitekey={HCAPTCHA_SITE_KEY}
                 theme={theme === Theme.DARK ? "dark" : "light"}
               />
-              {invalid && (
-                <p className="!text-[12px] pt-1.5 text-[#ff4961]">
-                  {error?.message}
-                </p>
-              )}
+              <SupplementalError error={error?.message} />
             </div>
           )}
         />
@@ -141,6 +136,6 @@ export const Step2A: React.FC = () => {
           Send Login Link
         </IonButton>
       </form>
-    </Container>
+    </AuthContainer>
   );
 };

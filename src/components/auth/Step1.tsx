@@ -6,9 +6,11 @@ import {IonButton, IonIcon, IonNote} from "@ionic/react";
 import {startAuthentication} from "@simplewebauthn/browser";
 import {AuthenticationResponseJSON} from "@simplewebauthn/typescript-types";
 import {callOutline, callSharp, keyOutline, keySharp} from "ionicons/icons";
+import {useContext} from "react";
 import {useHistory} from "react-router-dom";
 
-import {Container} from "~/components/auth/Container";
+import {AuthContainer} from "~/components/auth/Container";
+import {Step2} from "~/components/auth/Step2";
 import {
   beginAuthentication,
   checkPasskeySupport,
@@ -16,6 +18,7 @@ import {
 } from "~/lib/api/auth";
 import {useStore} from "~/lib/state";
 import {client} from "~/lib/supabase";
+import {AuthNavContext} from "~/pages/Auth";
 
 /**
  * Auth step 1 component
@@ -23,6 +26,7 @@ import {client} from "~/lib/supabase";
  */
 export const Step1: React.FC = () => {
   // Hooks
+  const nav = useContext(AuthNavContext);
   const history = useHistory();
   const setMessage = useStore(state => state.setMessage);
 
@@ -83,11 +87,11 @@ export const Step1: React.FC = () => {
    */
   const useEmail = () => {
     // Go to the next step
-    history.push("/auth/step/2a");
+    nav?.push(() => <Step2 />);
   };
 
   return (
-    <Container>
+    <AuthContainer back={false}>
       {checkPasskeySupport() && (
         <>
           <IonButton
@@ -123,6 +127,6 @@ export const Step1: React.FC = () => {
         Create a <b>new</b> account or log into an <b>existing</b> account with
         an email address.
       </IonNote>
-    </Container>
+    </AuthContainer>
   );
 };

@@ -4,13 +4,12 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
 import {User} from "@supabase/supabase-js";
-import {isEqual, merge} from "lodash-es";
+import {merge} from "lodash-es";
 import {create} from "zustand";
 import {createJSONStorage, devtools, persist} from "zustand/middleware";
 
 import {stateStorage} from "~/lib/storage";
-import {client} from "~/lib/supabase";
-import {DeepPartial, GlobalMessage, Theme} from "~/lib/types";
+import {DeepPartial, GlobalMessage, PostCreate, Theme} from "~/lib/types";
 
 /**
  * Store state and actions
@@ -28,7 +27,7 @@ interface Store {
   setMessage: (newMessage?: GlobalMessage) => void;
 
   /**
-   * Temporary email address
+   * Temporary email address being verified
    */
   email?: string;
 
@@ -37,6 +36,17 @@ interface Store {
    * @param newEmail New email address or undefined to clear the email address
    */
   setEmail: (newEmail?: string) => void;
+
+  /**
+   * Temporary post being created
+   */
+  post?: Partial<PostCreate>;
+
+  /**
+   * Set the temporary post being created
+   * @param newPost New post or undefined to clear the post
+   */
+  setPost: (newPost?: Partial<PostCreate>) => void;
 
   /**
    * Current user
@@ -72,6 +82,17 @@ interface Store {
   setTheme: (newTheme: Theme) => void;
 
   /**
+   * Whether or not FAB (Floating Action Buttons) should be shown
+   */
+  showFABs: boolean;
+
+  /**
+   * Set whether or not FAB (Floating Action Buttons) should be shown
+   * @param newShowFABs New value
+   */
+  setShowFABs: (newShowFABs: boolean) => void;
+
+  /**
    * Whether or not the store has been hydrated from storage
    */
   hydrated: boolean;
@@ -96,6 +117,7 @@ const defaultState: DeepPartial<Store> = {
     window.matchMedia("(prefers-color-scheme: dark)").matches
       ? Theme.DARK
       : Theme.LIGHT,
+  showFABs: true,
 };
 
 /**
@@ -104,7 +126,7 @@ const defaultState: DeepPartial<Store> = {
 export const useStore = create<Store>()(
   devtools(
     persist<Store, [], [], DeepPartial<Store>>(
-      (set, get) =>
+      set =>
         merge({}, defaultState, {
           message: undefined,
           setMessage: (newMessage?: GlobalMessage) =>
@@ -118,6 +140,12 @@ export const useStore = create<Store>()(
               ...state,
               email: newEmail,
             })),
+          post: undefined,
+          setPost: (newPost?: Partial<PostCreate>) =>
+            set(state => ({
+              ...state,
+              post: newPost,
+            })),
           user: undefined,
           setUser: (newUser: User) =>
             set(state => ({
@@ -125,41 +153,20 @@ export const useStore = create<Store>()(
               user: newUser,
             })),
           location: undefined,
-          setLocation: async (newLocation?: GeolocationPosition) => {
-            const oldLocation = get().location;
-
-            // Update the frontend
+          setLocation: (newLocation?: GeolocationPosition) =>
             set(state => ({
               ...state,
               location: newLocation,
-            }));
-
-            // Update the backend
-            if (
-              newLocation !== undefined &&
-              !isEqual(newLocation, oldLocation)
-            ) {
-              const {error} = await client.from("locations").insert({
-                // eslint-disable-next-line camelcase
-                created_at: new Date(newLocation?.timestamp).toISOString(),
-                location: `POINT(${newLocation?.coords.longitude} ${newLocation?.coords.latitude})`,
-              });
-
-              // Handle error
-              if (error !== null) {
-                get().setMessage({
-                  name: "Failed to update location",
-                  description: error.message,
-                });
-
-                return;
-              }
-            }
-          },
+            })),
           setTheme: (newTheme: Theme) =>
             set(state => ({
               ...state,
               theme: newTheme,
+            })),
+          setShowFABs: (newShowFABs: boolean) =>
+            set(state => ({
+              ...state,
+              showFABs: newShowFABs,
             })),
           hydrated: false,
           setHydrated: () =>
@@ -172,6 +179,7 @@ export const useStore = create<Store>()(
         name: "global-state",
         storage: createJSONStorage(() => stateStorage),
         partialize: state => ({
+          showFABs: state.showFABs,
           theme: state.theme,
         }),
         merge: (persisted, current) => merge({}, current, persisted),
@@ -187,68 +195,3 @@ export const useStore = create<Store>()(
     ),
   ),
 );
-
-/**
- * Geolocation watcher ID
- */
-let geolocationWatcherId: number | undefined;
-
-// Watch the user's geolocation
-useStore.subscribe(async state => {
-  // Check if the watcher is already running
-  if (geolocationWatcherId !== undefined) {
-    return;
-  }
-
-  // Check if geolocation is supported
-  if (navigator.geolocation === undefined) {
-    // Display the message
-    state.setMessage({
-      name: "Geolocation error",
-      description: "Your browser does not support geolocation.",
-    });
-
-    return;
-  }
-
-  // Check if the geolocation permission has been denied
-  const status = await navigator.permissions.query({name: "geolocation"});
-
-  if (status.state === "denied") {
-    // Display the message
-    state.setMessage({
-      name: "Geolocation error",
-      description:
-        "You have denied access to your geolocation, but it is required to show nearby posts. You can grant Beacon access to your geolocation in your browser settings.",
-    });
-
-    return;
-  }
-
-  // Watch the user's geolocation
-  try {
-    geolocationWatcherId = navigator.geolocation.watchPosition(
-      state.setLocation,
-      error => {
-        // Display the message
-        state.setMessage({
-          name: "Geolocation error",
-          description: error.message,
-        });
-      },
-      {
-        enableHighAccuracy: true,
-        maximumAge: 1000 * 60 * 5,
-        timeout: 1000 * 10,
-      },
-    );
-  } catch (error) {
-    // Display the message
-    state.setMessage({
-      name: "Geolocation error",
-      description: `Your geolocation could not be determined: ${error}`,
-    });
-
-    return;
-  }
-});

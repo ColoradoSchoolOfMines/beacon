@@ -1,7 +1,3 @@
-.container {
-  @apply overflow-auto w-full;
-}
-
 .markdown {
   @apply min-w-fit;
 }

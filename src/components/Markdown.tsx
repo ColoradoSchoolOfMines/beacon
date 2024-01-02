@@ -1,5 +1,5 @@
 /**
- * @file WYSIWYG markdown editor component
+ * @file Markdown renderer component
  */
 
 import {Schema} from "hast-util-sanitize";
@@ -52,9 +52,9 @@ const schema = {
 } as Schema;
 
 /**
- * WYSIWYG markdown editor component props
+ * Markdown renderer component props
  */
-interface MarkdownProps {
+interface MarkdownProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
    * Raw Github-Flavored Markdown (GFM) content
    */
@@ -62,11 +62,11 @@ interface MarkdownProps {
 }
 
 /**
- * WYSIWYG markdown editor component
+ * Markdown renderer component
  * @returns JSX
  */
-export const Markdown: React.FC<MarkdownProps> = ({raw}) => (
-  <div className={styles.container}>
+export const Markdown: React.FC<MarkdownProps> = ({raw, ...props}) => (
+  <div {...props}>
     <ReactMarkdown
       className={styles.markdown}
       remarkPlugins={[remarkGfm]}

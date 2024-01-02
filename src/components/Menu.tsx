@@ -3,7 +3,6 @@
  */
 
 import {
-  IonButton,
   IonContent,
   IonIcon,
   IonImg,
@@ -21,8 +20,6 @@ import {
   homeSharp,
   lockClosedOutline,
   lockClosedSharp,
-  logOutOutline,
-  logOutSharp,
   settingsOutline,
   settingsSharp,
 } from "ionicons/icons";
@@ -31,9 +28,16 @@ import {useLocation} from "react-router-dom";
 
 import logo from "~/assets/logo.png";
 import {useStore} from "~/lib/state";
-import {client} from "~/lib/supabase";
 import {RequiredAuthState} from "~/lib/types";
 import {checkRequiredAuthState} from "~/lib/utils";
+
+/**
+ * Menu navigation item position
+ */
+enum NavItemPosition {
+  TOP = "top",
+  BOTTOM = "bottom",
+}
 
 /**
  * Menu navigation item
@@ -48,6 +52,11 @@ interface NavItem {
    * Required authentication state to show this item
    */
   requiredState: RequiredAuthState;
+
+  /**
+   * Item position
+   */
+  position: NavItemPosition;
 
   /**
    * iOS icon
@@ -71,8 +80,9 @@ interface NavItem {
 const navItems: NavItem[] = [
   {
     title: "Home",
-    requiredState: RequiredAuthState.ANY,
+    requiredState: RequiredAuthState.UNAUTHENTICATED,
     url: "/",
+    position: NavItemPosition.TOP,
     iosIcon: homeOutline,
     mdIcon: homeSharp,
   },
@@ -80,6 +90,7 @@ const navItems: NavItem[] = [
     title: "Authentication",
     requiredState: RequiredAuthState.UNAUTHENTICATED,
     url: "/auth",
+    position: NavItemPosition.TOP,
     iosIcon: lockClosedOutline,
     mdIcon: lockClosedSharp,
   },
@@ -87,6 +98,7 @@ const navItems: NavItem[] = [
     title: "Nearby",
     requiredState: RequiredAuthState.AUTHENTICATED,
     url: "/nearby",
+    position: NavItemPosition.TOP,
     iosIcon: compassOutline,
     mdIcon: compassSharp,
   },
@@ -94,10 +106,42 @@ const navItems: NavItem[] = [
     title: "Settings",
     requiredState: RequiredAuthState.AUTHENTICATED,
     url: "/settings",
+    position: NavItemPosition.BOTTOM,
     iosIcon: settingsOutline,
     mdIcon: settingsSharp,
   },
 ];
+
+/**
+ * Navigation item component
+ * @param item Navigation item
+ * @returns JSX
+ */
+const NavItem: React.FC<NavItem> = item => {
+  // Hooks
+  const location = useLocation();
+
+  return (
+    <IonMenuToggle autoHide={false}>
+      <IonItem
+        className={location.pathname === item.url ? "selected" : ""}
+        routerLink={item.url}
+        routerDirection="none"
+        lines="none"
+        detail={false}
+      >
+        <IonIcon
+          aria-hidden="true"
+          slot="start"
+          ios={item.iosIcon}
+          md={item.mdIcon}
+        />
+
+        <IonLabel>{item.title}</IonLabel>
+      </IonItem>
+    </IonMenuToggle>
+  );
+};
 
 /**
  * Menu component
@@ -106,26 +150,12 @@ const navItems: NavItem[] = [
 export const Menu: React.FC = () => {
   // Hooks
   const user = useStore(state => state.user);
-  const location = useLocation();
   const menu = useRef<HTMLIonMenuElement>(null);
-
-  // Methods
-  /**
-   * Sign out
-   */
-  const signOut = async () => {
-    // Sign out
-    await client.auth.signOut();
-
-    // Close the menu
-    menu.current?.close();
-  };
 
   return (
     <IonMenu contentId="main" type="overlay" ref={menu}>
       <IonContent forceOverscroll={false}>
-        <IonList className="flex flex-col h-full">
-          {/* Header */}
+        <IonList className="flex flex-col h-full py-0">
           <IonListHeader>
             <div className="flex flex-row items-center justify-center my-8 w-full">
               <IonImg alt="Beacon logo" className="h-14 w-14 mr-2" src={logo} />
@@ -133,53 +163,27 @@ export const Menu: React.FC = () => {
             </div>
           </IonListHeader>
 
-          {/* Navigation items */}
           {navItems
-            .filter(navItem =>
-              checkRequiredAuthState(user, navItem.requiredState),
+            .filter(
+              navItem =>
+                navItem.position === NavItemPosition.TOP &&
+                checkRequiredAuthState(user, navItem.requiredState),
             )
-            .map((navItem, index) => {
-              return (
-                <IonMenuToggle key={index} autoHide={false}>
-                  <IonItem
-                    className={
-                      location.pathname === navItem.url ? "selected" : ""
-                    }
-                    routerLink={navItem.url}
-                    routerDirection="none"
-                    lines="none"
-                    detail={false}
-                  >
-                    <IonIcon
-                      aria-hidden="true"
-                      slot="start"
-                      ios={navItem.iosIcon}
-                      md={navItem.mdIcon}
-                    />
+            .map((navItem, index) => (
+              <NavItem key={index} {...navItem} />
+            ))}
 
-                    <IonLabel>{navItem.title}</IonLabel>
-                  </IonItem>
-                </IonMenuToggle>
-              );
-            })}
-
-          {/* Spacer */}
           <div className="flex-1" />
 
-          {/* Footer */}
-          {checkRequiredAuthState(user, RequiredAuthState.AUTHENTICATED) && (
-            <IonItem>
-              <IonButton
-                className="mx-0 my-4 overflow-hidden rounded-lg w-full"
-                size="default"
-                expand="full"
-                onClick={signOut}
-              >
-                <IonIcon slot="start" ios={logOutOutline} md={logOutSharp} />
-                <IonLabel>Sign out</IonLabel>
-              </IonButton>
-            </IonItem>
-          )}
+          {navItems
+            .filter(
+              navItem =>
+                navItem.position === NavItemPosition.BOTTOM &&
+                checkRequiredAuthState(user, navItem.requiredState),
+            )
+            .map((navItem, index) => (
+              <NavItem key={index} {...navItem} />
+            ))}
         </IonList>
       </IonContent>
     </IonMenu>

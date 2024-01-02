@@ -16,6 +16,8 @@ import "@ionic/react/css/display.css";
 import "@unocss/reset/tailwind.css";
 import "virtual:uno.css";
 import "~/styles/theme.css";
+// Setup geolocation
+import "~/lib/geolocation";
 
 import {IonApp, isPlatform, setupIonicReact} from "@ionic/react";
 import {IonReactRouter} from "@ionic/react-router";

@@ -686,10 +686,6 @@ export interface Database {
         }
         Returns: undefined
       }
-      clean_expired_webauthn_challenges: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
       email: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -697,6 +693,10 @@ export interface Database {
       jwt: {
         Args: Record<PropertyKey, never>
         Returns: Json
+      }
+      prune_webauthn_challenges: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       register_webauthn_credential: {
         Args: {
@@ -1146,7 +1146,10 @@ export interface Database {
       }
     }
     Functions: {
-      [_ in never]: never
+      delete_webauthn_credentials: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

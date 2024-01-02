@@ -8,15 +8,13 @@ import {isEqual} from "lodash-es";
 import {useEffect} from "react";
 import {Route, useHistory, useLocation} from "react-router-dom";
 
-import {Step1} from "~/components/auth/Step1";
-import {Step2A} from "~/components/auth/Step2A";
-import {Step3A} from "~/components/auth/Step3A";
-import {Step4A} from "~/components/auth/Step4A";
 import {Menu} from "~/components/Menu";
 import {useStore} from "~/lib/state";
 import {client} from "~/lib/supabase";
 import {RequiredAuthState, Theme} from "~/lib/types";
 import {checkRequiredAuthState} from "~/lib/utils";
+import {Auth} from "~/pages/Auth";
+import {CreatePost} from "~/pages/CreatePost";
 import {Error} from "~/pages/Error";
 import {Home} from "~/pages/Home";
 import {Nearby} from "~/pages/Nearby";
@@ -27,11 +25,9 @@ import {Settings} from "~/pages/Settings";
  */
 const routeAuthStates: Record<string, RequiredAuthState> = {
   "/": RequiredAuthState.ANY,
-  "/auth/step/1": RequiredAuthState.UNAUTHENTICATED,
-  "/auth/step/2a": RequiredAuthState.UNAUTHENTICATED,
-  "/auth/step/3a": RequiredAuthState.UNAUTHENTICATED,
-  "/auth/step/4a": RequiredAuthState.AUTHENTICATED,
+  "/auth": RequiredAuthState.UNAUTHENTICATED,
   "/nearby": RequiredAuthState.AUTHENTICATED,
+  "/posts/create": RequiredAuthState.AUTHENTICATED,
   "/settings": RequiredAuthState.AUTHENTICATED,
 };
 
@@ -97,7 +93,7 @@ export const App: React.FC = () => {
           break;
 
         case RequiredAuthState.AUTHENTICATED:
-          history.push("/auth/step/1");
+          history.push("/auth");
           break;
       }
     }
@@ -166,25 +162,17 @@ export const App: React.FC = () => {
           </Route>
 
           {/* Unauthenticated routes */}
-          <Route path="/auth/step/1" exact={true}>
-            <Step1 />
-          </Route>
-
-          <Route path="/auth/step/2a" exact={true}>
-            <Step2A />
-          </Route>
-
-          <Route path="/auth/step/3a" exact={true}>
-            <Step3A />
+          <Route path="/auth" exact={true}>
+            <Auth />
           </Route>
 
           {/* Authenticated routes */}
-          <Route path="/auth/step/4a" exact={true}>
-            <Step4A />
-          </Route>
-
           <Route path="/nearby" exact={true}>
             <Nearby />
+          </Route>
+
+          <Route path="/posts/create" exact={true}>
+            <CreatePost />
           </Route>
 
           <Route path="/settings" exact={true}>

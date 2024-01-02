@@ -224,8 +224,8 @@ export const SearchableSelect = <T extends object>({
         </IonHeader>
 
         <IonContent>
-          <IonList inset={true}>
-            {multiple &&
+          <IonList className="py-0" inset={true}>
+            {multiple ? (
               filteredItems.map(item => (
                 <IonItem key={item[itemValueKey] as string}>
                   <IonCheckbox
@@ -236,8 +236,8 @@ export const SearchableSelect = <T extends object>({
                     {itemRenderer(item)}
                   </IonCheckbox>
                 </IonItem>
-              ))}
-            {!multiple && (
+              ))
+            ) : (
               <IonRadioGroup
                 value={workingSelectedItems[0]?.[itemValueKey]}
                 onIonChange={onRadioGroupChange}

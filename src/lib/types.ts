@@ -130,6 +130,31 @@ export type Post = Pick<
   };
 
 /**
+ * Post creation data
+ */
+export interface PostCreate {
+  /**
+   * Post content
+   */
+  content: string;
+
+  /**
+   * Post media
+   */
+  media?: File;
+
+  /**
+   * Whether or not the post is anonymous
+   */
+  anonymous: boolean;
+
+  /**
+   * Post radius (in meters)
+   */
+  radius: number;
+}
+
+/**
  * Post vote
  */
 export type PostVote = Database["public"]["Tables"]["post_votes"]["Row"];

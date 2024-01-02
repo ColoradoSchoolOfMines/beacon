@@ -234,6 +234,7 @@
     "unicorn/no-useless-undefined": "off",
     "unicorn/numeric-separators-style": "off",
     "unicorn/prefer-query-selector": "off",
+    "unicorn/prefer-spread": "off",
     "unicorn/prevent-abbreviations": "off",
     "unicorn/switch-case-braces": "off"
   }

@@ -1,0 +1,3 @@
+.content:global(::part(scroll)) {
+  @apply p-0;
+}

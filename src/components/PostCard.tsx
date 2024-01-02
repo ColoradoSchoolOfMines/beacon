@@ -17,7 +17,7 @@ import {Post} from "~/lib/types";
 /**
  * Post card component props
  */
-interface PostProps {
+interface PostCardProps {
   /**
    * Post
    */
@@ -29,7 +29,7 @@ interface PostProps {
  * @param props Props
  * @returns JSX
  */
-export const PostCard: React.FC<PostProps> = ({post}) => {
+export const PostCard: React.FC<PostCardProps> = ({post}) => {
   // Hooks
   const [mediaUrl, setMediaUrl] = useState<string | undefined>();
 

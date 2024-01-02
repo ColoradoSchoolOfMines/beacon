@@ -1,18 +1,19 @@
 /**
- * @file Auth step 3A component
+ * @file Auth step 3 component
  */
 
 import {zodResolver} from "@hookform/resolvers/zod";
 import {IonButton, IonIcon, IonInput} from "@ionic/react";
 import {checkmarkOutline, checkmarkSharp} from "ionicons/icons";
+import {useContext} from "react";
 import {Controller, useForm} from "react-hook-form";
 import {useHistory} from "react-router-dom";
 import {z} from "zod";
 
-import {Container} from "~/components/auth/Container";
-import {checkPasskeySupport} from "~/lib/api/auth";
+import {AuthContainer} from "~/components/auth/Container";
 import {useStore} from "~/lib/state";
 import {client} from "~/lib/supabase";
+import {AuthNavContext} from "~/pages/Auth";
 
 /**
  * Form schema
@@ -32,14 +33,15 @@ const formSchema = z.object({
 type FormSchema = z.infer<typeof formSchema>;
 
 /**
- * Auth step 3A component
+ * Auth step 3 component
  * @returns JSX
  */
-export const Step3A: React.FC = () => {
+export const Step3: React.FC = () => {
   // Hooks
   const email = useStore(state => state.email);
   const setMessage = useStore(state => state.setMessage);
   const history = useHistory();
+  const nav = useContext(AuthNavContext);
 
   const {control, handleSubmit, reset} = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
@@ -70,13 +72,13 @@ export const Step3A: React.FC = () => {
       });
 
       // Go back to the previous step
-      history.push("/auth/step/2a");
+      nav?.pop();
 
       return;
     }
 
-    // Go to the next step
-    history.push(checkPasskeySupport() ? "/auth/step/4a" : "/nearby");
+    // Go to nearby
+    history.push("/nearby");
   };
 
   /**
@@ -87,7 +89,7 @@ export const Step3A: React.FC = () => {
   const onSubmit = async (data: FormSchema) => await verify(data.code);
 
   return (
-    <Container>
+    <AuthContainer back={true}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Controller
           control={control}
@@ -107,7 +109,9 @@ export const Step3A: React.FC = () => {
               label="Code"
               labelPlacement="floating"
               onIonBlur={onBlur}
-              onIonInput={onChange}
+              onIonChange={event =>
+                onChange(Number.parseInt(event.detail.value ?? ""))
+              }
               type="number"
               value={value}
             />
@@ -123,6 +127,6 @@ export const Step3A: React.FC = () => {
           Verify Code
         </IonButton>
       </form>
-    </Container>
+    </AuthContainer>
   );
 };

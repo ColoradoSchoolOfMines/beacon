@@ -84,7 +84,7 @@ export const Home: React.FC = () => {
             className="my-2"
             color="primary"
             fill="outline"
-            routerLink="/auth/step/1"
+            routerLink="/auth"
           >
             <IonIcon slot="start" ios={compassOutline} md={compassSharp} />
             Get Started
@@ -130,7 +130,7 @@ export const Home: React.FC = () => {
             className="my-2"
             color="dark"
             fill="outline"
-            routerLink="/auth/step/1"
+            routerLink="/auth"
           >
             <IonIcon slot="start" ios={compassOutline} md={compassSharp} />
             Get Started

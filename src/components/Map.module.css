@@ -1,0 +1,24 @@
+.container :global(.leaflet-control-zoom) {
+  @apply bg-transparent border-1 border-black dark:border-white;
+}
+
+.container :global(.leaflet-control-zoom-in),
+.container :global(.leaflet-control-zoom-out) {
+  @apply bg-opacity-20 hover:bg-opacity-80 hover:dark:bg-opacity-80 bg-white dark:bg-black dark:bg-opacity-20 dark:text-white text-black;
+}
+
+.container :global(.leaflet-control-zoom-in) {
+  @apply border-b-1;
+}
+
+.container :global(.leaflet-control-zoom-out) {
+  @apply border-t-1;
+}
+
+.container :global(.leaflet-control-scale-line) {
+  @apply bg-opacity-20 bg-white border-1 border-black dark:bg-black dark:bg-opacity-20 dark:border-white dark:text-neutral-200 text-neutral-700 text-shadow-none;
+}
+
+.container :global(.leaflet-control-attribution) {
+  @apply bg-opacity-20 bg-white dark:bg-black dark:bg-opacity-20 dark:text-neutral-200 text-neutral-700;
+}

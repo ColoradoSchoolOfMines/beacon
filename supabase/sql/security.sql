@@ -2,7 +2,7 @@
  * Setup security policies
  */
 
-/* ------------------------- Setup column-level security (CLS) policies ------------------------ */
+/* ----------------------------------- Setup role permissions ---------------------------------- */
 
 -- Profiles
 GRANT SELECT ON public.profiles TO authenticated;
@@ -78,6 +78,9 @@ GRANT INSERT (
   comment_id
 )
 ON public.comment_reports TO authenticated;
+
+-- Reset all webauthn credentials
+GRANT EXECUTE ON FUNCTION public.delete_webauthn_credentials() TO authenticated;
 
 /* ----------------------------- Row-level security (RLS) policies ----------------------------- */
 

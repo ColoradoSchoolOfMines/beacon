@@ -4,6 +4,9 @@
 
 import {
   IonContent,
+  IonFab,
+  IonFabButton,
+  IonIcon,
   IonInfiniteScroll,
   IonInfiniteScrollContent,
   IonList,
@@ -11,10 +14,13 @@ import {
   IonRefresher,
   IonRefresherContent,
 } from "@ionic/react";
+import {addOutline, addSharp} from "ionicons/icons";
 import {useEffect, useState} from "react";
+import {useHistory} from "react-router-dom";
 
 import {Header} from "~/components/Header";
 import {PostCard} from "~/components/PostCard";
+import {useStore} from "~/lib/state";
 import {client} from "~/lib/supabase";
 import {Post} from "~/lib/types";
 
@@ -24,7 +30,11 @@ import {Post} from "~/lib/types";
  */
 export const Nearby: React.FC = () => {
   // Hooks
+  const history = useHistory();
+
   const [posts, setPosts] = useState<Post[]>([]);
+
+  const showFABs = useStore(state => state.showFABs);
 
   // Effects
   useEffect(() => {
@@ -41,6 +51,15 @@ export const Nearby: React.FC = () => {
     })();
   }, []);
 
+  // Methods
+  /**
+   * Create a post
+   */
+  const createPost = () => {
+    // Go to the create post page
+    history.push("/posts/create");
+  };
+
   return (
     <IonPage>
       <Header />
@@ -50,7 +69,7 @@ export const Nearby: React.FC = () => {
           <IonRefresherContent />
         </IonRefresher>
 
-        {posts.length > 0 && (
+        {posts.length > 0 ? (
           <IonList>
             {posts.map(post => (
               <PostCard key={post.id} post={post} />
@@ -60,8 +79,7 @@ export const Nearby: React.FC = () => {
               <IonInfiniteScrollContent />
             </IonInfiniteScroll>
           </IonList>
-        )}
-        {posts.length === 0 && (
+        ) : (
           <div className="flex flex-col h-full items-center justify-center text-center w-full">
             <h1 className="text-8xl">😢</h1>
             <p className="mt-4 text-xl">
@@ -72,6 +90,14 @@ export const Nearby: React.FC = () => {
           </div>
         )}
       </IonContent>
+
+      {showFABs && (
+        <IonFab slot="fixed" horizontal="end" vertical="bottom">
+          <IonFabButton onClick={createPost}>
+            <IonIcon ios={addOutline} md={addSharp} />
+          </IonFabButton>
+        </IonFab>
+      )}
     </IonPage>
   );
 };

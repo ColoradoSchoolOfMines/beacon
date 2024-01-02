@@ -2,7 +2,10 @@
  * @file Geolocation helper
  */
 
+import {isEqual} from "lodash-es";
+
 import {useStore} from "~/lib/state";
+import {client} from "~/lib/supabase";
 
 const setMessage = useStore.getState().setMessage;
 const setLocation = useStore.getState().setLocation;
@@ -12,10 +15,13 @@ const setLocation = useStore.getState().setLocation;
  */
 let geolocationWatcherId: number | undefined;
 
-/**
- * Start watching the user's current geolocation
- */
-export const watchGeolocation = async () => {
+// Watch the user's geolocation
+useStore.subscribe(async state => {
+  // Check if the user is logged in
+  if (state.user === undefined) {
+    return;
+  }
+
   // Check if the watcher is already running
   if (geolocationWatcherId !== undefined) {
     return;
@@ -24,7 +30,7 @@ export const watchGeolocation = async () => {
   // Check if geolocation is supported
   if (navigator.geolocation === undefined) {
     // Display the message
-    setMessage({
+    state.setMessage({
       name: "Geolocation error",
       description: "Your browser does not support geolocation.",
     });
@@ -37,7 +43,7 @@ export const watchGeolocation = async () => {
 
   if (status.state === "denied") {
     // Display the message
-    setMessage({
+    state.setMessage({
       name: "Geolocation error",
       description:
         "You have denied access to your geolocation, but it is required to show nearby posts. You can grant Beacon access to your geolocation in your browser settings.",
@@ -49,10 +55,34 @@ export const watchGeolocation = async () => {
   // Watch the user's geolocation
   try {
     geolocationWatcherId = navigator.geolocation.watchPosition(
-      setLocation,
+      async location => {
+        const oldLocation = useStore.getState().location;
+
+        // Update the frontend
+        setLocation(location);
+
+        // Update the backend
+        if (!isEqual(location, oldLocation)) {
+          const {error} = await client.from("locations").insert({
+            // eslint-disable-next-line camelcase
+            created_at: new Date(location.timestamp).toISOString(),
+            location: `POINT(${location.coords.longitude} ${location.coords.latitude})`,
+          });
+
+          // Handle error
+          if (error !== null) {
+            setMessage({
+              name: "Failed to update location",
+              description: error.message,
+            });
+
+            return;
+          }
+        }
+      },
       error => {
         // Display the message
-        setMessage({
+        state.setMessage({
           name: "Geolocation error",
           description: error.message,
         });
@@ -65,11 +95,11 @@ export const watchGeolocation = async () => {
     );
   } catch (error) {
     // Display the message
-    setMessage({
+    state.setMessage({
       name: "Geolocation error",
       description: `Your geolocation could not be determined: ${error}`,
     });
 
     return;
   }
-};
+});

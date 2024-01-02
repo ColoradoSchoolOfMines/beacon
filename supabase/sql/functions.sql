@@ -343,11 +343,16 @@ BEGIN
   -- Calculate the _elapsed time between the new location and the previous location
   SELECT EXTRACT(EPOCH FROM (NEW.created_at - _previous_created_at)) INTO _elapsed;
 
+  -- Skip inserting if the elapsed time is zero
+  IF _elapsed = 0::BIGINT THEN
+    RETURN NULL;
+  END IF;
+
   -- Calculate the distance between the new location and the previous location
   SELECT extensions.ST_Distance(NEW.location, _previous_location) INTO _distance;
 
   -- Prevent the user from moving too fast (> 1200 km/h ~= 333.333 m/s)
-  IF (_elapsed = 0::BIGINT) OR ((_distance / _elapsed::DOUBLE PRECISION) > 333.333) THEN
+  IF (_distance / _elapsed::DOUBLE PRECISION) > 333.333 THEN
     RAISE EXCEPTION 'You are moving too fast';
   END IF;
 
@@ -586,5 +591,19 @@ BEGIN
   END IF;
 
   RETURN NULL;
+END;
+$$;
+
+-- Delete all webauthn credentials for the current user
+CREATE OR REPLACE FUNCTION public.delete_webauthn_credentials()
+RETURNS VOID
+SECURITY DEFINER
+VOLATILE
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  -- Delete all webauthn credentials for the current user
+  DELETE FROM auth.webauthn_credentials
+  WHERE user_id = auth.uid();
 END;
 $$;
