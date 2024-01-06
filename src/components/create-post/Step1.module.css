@@ -5,3 +5,7 @@
 .collapsedItem:global(::part(native)) {
   @apply min-h-unset;
 }
+
+.clearButton:global(::part(native)) {
+  @apply px-1;
+}

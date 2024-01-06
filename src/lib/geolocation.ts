@@ -46,7 +46,7 @@ useStore.subscribe(async state => {
     state.setMessage({
       name: "Geolocation error",
       description:
-        "You have denied access to your geolocation, but it is required to show nearby posts. You can grant Beacon access to your geolocation in your browser settings.",
+        "You have denied access to your geolocation, but it is required to show and create posts. You can grant Beacon access to your geolocation in your browser settings.",
     });
 
     return;

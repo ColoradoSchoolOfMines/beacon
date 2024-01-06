@@ -25,8 +25,8 @@ import {
 import {startRegistration} from "@simplewebauthn/browser";
 import {RegistrationResponseJSON} from "@simplewebauthn/typescript-types";
 import {
-  lockClosedOutline,
-  lockClosedSharp,
+  keyOutline,
+  keySharp,
   logOutOutline,
   logOutSharp,
   refreshOutline,
@@ -42,6 +42,7 @@ import {
 } from "~/lib/api/auth";
 import {useStore} from "~/lib/state";
 import {client} from "~/lib/supabase";
+import {MeasurementSystem, Theme} from "~/lib/types";
 import {GIT_BRANCH, GIT_COMMIT, VERSION} from "~/lib/vars";
 
 /**
@@ -55,6 +56,8 @@ export const Settings: React.FC = () => {
   const setTheme = useStore(state => state.setTheme);
   const showFABs = useStore(state => state.showFABs);
   const setShowFABs = useStore(state => state.setShowFABs);
+  const measurementSystem = useStore(state => state.measurementSystem);
+  const setMeasurementSystem = useStore(state => state.setMeasurementSystem);
   const reset = useStore(state => state.reset);
 
   const [present] = useIonActionSheet();
@@ -219,10 +222,11 @@ export const Settings: React.FC = () => {
                 onIonChange={event => setTheme(event.detail.value)}
                 value={theme}
               >
-                <IonSelectOption value="light">Light</IonSelectOption>
-                <IonSelectOption value="dark">Dark</IonSelectOption>
+                <IonSelectOption value={Theme.LIGHT}>Light</IonSelectOption>
+                <IonSelectOption value={Theme.DARK}>Dark</IonSelectOption>
               </IonSelect>
             </IonItem>
+
             <IonItem>
               <IonToggle
                 checked={showFABs}
@@ -231,21 +235,38 @@ export const Settings: React.FC = () => {
                 Show floating action buttons
               </IonToggle>
             </IonItem>
+
+            <IonItem>
+              <IonSelect
+                interface="action-sheet"
+                interfaceOptions={{
+                  header: "Measurement system",
+                  subHeader: "Select your preferred measurement system",
+                }}
+                label="Measurement system"
+                labelPlacement="floating"
+                onIonChange={event => setMeasurementSystem(event.detail.value)}
+                value={measurementSystem}
+              >
+                <IonSelectOption value={MeasurementSystem.METRIC}>
+                  Metric
+                </IonSelectOption>
+                <IonSelectOption value={MeasurementSystem.IMPERIAL}>
+                  Imperial
+                </IonSelectOption>
+              </IonSelect>
+            </IonItem>
           </IonItemGroup>
 
           <IonItemGroup>
             <IonItemDivider>
-              <IonLabel>User</IonLabel>
+              <IonLabel>Account</IonLabel>
             </IonItemDivider>
 
             {checkPasskeySupport() && (
               <IonItem button={true} onClick={registerPasskey}>
                 <IonLabel>Register passkey</IonLabel>
-                <IonIcon
-                  slot="end"
-                  ios={lockClosedOutline}
-                  md={lockClosedSharp}
-                />
+                <IonIcon slot="end" ios={keyOutline} md={keySharp} />
               </IonItem>
             )}
 
@@ -275,24 +296,28 @@ export const Settings: React.FC = () => {
             <IonItemDivider>
               <IonLabel>About</IonLabel>
             </IonItemDivider>
+
             <IonItem>
               <IonLabel>Version</IonLabel>
               <IonNote className="ml-0 my-4 p-0 text-[1rem]" slot="end">
                 {VERSION}
               </IonNote>
             </IonItem>
+
             <IonItem>
               <IonLabel>Branch</IonLabel>
               <IonNote className="ml-0 my-4 p-0 text-[1rem]" slot="end">
                 {GIT_BRANCH}
               </IonNote>
             </IonItem>
+
             <IonItem>
               <IonLabel>Commit</IonLabel>
               <IonNote className="ml-0 my-4 p-0 text-[1rem]" slot="end">
                 {GIT_COMMIT}
               </IonNote>
             </IonItem>
+
             <IonItem
               rel="noreferrer"
               target="_blank"

@@ -3,7 +3,7 @@
  */
 
 import {IonButton, IonContent, IonIcon, IonPage} from "@ionic/react";
-import {compassOutline, compassSharp} from "ionicons/icons";
+import {navigateCircleOutline, navigateCircleSharp} from "ionicons/icons";
 import {useMeasure} from "react-use";
 
 import {Header} from "~/components/Header";
@@ -86,7 +86,11 @@ export const Home: React.FC = () => {
             fill="outline"
             routerLink="/auth"
           >
-            <IonIcon slot="start" ios={compassOutline} md={compassSharp} />
+            <IonIcon
+              slot="start"
+              ios={navigateCircleOutline}
+              md={navigateCircleSharp}
+            />
             Get Started
           </IonButton>
         </div>
@@ -132,7 +136,11 @@ export const Home: React.FC = () => {
             fill="outline"
             routerLink="/auth"
           >
-            <IonIcon slot="start" ios={compassOutline} md={compassSharp} />
+            <IonIcon
+              slot="start"
+              ios={navigateCircleOutline}
+              md={navigateCircleSharp}
+            />
             Get Started
           </IonButton>
         </div>

@@ -16,6 +16,8 @@ import {
 import {
   arrowForwardOutline,
   arrowForwardSharp,
+  closeOutline,
+  closeSharp,
   codeSlashOutline,
   codeSlashSharp,
   eyeOutline,
@@ -33,6 +35,7 @@ import {Step2} from "~/components/create-post/Step2";
 import {Markdown} from "~/components/Markdown";
 import {SupplementalError} from "~/components/SupplementalError";
 import {useStore} from "~/lib/state";
+import {createDataURL} from "~/lib/utils";
 import {CreatePostNavContext} from "~/pages/CreatePost";
 
 /**
@@ -111,8 +114,9 @@ type FormSchema = z.infer<typeof formSchema>;
 export const Step1: React.FC = () => {
   // Hooks
   const contentTextarea = useRef<HTMLIonTextareaElement | null>(null);
-  const [filenames, setFilenames] = useState<string[]>([]);
   const [contentMode, setContentMode] = useState<ContentMode>(ContentMode.RAW);
+  const [previewUrl, setPreviewUrl] = useState<string | undefined>(undefined);
+  const mediaInput = useRef<HTMLInputElement | null>(null);
 
   const post = useStore(state => state.post);
   const setPost = useStore(state => state.setPost);
@@ -142,10 +146,26 @@ export const Step1: React.FC = () => {
     }
   }, [post]);
 
-  useEffect(
-    () => setFilenames(media === undefined ? [] : media.map(file => file.name)),
-    [media],
-  );
+  useEffect(() => {
+    // Update the upload value
+    if (
+      (media === undefined || media.length === 0) &&
+      mediaInput.current !== null
+    ) {
+      mediaInput.current.value = "";
+    }
+
+    // Update the preview URL
+    (async () => {
+      let url: string | undefined;
+
+      if (media !== undefined && media.length > 0) {
+        url = await createDataURL(media[0]!);
+      }
+
+      setPreviewUrl(url);
+    })();
+  }, [media]);
 
   // Methods
   /**
@@ -234,35 +254,54 @@ export const Step1: React.FC = () => {
               name="media"
               render={({field: {onChange, onBlur}, fieldState: {error}}) => (
                 <>
-                  <label className="flex flex-row items-center justify-center w-full">
-                    <p className="mr-4 text-center">
-                      Add a photo or video (
-                      {filenames.length > 0
-                        ? `Selected: ${filenames.join(", ")}`
-                        : "No files selected"}
-                      )
-                    </p>
+                  <label className="w-full">
+                    <div className="flex flex-row items-center justify-center relative w-full">
+                      <IonIcon
+                        className="text-2xl"
+                        ios={imageOutline}
+                        md={imageSharp}
+                      />
 
-                    <IonIcon
-                      className="text-2xl"
-                      color="primary"
-                      ios={imageOutline}
-                      md={imageSharp}
-                    />
+                      <p className="ml-2 text-center">Add a photo or video</p>
 
-                    <input
-                      accept={MEDIA_MIME_TYPES.join(",")}
-                      onChange={event =>
-                        onChange(
-                          event.target.files === null
-                            ? []
-                            : Array.from(event.target.files),
-                        )
-                      }
-                      onBlur={onBlur}
-                      className="h-0 w-0"
-                      type="file"
-                    />
+                      <input
+                        accept={MEDIA_MIME_TYPES.join(",")}
+                        className="h-0 w-0"
+                        onChange={event =>
+                          onChange(
+                            event.target.files === null
+                              ? []
+                              : Array.from(event.target.files),
+                          )
+                        }
+                        onBlur={onBlur}
+                        ref={mediaInput}
+                        type="file"
+                      />
+
+                      {media !== undefined && media.length > 0 && (
+                        <IonButton
+                          className={`absolute right-0 ${styles.clearButton}`}
+                          fill="clear"
+                          onClick={event => {
+                            event.preventDefault();
+                            onChange([]);
+                          }}
+                        >
+                          <IonIcon
+                            slot="icon-only"
+                            ios={closeOutline}
+                            md={closeSharp}
+                          />
+                        </IonButton>
+                      )}
+                    </div>
+                    {previewUrl !== undefined && (
+                      <embed
+                        className="pointer-events-none w-full object-fill"
+                        src={previewUrl}
+                      />
+                    )}
                   </label>
 
                   <SupplementalError error={error?.message} />

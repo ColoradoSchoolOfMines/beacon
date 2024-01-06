@@ -14,12 +14,14 @@ import {
   IonMenuToggle,
 } from "@ionic/react";
 import {
-  compassOutline,
-  compassSharp,
+  createOutline,
+  createSharp,
   homeOutline,
   homeSharp,
   lockClosedOutline,
   lockClosedSharp,
+  navigateCircleOutline,
+  navigateCircleSharp,
   settingsOutline,
   settingsSharp,
 } from "ionicons/icons";
@@ -99,8 +101,16 @@ const navItems: NavItem[] = [
     requiredState: RequiredAuthState.AUTHENTICATED,
     url: "/nearby",
     position: NavItemPosition.TOP,
-    iosIcon: compassOutline,
-    mdIcon: compassSharp,
+    iosIcon: navigateCircleOutline,
+    mdIcon: navigateCircleSharp,
+  },
+  {
+    title: "Create Post",
+    requiredState: RequiredAuthState.AUTHENTICATED,
+    url: "/posts/create",
+    position: NavItemPosition.TOP,
+    iosIcon: createOutline,
+    mdIcon: createSharp,
   },
   {
     title: "Settings",

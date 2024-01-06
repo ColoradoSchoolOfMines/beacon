@@ -9,6 +9,7 @@ import {Map as LeafletMap} from "leaflet";
 import {useEffect, useRef} from "react";
 import {
   AttributionControl,
+  Circle,
   MapContainer,
   MapContainerProps,
   ScaleControl,
@@ -35,6 +36,11 @@ interface MapProps extends React.HTMLAttributes<HTMLDivElement> {
   lockPosition?: boolean;
 
   /**
+   * Bounds (corner 1 latitude, corner 1 longitude, corner 2 latitude, corner 2 longitude)
+   */
+  bounds?: [[number, number], [number, number]];
+
+  /**
    * Zoom level (0-20)
    */
   zoom?: number;
@@ -53,6 +59,21 @@ interface MapProps extends React.HTMLAttributes<HTMLDivElement> {
    * Maximum zoom level (0-20)
    */
   maxZoom?: number;
+
+  /**
+   * Circle overlay
+   */
+  circle?: {
+    /**
+     * Circle radius (in meters)
+     */
+    radius: number;
+
+    /**
+     * Circle center (latitude, longitude)
+     */
+    center: [number, number];
+  };
 }
 
 /**
@@ -62,10 +83,12 @@ interface MapProps extends React.HTMLAttributes<HTMLDivElement> {
 export const Map: React.FC<MapProps> = ({
   position,
   lockPosition = false,
+  bounds,
   zoom = 10,
   lockZoom = false,
   minZoom,
   maxZoom,
+  circle,
   ...props
 }) => {
   // Hooks
@@ -95,7 +118,7 @@ export const Map: React.FC<MapProps> = ({
         center={position}
         doubleClickZoom={!lockZoom}
         dragging={!lockPosition}
-        maxBounds={[position, position]}
+        maxBounds={lockPosition ? [position, position] : bounds}
         maxZoom={maxZoom}
         minZoom={minZoom}
         scrollWheelZoom={!lockZoom}
@@ -104,6 +127,20 @@ export const Map: React.FC<MapProps> = ({
       >
         <ScaleControl />
         <AttributionControl prefix="" />
+        {circle !== undefined && (
+          <Circle
+            className="!fill-primary-400 !stroke-primary-700"
+            center={circle.center}
+            radius={circle.radius}
+            pathOptions={{
+              lineCap: "square",
+              lineJoin: "miter",
+              fillOpacity: 0.25,
+              opacity: 0.8,
+              weight: 2,
+            }}
+          />
+        )}
         <TileLayer
           className={
             theme === Theme.DARK ? "invert grayscale-30 hue-rotate-180" : ""

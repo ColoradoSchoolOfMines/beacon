@@ -5,8 +5,7 @@
 import {IonNav} from "@ionic/react";
 import {createContext, useState} from "react";
 
-// import {Step1} from "~/components/create-post/Step1";
-import {Step2} from "~/components/create-post/Step2";
+import {Step1} from "~/components/create-post/Step1";
 
 /**
  * Create post page nav context
@@ -25,7 +24,7 @@ export const CreatePost: React.FC = () => {
 
   return (
     <CreatePostNavContext.Provider value={nav}>
-      <IonNav ref={n => setNav(n ?? undefined)} root={() => <Step2 />} />
+      <IonNav ref={n => setNav(n ?? undefined)} root={() => <Step1 />} />
     </CreatePostNavContext.Provider>
   );
 };

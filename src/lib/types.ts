@@ -44,6 +44,21 @@ export type KeysOfType<T, KT> = {
 }[keyof T];
 
 /**
+ * Global information message modal
+ */
+export interface GlobalMessage {
+  /**
+   * Message name
+   */
+  name: string;
+
+  /**
+   * Message description
+   */
+  description: string;
+}
+
+/**
  * Theme
  */
 export enum Theme {
@@ -59,18 +74,18 @@ export enum Theme {
 }
 
 /**
- * Global information message modal
+ * Measurement systems
  */
-export interface GlobalMessage {
+export enum MeasurementSystem {
   /**
-   * Message name
+   * Metric
    */
-  name: string;
+  METRIC = "metric",
 
   /**
-   * Message description
+   * Imperial
    */
-  description: string;
+  IMPERIAL = "imperial",
 }
 
 /**

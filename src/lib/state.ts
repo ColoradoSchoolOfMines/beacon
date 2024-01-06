@@ -9,7 +9,13 @@ import {create} from "zustand";
 import {createJSONStorage, devtools, persist} from "zustand/middleware";
 
 import {stateStorage} from "~/lib/storage";
-import {DeepPartial, GlobalMessage, PostCreate, Theme} from "~/lib/types";
+import {
+  DeepPartial,
+  GlobalMessage,
+  MeasurementSystem,
+  PostCreate,
+  Theme,
+} from "~/lib/types";
 
 /**
  * Store state and actions
@@ -93,6 +99,17 @@ interface Store {
   setShowFABs: (newShowFABs: boolean) => void;
 
   /**
+   * Measurement system
+   */
+  measurementSystem: MeasurementSystem;
+
+  /**
+   * Set the measurement system
+   * @param newMeasurementSystem New measurement system
+   */
+  setMeasurementSystem: (newMeasurementSystem: MeasurementSystem) => void;
+
+  /**
    * Whether or not the store has been hydrated from storage
    */
   hydrated: boolean;
@@ -118,6 +135,7 @@ const defaultState: DeepPartial<Store> = {
       ? Theme.DARK
       : Theme.LIGHT,
   showFABs: true,
+  measurementSystem: MeasurementSystem.IMPERIAL,
 };
 
 /**
@@ -167,6 +185,11 @@ export const useStore = create<Store>()(
             set(state => ({
               ...state,
               showFABs: newShowFABs,
+            })),
+          setMeasurementSystem: (newMeasurementSystem: MeasurementSystem) =>
+            set(state => ({
+              ...state,
+              measurementSystem: newMeasurementSystem,
             })),
           hydrated: false,
           setHydrated: () =>
