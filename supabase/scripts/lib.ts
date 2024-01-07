@@ -90,8 +90,8 @@ const dbSetupFiles = [
   join(root, "supabase", "sql", "functions.sql"),
   join(root, "supabase", "sql", "tables.sql"),
   join(root, "supabase", "sql", "triggers.sql"),
-  join(root, "supabase", "sql", "security.sql"),
   join(root, "supabase", "sql", "views.sql"),
+  join(root, "supabase", "sql", "security.sql"),
   join(root, "supabase", "sql", "after.sql"),
 ];
 

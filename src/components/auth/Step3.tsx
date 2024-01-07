@@ -109,10 +109,8 @@ export const Step3: React.FC = () => {
               label="Code"
               labelPlacement="floating"
               onIonBlur={onBlur}
-              onIonChange={event =>
-                onChange(Number.parseInt(event.detail.value ?? ""))
-              }
-              type="number"
+              onIonChange={onChange}
+              type="text"
               value={value}
             />
           )}

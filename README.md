@@ -44,7 +44,7 @@ npm run supabase:status
 
 and then update [`supabase/functions/.env`](supabase/functions/.env) with the appropriate values (See [Function Environment Variables](#function-environment-variables)).
 
-5. Update [`.env`](.env) with the appropriate values (See [Frontend Environment Variables](#frontend-environment-variables)).
+5. Update [`.env`](.env) (Different than the preceding `supabase/functions/.env` file) with the appropriate values (See [Frontend Environment Variables](#frontend-environment-variables)).
 
 6. Still inside the repository, start the development server:
 
@@ -52,9 +52,15 @@ and then update [`supabase/functions/.env`](supabase/functions/.env) with the ap
 npm run dev
 ```
 
-7. Open [`http://localhost:3000`](http://localhost:3000) in your browser to access the frontend
+7. If running Supabase locally, start the Supabase functions:
 
-8. Reset the backend (optional, but **strongly** recommended anytime after you change the backend schema):
+```bash
+npm run supabase:functions
+```
+
+8. Open [`http://localhost:3000`](http://localhost:3000) in your browser to access the frontend
+
+9. If running Supabase locally, reset the database after each schema change:
 
 ```bash
 npm run supabase:reset

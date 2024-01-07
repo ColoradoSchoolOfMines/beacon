@@ -228,7 +228,7 @@ export const endRegistration = async (ctx: Context) => {
 
   // Register the credential
   const registerWebauthnCrdential = await serviceRoleClient
-    .schema("auth")
+    .schema("utilities")
     .rpc("register_webauthn_credential", {
       _user_id: user.id,
       _challenge_id: challengeRes.data.id,
@@ -398,7 +398,7 @@ export const endAuthentication = async (ctx: Context) => {
 
   // Authenticate the credential
   const authenticateWebauthnCrdential = await serviceRoleClient
-    .schema("auth")
+    .schema("utilities")
     .rpc("authenticate_webauthn_credential", {
       _user_id: credentialRes.data.user_id,
       _challenge_id: challengeRes.data.id,

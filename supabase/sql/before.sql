@@ -6,9 +6,6 @@
 
 /* --------------------------------------- Setup schemas --------------------------------------- */
 
--- Public
-REVOKE ALL ON SCHEMA public FROM anon, authenticated;
-
 -- Utilities (Non-public helpers)
 CREATE SCHEMA IF NOT EXISTS utilities;
 

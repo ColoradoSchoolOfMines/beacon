@@ -142,9 +142,7 @@ export const Map: React.FC<MapProps> = ({
           />
         )}
         <TileLayer
-          className={
-            theme === Theme.DARK ? "invert grayscale-30 hue-rotate-180" : ""
-          }
+          className={theme === Theme.DARK ? "invert grayscale-30" : ""}
           attribution='<a rel="noreferrer" target="_blank" href="https://leafletjs.com/">Leaflet</a> | &copy; <a rel="noreferrer" target="_blank" href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a rel="noreferrer" target="_blank" href="https://carto.com/attributions">CARTO</a>'
           url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         />

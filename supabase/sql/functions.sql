@@ -4,93 +4,7 @@
  * Prerequisites: before.sql
  */
 
--- Register the webauthn credential after a challenge has been successfully verified
-CREATE OR REPLACE FUNCTION auth.register_webauthn_credential(
-  -- User ID
-  _user_id UUID,
-
-  -- Challenge ID
-  _challenge_id UUID,
-
-  -- Client-side credential ID
-  _client_credential_id TEXT,
-
-  -- Credential counter
-  _counter INTEGER,
-
-  -- Credential public key
-  _public_key VARCHAR(1000)
-)
-RETURNS VOID
-SECURITY DEFINER
-VOLATILE
-LANGUAGE plpgsql
-AS $$
-BEGIN
-  -- Insert the credential
-  INSERT INTO auth.webauthn_credentials (
-    user_id,
-    client_credential_id,
-    counter,
-    public_key
-  ) VALUES (
-    _user_id,
-    _client_credential_id,
-    _counter,
-    _public_key
-  );
-
-  -- Delete the challenge
-  DELETE FROM auth.webauthn_challenges
-  WHERE id = _challenge_id;
-END;
-$$;
-
--- Update the webauthn credential after a challenge has been successfully verified
-CREATE OR REPLACE FUNCTION auth.authenticate_webauthn_credential(
-  -- User ID
-  _user_id UUID,
-
-  -- Challenge ID
-  _challenge_id UUID,
-
-  -- Credential ID
-  _credential_id UUID,
-
-  -- New credential counter
-  _new_counter INTEGER
-)
-RETURNS VOID
-SECURITY DEFINER
-VOLATILE
-LANGUAGE plpgsql
-AS $$
-BEGIN
-  -- Update the credential
-  UPDATE auth.webauthn_credentials SET counter = _new_counter WHERE id = _credential_id AND user_id = _user_id;
-
-  -- Delete the challenge
-  DELETE FROM auth.webauthn_challenges
-  WHERE id = _challenge_id;
-END;
-$$;
-
--- Prune old webauthn challenges
-CREATE OR REPLACE FUNCTION auth.prune_webauthn_challenges()
-RETURNS VOID
-SECURITY DEFINER
-VOLATILE
-LANGUAGE plpgsql
-AS $$
-DECLARE
-  -- Expiration interval
-  _interval CONSTANT INTERVAL := INTERVAL '1 hour';
-BEGIN
-  -- Delete expired challenges
-  DELETE FROM auth.webauthn_challenges
-  WHERE created_at < (NOW() - _interval);
-END;
-$$;
+/* --------------------------------- Private utility functions --------------------------------- */
 
 -- Generate a random double precision number between 0 (inclusive) and 1 (exclusive), using crypto-safe random data
 --
@@ -193,23 +107,91 @@ BEGIN
 END;
 $$;
 
--- Calculate the distance between two locations, with an uncertainty factor to anonymize the locations
-CREATE OR REPLACE FUNCTION utilities.anonymized_distance(
-  -- First location
-  _a GEOGRAPHY(POINT, 4326),
+-- Register the webauthn credential after a challenge has been successfully verified
+CREATE OR REPLACE FUNCTION utilities.register_webauthn_credential(
+  -- User ID
+  _user_id UUID,
 
-  -- Second location
-  _b GEOGRAPHY(POINT, 4326),
+  -- Challenge ID
+  _challenge_id UUID,
 
-  -- Distance uncertainty (in meters)
-  _uncertainty DOUBLE PRECISION
+  -- Client-side credential ID
+  _client_credential_id TEXT,
+
+  -- Credential counter
+  _counter INTEGER,
+
+  -- Credential public key
+  _public_key VARCHAR(1000)
 )
-RETURNS DOUBLE PRECISION
+RETURNS VOID
+SECURITY DEFINER
 VOLATILE
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  RETURN extensions.ST_Distance(_a, _b) - (0.5 * _uncertainty) + (_uncertainty * utilities.safe_random());
+  -- Insert the credential
+  INSERT INTO auth.webauthn_credentials (
+    user_id,
+    client_credential_id,
+    counter,
+    public_key
+  ) VALUES (
+    _user_id,
+    _client_credential_id,
+    _counter,
+    _public_key
+  );
+
+  -- Delete the challenge
+  DELETE FROM auth.webauthn_challenges
+  WHERE id = _challenge_id;
+END;
+$$;
+
+-- Update the webauthn credential after a challenge has been successfully verified
+CREATE OR REPLACE FUNCTION utilities.authenticate_webauthn_credential(
+  -- User ID
+  _user_id UUID,
+
+  -- Challenge ID
+  _challenge_id UUID,
+
+  -- Credential ID
+  _credential_id UUID,
+
+  -- New credential counter
+  _new_counter INTEGER
+)
+RETURNS VOID
+SECURITY DEFINER
+VOLATILE
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  -- Update the credential
+  UPDATE auth.webauthn_credentials SET counter = _new_counter WHERE id = _credential_id AND user_id = _user_id;
+
+  -- Delete the challenge
+  DELETE FROM auth.webauthn_challenges
+  WHERE id = _challenge_id;
+END;
+$$;
+
+-- Prune old webauthn challenges
+CREATE OR REPLACE FUNCTION utilities.prune_webauthn_challenges()
+RETURNS VOID
+SECURITY DEFINER
+VOLATILE
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  -- Expiration interval
+  _interval CONSTANT INTERVAL := INTERVAL '1 hour';
+BEGIN
+  -- Delete expired challenges
+  DELETE FROM auth.webauthn_challenges
+  WHERE created_at < (NOW() - _interval);
 END;
 $$;
 
@@ -219,6 +201,7 @@ CREATE OR REPLACE FUNCTION utilities.validate_media_object_name(
   _user_id UUID
 )
 RETURNS BOOLEAN
+SECURITY DEFINER
 STABLE
 LANGUAGE plpgsql
 AS $$
@@ -230,12 +213,12 @@ BEGIN
   _segments = STRING_TO_ARRAY(_object_name, '/');
 
   -- Return false if the name has an incorrect number of segments
-  IF ARRAY_LENGTH(_segments, 1) != 3 THEN
+  IF ARRAY_LENGTH(_segments, 1) != 2 THEN
     RETURN FALSE;
   END IF;
 
   -- Posts category
-  IF _segments[2] = 'posts' THEN
+  IF _segments[1] = 'posts' THEN
     -- Check that the user owns the corresponding post and that the post should have media
     RETURN EXISTS(
       SELECT 1
@@ -243,7 +226,7 @@ BEGIN
       WHERE
         private_poster_id = _user_id
         AND has_media = TRUE
-        AND id = _segments[3]::UUID
+        AND id = _segments[2]::UUID
     );
 
   -- Unknown media category
@@ -291,6 +274,31 @@ BEGIN
 END;
 $$;
 
+-- Prune old locations trigger function
+CREATE OR REPLACE FUNCTION utilities.prune_locations()
+RETURNS TRIGGER
+SECURITY DEFINER
+VOLATILE
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  -- Keep only 5 newest locations for the user
+  DELETE FROM public.locations
+  WHERE
+    user_id = NEW.user_id AND
+    id NOT IN (
+      SELECT id
+      FROM public.locations
+      ORDER BY created_at DESC
+      LIMIT 5
+    );
+
+  RETURN NEW;
+END;
+$$;
+
+/* ------------------------------------- Trigger functions ------------------------------------- */
+
 -- Setup a profile for a new user trigger function
 CREATE OR REPLACE FUNCTION utilities.setup_profile_trigger()
 RETURNS TRIGGER
@@ -313,6 +321,7 @@ $$;
 -- Validate a new location trigger function
 CREATE OR REPLACE FUNCTION utilities.validate_location_trigger()
 RETURNS TRIGGER
+SECURITY DEFINER
 LANGUAGE plpgsql
 AS $$
 DECLARE
@@ -360,73 +369,6 @@ BEGIN
 END;
 $$;
 
--- Prune old locations trigger function
-CREATE OR REPLACE FUNCTION utilities.prune_locations()
-RETURNS TRIGGER
-SECURITY DEFINER
-VOLATILE
-LANGUAGE plpgsql
-AS $$
-BEGIN
-  -- Keep only 5 newest locations for the user
-  DELETE FROM public.locations
-  WHERE
-    user_id = NEW.user_id AND
-    id NOT IN (
-      SELECT id
-      FROM public.locations
-      ORDER BY created_at DESC
-      LIMIT 5
-    );
-
-  RETURN NEW;
-END;
-$$;
-
--- Get a post's votes
-CREATE OR REPLACE FUNCTION utilities.get_post_votes(
-  -- Post ID
-  _id UUID,
-
-  -- Whether or not the vote is an upvote
-  _upvote BOOLEAN
-)
-RETURNS INTEGER
-SECURITY DEFINER
-VOLATILE
-LANGUAGE plpgsql
-AS $$
-BEGIN
-  RETURN (
-    SELECT COUNT(*)
-    FROM public.post_votes post_vote
-    WHERE post_vote.post_id = _id AND post_vote.upvote = _upvote
-  );
-END;
-$$;
-
--- Get a comment's votes
-CREATE OR REPLACE FUNCTION utilities.get_comment_votes(
-  -- Comment ID
-  _id UUID,
-
-  -- Whether or not the vote is an upvote
-  _upvote BOOLEAN
-)
-RETURNS INTEGER
-SECURITY DEFINER
-VOLATILE
-LANGUAGE plpgsql
-AS $$
-BEGIN
-  RETURN (
-    SELECT COUNT(*)
-    FROM public.comment_votes comment_vote
-    WHERE comment_vote.comment_id = _id AND comment_vote.upvote = _upvote
-  );
-END;
-$$;
-
 -- Anonymize the location of a new post trigger function
 CREATE OR REPLACE FUNCTION utilities.anonymize_location_trigger()
 RETURNS TRIGGER
@@ -435,16 +377,18 @@ VOLATILE
 LANGUAGE plpgsql
 AS $$
 DECLARE
+  _uncertainty DOUBLE PRECISION := 0.05;
+
   -- Old location as a geometry point
   _old_location GEOMETRY;
 BEGIN
   -- Convert the old location to a geometry point
   _old_location = NEW.private_location::GEOMETRY;
 
-  -- Add 5% location uncertainty relative to the post's radius (To increase resistance against static-target trilateration attacks)
+  -- Add some uncertainty relative to the post's radius (To increase resistance against static trilateration attacks)
   NEW.private_location = extensions.ST_MakePoint(
-    extensions.ST_X(_old_location) - (0.025 * NEW.radius) + (0.05 * NEW.radius * utilities.safe_random()),
-    extensions.ST_Y(_old_location) - (0.025 * NEW.radius) + (0.05 * NEW.radius * utilities.safe_random())
+    extensions.ST_X(_old_location) - ((_uncertainty / 2) * NEW.radius) + (_uncertainty * NEW.radius * utilities.safe_random()),
+    extensions.ST_Y(_old_location) - ((_uncertainty / 2) * NEW.radius) + (_uncertainty * NEW.radius * utilities.safe_random())
   );
 
   RETURN NEW;
@@ -507,7 +451,7 @@ BEGIN
     -- Ensure the ancestor comment's post matches the child comment's post
     IF (
       SELECT post_id
-      FROM public.comments
+      FROM public.private_comments
       WHERE id = _ancestor_id
     ) != _post_id THEN
       RAISE EXCEPTION 'The ancestor''s comment''s post does not match the child comment''s post';
@@ -523,7 +467,7 @@ BEGIN
 
     -- Get the next parent ID
     SELECT parent_id INTO _ancestor_id
-    FROM public.comments
+    FROM public.private_comments
     WHERE id = _ancestor_id;
   END LOOP;
 
@@ -583,16 +527,18 @@ BEGIN
   -- Delete the comment if the net votes is less than or equal to -5
   IF (
     SELECT upvotes - downvotes
-    FROM public.comments
+    FROM public.private_comments
     WHERE id = _comment_id
   ) <= -5 THEN
-    DELETE FROM public.comments
+    DELETE FROM public.private_comments
     WHERE id = _comment_id;
   END IF;
 
   RETURN NULL;
 END;
 $$;
+
+/* -------------------------------------- Public functions ------------------------------------- */
 
 -- Delete all webauthn credentials for the current user
 CREATE OR REPLACE FUNCTION public.delete_webauthn_credentials()
@@ -605,5 +551,27 @@ BEGIN
   -- Delete all webauthn credentials for the current user
   DELETE FROM auth.webauthn_credentials
   WHERE user_id = auth.uid();
+END;
+$$;
+
+-- Calculate the distance from the current user's location to a specified location
+CREATE OR REPLACE FUNCTION public.distance_to(
+  -- Other location to calculate the distance to
+  _other_location GEOGRAPHY(POINT, 4326)
+)
+RETURNS DOUBLE PRECISION
+SECURITY DEFINER
+VOLATILE
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  -- Current user's location
+  _uncertainty DOUBLE PRECISION := 0.05;
+
+  -- Current user's location
+  _user_location GEOGRAPHY(POINT, 4326) := utilities.get_latest_location(auth.uid());
+BEGIN
+  -- Add some uncertainty relative to the total distance (To increase resistance against dynamic trilateration attacks)
+  RETURN extensions.ST_Distance(_user_location, _other_location) - (0.5 * _uncertainty) + (_uncertainty * utilities.safe_random());
 END;
 $$;

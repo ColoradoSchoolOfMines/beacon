@@ -66,7 +66,10 @@ export const client = new SupabaseClient<Database>(
 
         const res = await fetch(input as any, init);
 
-        if (!res.ok) {
+        if (res.status === 401) {
+          // Sign out
+          await client.auth.signOut();
+        } else if (!res.ok) {
           // Parse the response body as JSON
           let json: any = {};
 

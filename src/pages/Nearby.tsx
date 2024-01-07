@@ -31,16 +31,14 @@ import {Post} from "~/lib/types";
 export const Nearby: React.FC = () => {
   // Hooks
   const history = useHistory();
-
   const [posts, setPosts] = useState<Post[]>([]);
-
   const showFABs = useStore(state => state.showFABs);
 
   // Effects
   useEffect(() => {
     (async () => {
       // Get posts
-      const {data, error} = await client.from("public_posts").select("*");
+      const {data, error} = await client.from("personalized_posts").select(`*`);
 
       // Handle error
       if (data === null || error !== null) {

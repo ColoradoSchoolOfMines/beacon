@@ -44,6 +44,15 @@ export type KeysOfType<T, KT> = {
 }[keyof T];
 
 /**
+ * Prefix all keys of `T` with `P`
+ * @param T Type
+ * @param P Prefix
+ */
+export type PrefixKeys<T, P extends string> = {
+  [K in keyof T as `${P}${string & K}`]: T[K];
+};
+
+/**
  * Global information message modal
  */
 export interface GlobalMessage {
@@ -109,6 +118,21 @@ export enum RequiredAuthState {
 }
 
 /**
+ * Media category
+ */
+export enum MediaCategory {
+  /**
+   * Image
+   */
+  IMAGE = "image",
+
+  /**
+   * Video
+   */
+  VIDEO = "video",
+}
+
+/**
  * WebAuthn challenge
  */
 export type WebauthnChallenge =
@@ -135,11 +159,18 @@ export type Location = Database["public"]["Tables"]["locations"]["Row"];
  */
 export type Post = Pick<
   Database["public"]["Tables"]["posts"]["Row"],
-  "id" | "poster_id" | "created_at" | "content" | "has_media"
+  "id" | "poster_id" | "created_at" | "radius" | "content" | "has_media"
 > &
   Pick<
     DeepMandatory<Database["utilities"]["Views"]["cached_posts"]["Row"]>,
     "upvotes" | "downvotes"
+  > &
+  PrefixKeys<
+    Pick<
+      DeepMandatory<Database["public"]["Tables"]["profiles"]["Row"]>,
+      "color" | "emoji"
+    >,
+    "poster_"
   > & {
     distance: number;
   };

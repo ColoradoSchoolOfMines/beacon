@@ -677,15 +677,6 @@ export interface Database {
       [_ in never]: never;
     };
     Functions: {
-      authenticate_webauthn_credential: {
-        Args: {
-          _user_id: string;
-          _challenge_id: string;
-          _credential_id: string;
-          _new_counter: number;
-        };
-        Returns: undefined;
-      };
       email: {
         Args: Record<PropertyKey, never>;
         Returns: string;
@@ -693,20 +684,6 @@ export interface Database {
       jwt: {
         Args: Record<PropertyKey, never>;
         Returns: Json;
-      };
-      prune_webauthn_challenges: {
-        Args: Record<PropertyKey, never>;
-        Returns: undefined;
-      };
-      register_webauthn_credential: {
-        Args: {
-          _user_id: string;
-          _challenge_id: string;
-          _client_credential_id: string;
-          _counter: number;
-          _public_key: string;
-        };
-        Returns: undefined;
       };
       role: {
         Args: Record<PropertyKey, never>;
@@ -765,7 +742,7 @@ export interface Database {
             foreignKeyName: "comment_reports_comment_id_fkey";
             columns: ["comment_id"];
             isOneToOne: false;
-            referencedRelation: "public_comments";
+            referencedRelation: "personalized_comments";
             referencedColumns: ["id"];
           },
           {
@@ -815,7 +792,7 @@ export interface Database {
             foreignKeyName: "comment_votes_comment_id_fkey";
             columns: ["comment_id"];
             isOneToOne: false;
-            referencedRelation: "public_comments";
+            referencedRelation: "personalized_comments";
             referencedColumns: ["id"];
           },
           {
@@ -832,37 +809,31 @@ export interface Database {
           commenter_id: string | null;
           content: string;
           created_at: string;
-          downvotes: number;
           id: string;
           parent_id: string | null;
           post_id: string;
           private_anonymous: boolean;
           private_commenter_id: string;
-          upvotes: number;
         };
         Insert: {
           commenter_id?: string | null;
           content: string;
           created_at?: string;
-          downvotes?: number;
           id?: string;
           parent_id?: string | null;
           post_id: string;
           private_anonymous?: boolean;
           private_commenter_id?: string;
-          upvotes?: number;
         };
         Update: {
           commenter_id?: string | null;
           content?: string;
           created_at?: string;
-          downvotes?: number;
           id?: string;
           parent_id?: string | null;
           post_id?: string;
           private_anonymous?: boolean;
           private_commenter_id?: string;
-          upvotes?: number;
         };
         Relationships: [
           {
@@ -883,7 +854,7 @@ export interface Database {
             foreignKeyName: "comments_parent_id_fkey";
             columns: ["parent_id"];
             isOneToOne: false;
-            referencedRelation: "public_comments";
+            referencedRelation: "personalized_comments";
             referencedColumns: ["id"];
           },
           {
@@ -897,14 +868,14 @@ export interface Database {
             foreignKeyName: "comments_post_id_fkey";
             columns: ["post_id"];
             isOneToOne: false;
-            referencedRelation: "posts";
+            referencedRelation: "personalized_posts";
             referencedColumns: ["id"];
           },
           {
             foreignKeyName: "comments_post_id_fkey";
             columns: ["post_id"];
             isOneToOne: false;
-            referencedRelation: "public_posts";
+            referencedRelation: "posts";
             referencedColumns: ["id"];
           },
           {
@@ -973,14 +944,14 @@ export interface Database {
             foreignKeyName: "post_reports_post_id_fkey";
             columns: ["post_id"];
             isOneToOne: false;
-            referencedRelation: "posts";
+            referencedRelation: "personalized_posts";
             referencedColumns: ["id"];
           },
           {
             foreignKeyName: "post_reports_post_id_fkey";
             columns: ["post_id"];
             isOneToOne: false;
-            referencedRelation: "public_posts";
+            referencedRelation: "posts";
             referencedColumns: ["id"];
           },
           {
@@ -1023,14 +994,14 @@ export interface Database {
             foreignKeyName: "post_votes_post_id_fkey";
             columns: ["post_id"];
             isOneToOne: false;
-            referencedRelation: "posts";
+            referencedRelation: "personalized_posts";
             referencedColumns: ["id"];
           },
           {
             foreignKeyName: "post_votes_post_id_fkey";
             columns: ["post_id"];
             isOneToOne: false;
-            referencedRelation: "public_posts";
+            referencedRelation: "posts";
             referencedColumns: ["id"];
           },
           {
@@ -1046,7 +1017,6 @@ export interface Database {
         Row: {
           content: string;
           created_at: string;
-          downvotes: number;
           has_media: boolean;
           id: string;
           poster_id: string | null;
@@ -1054,12 +1024,10 @@ export interface Database {
           private_location: unknown;
           private_poster_id: string;
           radius: number;
-          upvotes: number;
         };
         Insert: {
           content: string;
           created_at?: string;
-          downvotes?: number;
           has_media?: boolean;
           id?: string;
           poster_id?: string | null;
@@ -1067,12 +1035,10 @@ export interface Database {
           private_location?: unknown;
           private_poster_id?: string;
           radius: number;
-          upvotes?: number;
         };
         Update: {
           content?: string;
           created_at?: string;
-          downvotes?: number;
           has_media?: boolean;
           id?: string;
           poster_id?: string | null;
@@ -1080,7 +1046,6 @@ export interface Database {
           private_location?: unknown;
           private_poster_id?: string;
           radius?: number;
-          upvotes?: number;
         };
         Relationships: [
           {
@@ -1112,7 +1077,7 @@ export interface Database {
           {
             foreignKeyName: "profiles_id_fkey";
             columns: ["id"];
-            isOneToOne: false;
+            isOneToOne: true;
             referencedRelation: "users";
             referencedColumns: ["id"];
           },
@@ -1120,18 +1085,65 @@ export interface Database {
       };
     };
     Views: {
-      public_comments: {
+      personalized_comments: {
         Row: {
+          commenter_color: string | null;
+          commenter_emoji: string | null;
           commenter_id: string | null;
           content: string | null;
           created_at: string | null;
           downvotes: number | null;
           id: string | null;
+          parent_id: string | null;
+          post_id: string | null;
           upvotes: number | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "comments_parent_id_fkey";
+            columns: ["parent_id"];
+            isOneToOne: false;
+            referencedRelation: "comments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comments_parent_id_fkey";
+            columns: ["parent_id"];
+            isOneToOne: false;
+            referencedRelation: "personalized_comments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comments_parent_id_fkey";
+            columns: ["parent_id"];
+            isOneToOne: false;
+            referencedRelation: "cached_comments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comments_post_id_fkey";
+            columns: ["post_id"];
+            isOneToOne: false;
+            referencedRelation: "posts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comments_post_id_fkey";
+            columns: ["post_id"];
+            isOneToOne: false;
+            referencedRelation: "personalized_posts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comments_post_id_fkey";
+            columns: ["post_id"];
+            isOneToOne: false;
+            referencedRelation: "cached_posts";
+            referencedColumns: ["id"];
+          },
+        ];
       };
-      public_posts: {
+      personalized_posts: {
         Row: {
           content: string | null;
           created_at: string | null;
@@ -1139,7 +1151,10 @@ export interface Database {
           downvotes: number | null;
           has_media: boolean | null;
           id: string | null;
+          poster_color: string | null;
+          poster_emoji: string | null;
           poster_id: string | null;
+          radius: number | null;
           upvotes: number | null;
         };
         Relationships: [];
@@ -1149,6 +1164,12 @@ export interface Database {
       delete_webauthn_credentials: {
         Args: Record<PropertyKey, never>;
         Returns: undefined;
+      };
+      distance_to: {
+        Args: {
+          _other_location: unknown;
+        };
+        Returns: number;
       };
     };
     Enums: {
@@ -1181,33 +1202,20 @@ export interface Database {
       };
     };
     Functions: {
-      anonymized_distance: {
+      authenticate_webauthn_credential: {
         Args: {
-          _a: unknown;
-          _b: unknown;
-          _uncertainty: number;
+          _user_id: string;
+          _challenge_id: string;
+          _credential_id: string;
+          _new_counter: number;
         };
-        Returns: number;
-      };
-      get_comment_votes: {
-        Args: {
-          _id: string;
-          _upvote: boolean;
-        };
-        Returns: number;
+        Returns: undefined;
       };
       get_latest_location: {
         Args: {
           _user_id: string;
         };
         Returns: unknown;
-      };
-      get_post_votes: {
-        Args: {
-          _id: string;
-          _upvote: boolean;
-        };
-        Returns: number;
       };
       get_random_color: {
         Args: Record<PropertyKey, never>;
@@ -1216,6 +1224,20 @@ export interface Database {
       get_random_emoji: {
         Args: Record<PropertyKey, never>;
         Returns: string;
+      };
+      prune_webauthn_challenges: {
+        Args: Record<PropertyKey, never>;
+        Returns: undefined;
+      };
+      register_webauthn_credential: {
+        Args: {
+          _user_id: string;
+          _challenge_id: string;
+          _client_credential_id: string;
+          _counter: number;
+          _public_key: string;
+        };
+        Returns: undefined;
       };
       safe_random: {
         Args: Record<PropertyKey, never>;

@@ -25,6 +25,7 @@ import {
   imageOutline,
   imageSharp,
 } from "ionicons/icons";
+import {flatten} from "lodash-es";
 import {useContext, useEffect, useRef, useState} from "react";
 import {Controller, useForm} from "react-hook-form";
 import {z} from "zod";
@@ -35,7 +36,15 @@ import {Step2} from "~/components/create-post/Step2";
 import {Markdown} from "~/components/Markdown";
 import {SupplementalError} from "~/components/SupplementalError";
 import {useStore} from "~/lib/state";
-import {createDataURL} from "~/lib/utils";
+import {MediaCategory} from "~/lib/types";
+import {
+  CATEGORIZED_MEDIA_MIME_TYPES,
+  createDataURL,
+  getCategory,
+  getMediaDimensions,
+  MAX_MEDIA_DIMENSION,
+  MIN_MEDIA_DIMENSION,
+} from "~/lib/utils";
 import {CreatePostNavContext} from "~/pages/CreatePost";
 
 /**
@@ -64,22 +73,9 @@ const MIN_CONTENT_LENGTH = 1;
 const MAX_CONTENT_LENGTH = 300;
 
 /**
- * Media mime types
+ * Allowed media mime types
  */
-const MEDIA_MIME_TYPES = [
-  // Images
-  "image/avif",
-  "image/gif",
-  "image/jpeg",
-  "image/png",
-  "image/svg+xml",
-  "image/webp",
-
-  // Videos
-  "video/mp4",
-  "video/mpeg",
-  "video/webm",
-];
+const MEDIA_MIME_TYPES = flatten(Object.values(CATEGORIZED_MEDIA_MIME_TYPES));
 
 /**
  * Form schema
@@ -99,7 +95,36 @@ const formSchema = z.object({
       {
         message: "Unsupported media type",
       },
-    ),
+    )
+    .superRefine(async (value, ctx) => {
+      if (value?.length === 1) {
+        // Get the dimensions
+        const dimensions = await getMediaDimensions(value[0]!);
+
+        // Check the media dimensions
+        if (
+          dimensions.height < MIN_MEDIA_DIMENSION ||
+          dimensions.width < MIN_MEDIA_DIMENSION
+        ) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Media must be at least ${MIN_MEDIA_DIMENSION} x ${MIN_MEDIA_DIMENSION}`,
+          });
+        }
+
+        if (
+          dimensions.height > MAX_MEDIA_DIMENSION ||
+          dimensions.width > MAX_MEDIA_DIMENSION
+        ) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Media must be at most ${MAX_MEDIA_DIMENSION} x ${MAX_MEDIA_DIMENSION}`,
+          });
+        }
+      }
+
+      return false;
+    }),
 });
 
 /**
@@ -113,7 +138,10 @@ type FormSchema = z.infer<typeof formSchema>;
  */
 export const Step1: React.FC = () => {
   // Hooks
-  const contentTextarea = useRef<HTMLIonTextareaElement | null>(null);
+  const [contentTextarea, setContentTextarea] =
+    // eslint-disable-next-line unicorn/no-null
+    useState<HTMLIonTextareaElement | null>(null);
+
   const [contentMode, setContentMode] = useState<ContentMode>(ContentMode.RAW);
   const [previewUrl, setPreviewUrl] = useState<string | undefined>(undefined);
   const mediaInput = useRef<HTMLInputElement | null>(null);
@@ -127,13 +155,24 @@ export const Step1: React.FC = () => {
     resolver: zodResolver(formSchema),
   });
 
+  // Variables
   const media = watch("media");
+
+  const mediaCategory =
+    media?.[0]?.type === undefined ? undefined : getCategory(media[0].type);
 
   // Effects
   useEffect(() => {
+    if (contentTextarea === null) {
+      return;
+    }
+
     // Focus the content textarea
-    setTimeout(() => contentTextarea.current?.setFocus(), 10);
-  }, []);
+    if (contentMode === ContentMode.RAW) {
+      // setFocus has a race condition
+      setTimeout(() => contentTextarea.setFocus(), 10);
+    }
+  }, [contentMode, contentTextarea]);
 
   useEffect(() => {
     // Update the form
@@ -194,7 +233,9 @@ export const Step1: React.FC = () => {
               field: {onChange, onBlur, value},
               fieldState: {error},
             }) => (
-              <div className="flex flex-col flex-1 px-4">
+              <div className="flex flex-col flex-1 px-4 pt-4">
+                <IonLabel>Content</IonLabel>
+
                 <div className="flex-1 relative">
                   <div className="absolute flex flex-col left-0 right-0 bottom-0 top-0">
                     {contentMode === ContentMode.RAW ? (
@@ -202,11 +243,12 @@ export const Step1: React.FC = () => {
                         className={`h-full w-full ${styles.textarea}`}
                         autocapitalize="on"
                         counter={true}
+                        fill="outline"
                         maxlength={MAX_CONTENT_LENGTH}
                         minlength={MIN_CONTENT_LENGTH}
                         onIonBlur={onBlur}
                         onIonInput={onChange}
-                        ref={contentTextarea}
+                        ref={setContentTextarea}
                         spellcheck={true}
                         value={value}
                       />
@@ -255,7 +297,7 @@ export const Step1: React.FC = () => {
               render={({field: {onChange, onBlur}, fieldState: {error}}) => (
                 <>
                   <label className="w-full">
-                    <div className="flex flex-row items-center justify-center relative w-full">
+                    <div className="flex flex-row items-center justify-center relative w-full my-2">
                       <IonIcon
                         className="text-2xl"
                         ios={imageOutline}
@@ -296,12 +338,30 @@ export const Step1: React.FC = () => {
                         </IonButton>
                       )}
                     </div>
-                    {previewUrl !== undefined && (
-                      <embed
-                        className="pointer-events-none w-full object-fill"
-                        src={previewUrl}
-                      />
-                    )}
+                    {previewUrl !== undefined &&
+                      mediaCategory !== undefined &&
+                      (() => {
+                        switch (mediaCategory) {
+                          case MediaCategory.IMAGE:
+                            return (
+                              <img
+                                className="mb-4 object-fill overflow-hidden pointer-events-none rounded-lg w-full"
+                                src={previewUrl}
+                              />
+                            );
+
+                          case MediaCategory.VIDEO:
+                            return (
+                              <video
+                                autoPlay
+                                className="mb-4 object-fill overflow-hidden pointer-events-none rounded-lg w-full"
+                                loop
+                                muted
+                                src={previewUrl}
+                              />
+                            );
+                        }
+                      })()}
                   </label>
 
                   <SupplementalError error={error?.message} />

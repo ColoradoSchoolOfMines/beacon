@@ -86,7 +86,7 @@ export const App: React.FC = () => {
       requiredState !== undefined &&
       !checkRequiredAuthState(user, requiredState)
     ) {
-      // Redirect
+      // Go to the required route
       switch (requiredState) {
         case RequiredAuthState.UNAUTHENTICATED:
           history.push("/nearby");
@@ -144,14 +144,6 @@ export const App: React.FC = () => {
 
   return (
     <>
-      <IonAlert
-        isOpen={message !== undefined}
-        header={message?.name}
-        subHeader={message?.description}
-        buttons={["OK"]}
-        onIonAlertDidDismiss={() => setMessage()}
-      />
-
       <IonSplitPane contentId="main">
         <Menu />
 
@@ -189,6 +181,14 @@ export const App: React.FC = () => {
           </Route>
         </IonRouterOutlet>
       </IonSplitPane>
+
+      <IonAlert
+        isOpen={message !== undefined}
+        header={message?.name}
+        subHeader={message?.description}
+        buttons={["OK"]}
+        onIonAlertDidDismiss={() => setMessage()}
+      />
     </>
   );
 };

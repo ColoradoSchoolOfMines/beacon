@@ -65,7 +65,6 @@ useStore.subscribe(async state => {
         if (!isEqual(location, oldLocation)) {
           const {error} = await client.from("locations").insert({
             // eslint-disable-next-line camelcase
-            created_at: new Date(location.timestamp).toISOString(),
             location: `POINT(${location.coords.longitude} ${location.coords.latitude})`,
           });
 

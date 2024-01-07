@@ -208,6 +208,7 @@
         "next": "export"
       }
     ],
+    "no-async-promise-executor": "off",
     "no-extra-semi": "warn",
     "no-undef": "off",
     "no-var": "error",

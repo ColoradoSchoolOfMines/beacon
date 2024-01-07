@@ -24,12 +24,15 @@ import {
 } from "ionicons/icons";
 import {useEffect} from "react";
 import {Controller, useForm} from "react-hook-form";
+import {useHistory} from "react-router-dom";
 import {z} from "zod";
 
 import {CreatePostContainer} from "~/components/create-post/Container";
+import styles from "~/components/create-post/Step2.module.css";
 import {Map} from "~/components/Map";
 import {SupplementalError} from "~/components/SupplementalError";
 import {useStore} from "~/lib/state";
+import {client} from "~/lib/supabase";
 import {MeasurementSystem} from "~/lib/types";
 import {Error} from "~/pages/Error";
 
@@ -52,8 +55,10 @@ export const Step2: React.FC = () => {
   const post = useStore(state => state.post);
   const location = useStore(state => state.location);
   const measurementSystem = useStore(state => state.measurementSystem);
+  const setMessage = useStore(state => state.setMessage);
+  const history = useHistory();
 
-  // Constants
+  // Variables
   /**
    * Minimum radius (In kilometers or miles, depending on the current measurement system)
    */
@@ -73,6 +78,14 @@ export const Step2: React.FC = () => {
    * Radius step (In kilometers or miles, depending on the current measurement system)
    */
   const radiusStep = measurementSystem === MeasurementSystem.METRIC ? 1 : 0.5;
+
+  /**
+   * Conversion factor
+   */
+  const conversionFactor =
+    measurementSystem === MeasurementSystem.METRIC
+      ? KILOMETERS_TO_METERS
+      : MILES_TO_METERS;
 
   /**
    * Form schema
@@ -117,7 +130,47 @@ export const Step2: React.FC = () => {
    * @param form Form data
    */
   const onSubmit = async (form: FormSchema) => {
-    console.log(post, form);
+    // Insert the post
+    const {data, error} = await client
+      .from("posts")
+      .insert({
+        content: post!.content!,
+        // eslint-disable-next-line camelcase
+        has_media: post!.media !== undefined,
+        // eslint-disable-next-line camelcase
+        private_anonymous: form.anonymous,
+        radius: form.radius * conversionFactor,
+      })
+      .select("id")
+      .single<{
+        id: string;
+      }>();
+
+    // Handle error
+    if (data === null || error !== null) {
+      return;
+    }
+
+    // Upload the media
+    if (post!.media !== undefined) {
+      const {error} = await client.storage
+        .from("media")
+        .upload(`posts/${data.id}`, post!.media);
+
+      // Handle error
+      if (error !== null) {
+        return;
+      }
+    }
+
+    // Display the message
+    setMessage({
+      name: "Success",
+      description: "Your post has been created.",
+    });
+
+    // Go to nearby
+    history.push("/nearby");
   };
 
   return location === undefined ? (
@@ -152,10 +205,8 @@ export const Step2: React.FC = () => {
           <div className="flex flex-1 flex-col mt-4 mx-4">
             <IonLabel>Radius</IonLabel>
             <IonNote>
-              Only people within this radius of your location at the time of
-              posting will be able to see this post. (If your location is not
-              accurate, make sure you&apos;ve granted the <b>high accuracy</b>{" "}
-              geolocation permissions to Beacon and reload the page.)
+              Only people in the blue region will be able to see and comment on
+              this post.
             </IonNote>
 
             <Controller
@@ -169,7 +220,7 @@ export const Step2: React.FC = () => {
                   <div className="flex flex-row items-center justify-center">
                     <IonRange
                       aria-label="Radius"
-                      className="flex-1 ml-2 mr-2"
+                      className={`flex-1 ml-2 mr-2 ${styles.range}`}
                       min={minRadius}
                       max={maxRadius}
                       step={radiusStep}
@@ -186,7 +237,7 @@ export const Step2: React.FC = () => {
                     </IonRange>
                     <IonInput
                       aria-label="Radius"
-                      className="ml-2 w-24"
+                      className="ml-2 w-28"
                       fill="outline"
                       onIonBlur={onBlur}
                       onIonChange={event =>
@@ -198,7 +249,7 @@ export const Step2: React.FC = () => {
                       step={radiusStep.toString()}
                       value={value}
                     >
-                      <IonLabel slot="end">
+                      <IonLabel class="!ml-2" slot="end">
                         {measurementSystem === MeasurementSystem.METRIC
                           ? "km"
                           : "mi"}
@@ -228,11 +279,7 @@ export const Step2: React.FC = () => {
               minZoom={6}
               circle={{
                 center: [location.coords.latitude, location.coords.longitude],
-                radius:
-                  radius *
-                  (measurementSystem === MeasurementSystem.METRIC
-                    ? KILOMETERS_TO_METERS
-                    : MILES_TO_METERS),
+                radius: radius * conversionFactor,
               }}
             />
           </div>

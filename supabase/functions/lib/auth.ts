@@ -99,12 +99,9 @@ const generateToken = () => {
  * Generate a session for a user
  * @param rawId Raw user ID
  * @param method Authentication method
- * @returns Minted JWT session
+ * @returns Session
  */
-export const generateSession = async (
-  rawId: string,
-  method: string,
-): Promise<Session> => {
+export const generateSession = async (rawId: string, method: string) => {
   // Get the user
   const userRes1 = await serviceRoleClient.auth.admin.getUserById(rawId);
 
@@ -204,5 +201,5 @@ export const generateSession = async (
     ),
     refresh_token: refreshToken,
     user: userRes1.data.user,
-  };
+  } as Session;
 };

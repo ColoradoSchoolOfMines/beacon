@@ -45,7 +45,7 @@ CREATE TABLE auth.webauthn_credentials (
 -- Profiles (Modifying auth.users is considered bad practice, so additonal user data is stored here)
 CREATE TABLE public.profiles (
   -- Primary key (Foreign key to auth.users)
-  id UUID NOT NULL REFERENCES auth.users ON UPDATE CASCADE ON DELETE CASCADE,
+  id UUID NOT NULL PRIMARY KEY REFERENCES auth.users ON UPDATE CASCADE ON DELETE CASCADE,
 
   -- Random color
   color TEXT NOT NULL DEFAULT utilities.get_random_color(),
@@ -100,13 +100,7 @@ CREATE TABLE public.posts (
   -- Whether or not the post has media (e.g.: an image or video)
   -- Note: media is stored in the `media` bucket with the name `posts/[Post ID]`, where `[Post ID]` refers to the `id` column of this table.
   -- Therefore, media can only be uploaded after a row is inserted into this table and its `id` column is retrieved.
-  has_media BOOLEAN NOT NULL DEFAULT FALSE,
-
-  -- Number of upvotes
-  upvotes INTEGER NOT NULL DEFAULT 0,
-
-  -- Number of downvotes
-  downvotes INTEGER NOT NULL DEFAULT 0
+  has_media BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 -- Post votes
@@ -168,13 +162,7 @@ CREATE TABLE public.comments (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW() CHECK (created_at <= NOW()),
 
   -- Comment content (Up to 1000 characters)
-  content VARCHAR(1000) NOT NULL,
-
-  -- Number of upvotes
-  upvotes INTEGER NOT NULL DEFAULT 0,
-
-  -- Number of downvotes
-  downvotes INTEGER NOT NULL DEFAULT 0
+  content VARCHAR(1000) NOT NULL
 );
 
 -- Comment votes

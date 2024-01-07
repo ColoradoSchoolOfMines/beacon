@@ -2,6 +2,19 @@
  * Setup security policies
  */
 
+/* --------------------------------------- Setup schemas --------------------------------------- */
+
+-- Auth
+GRANT ALL ON ALL TABLES IN SCHEMA auth TO postgres, service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA auth TO postgres, service_role;
+
+-- Utilities (Non-public helpers)
+REVOKE ALL ON SCHEMA utilities FROM anon, authenticated;
+
+-- Public
+REVOKE ALL ON SCHEMA public FROM anon, authenticated;
+REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM anon, authenticated;
+
 /* ----------------------------------- Setup role permissions ---------------------------------- */
 
 -- Profiles
@@ -16,12 +29,8 @@ ON public.locations
 TO authenticated;
 
 -- Posts
-GRANT SELECT (
-  id,
-  created_at,
-  content,
-  has_media
-) ON public.posts TO authenticated;
+GRANT SELECT ON public.personalized_posts TO authenticated;
+GRANT SELECT (id) ON public.posts TO authenticated;
 GRANT DELETE ON public.posts TO authenticated;
 GRANT INSERT (
   private_anonymous,
@@ -48,13 +57,8 @@ GRANT INSERT (
 ON public.post_reports TO authenticated;
 
 -- Comments
-GRANT SELECT (
-  id,
-  post_id,
-  parent_id,
-  created_at,
-  content
-) ON public.comments TO authenticated;
+GRANT SELECT ON public.personalized_comments TO authenticated;
+GRANT SELECT (id) ON public.comments TO authenticated;
 GRANT DELETE ON public.comments TO authenticated;
 GRANT INSERT (
   private_anonymous,
@@ -79,8 +83,9 @@ GRANT INSERT (
 )
 ON public.comment_reports TO authenticated;
 
--- Reset all webauthn credentials
+-- Public functions
 GRANT EXECUTE ON FUNCTION public.delete_webauthn_credentials() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.distance_to(GEOGRAPHY(POINT, 4326)) TO authenticated;
 
 /* ----------------------------- Row-level security (RLS) policies ----------------------------- */
 
@@ -129,13 +134,8 @@ USING (
   -- Only get posts for which the user is the poster
   private_poster_id = auth.uid()
 
-  -- Or only get posts for which the user is within the post's radius (To increase resistance against moving-target trilateration attacks)
-  OR utilities.anonymized_distance(
-    private_location,
-    utilities.get_latest_location(auth.uid()),
-    -- Add an additional 5% location uncertainty relative to the post's radius
-    0.05 * radius
-  ) <= radius
+  -- Or only get posts for which the user is within the post's radius
+  OR public.distance_to(private_location) <= radius
 );
 
 CREATE POLICY insert_posts
@@ -209,15 +209,10 @@ USING (
     FROM public.posts post
     WHERE
       -- Only get posts for which the user is the poster
-      private_poster_id = auth.uid()
+      post.private_poster_id = auth.uid()
 
-      -- Or only get posts for which the user is within the post's radius (To increase resistance against moving-target trilateration attacks)
-      OR utilities.anonymized_distance(
-        post.private_location,
-        utilities.get_latest_location(auth.uid()),
-        -- Add an additional 5% location uncertainty relative to the post's radius
-        0.05 * post.radius
-      ) <= post.radius
+      -- Or only get posts for which the user is within the post's radius
+      OR public.distance_to(post.private_location) <= post.radius
   )
 );
 
