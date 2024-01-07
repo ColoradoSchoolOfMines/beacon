@@ -164,9 +164,9 @@ export const Menu: React.FC = () => {
 
   return (
     <IonMenu contentId="main" type="overlay" ref={menu}>
-      <IonContent forceOverscroll={false}>
-        <IonList className="flex flex-col h-full py-0">
-          <IonListHeader>
+      <IonContent>
+        <IonList className="flex flex-col h-full py-4">
+          <IonListHeader className="p-0">
             <div className="flex flex-row items-center justify-center my-8 w-full">
               <IonImg alt="Beacon logo" className="h-14 w-14 mr-2" src={logo} />
               <span className="ml-2 text-3xl">Beacon</span>

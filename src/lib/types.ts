@@ -133,6 +133,28 @@ export enum MediaCategory {
 }
 
 /**
+ * Media dimensions
+ */
+export interface MediaDimensions {
+  /**
+   * Media height (In pixels)
+   */
+  height: number;
+
+  /**
+   * Media width (In pixels)
+   */
+  width: number;
+}
+
+/**
+ * Media category element
+ * @param T Media category
+ */
+export type MediaCategoryElement<T extends MediaCategory> =
+  T extends MediaCategory.IMAGE ? HTMLImageElement : HTMLVideoElement;
+
+/**
  * WebAuthn challenge
  */
 export type WebauthnChallenge =
@@ -156,24 +178,31 @@ export type Location = Database["public"]["Tables"]["locations"]["Row"];
 
 /**
  * Post
+ * @param T Whether or not the post has media
  */
-export type Post = Pick<
-  Database["public"]["Tables"]["posts"]["Row"],
-  "id" | "poster_id" | "created_at" | "radius" | "content" | "has_media"
-> &
-  Pick<
-    DeepMandatory<Database["utilities"]["Views"]["cached_posts"]["Row"]>,
-    "upvotes" | "downvotes"
-  > &
-  PrefixKeys<
-    Pick<
-      DeepMandatory<Database["public"]["Tables"]["profiles"]["Row"]>,
-      "color" | "emoji"
-    >,
-    "poster_"
-  > & {
-    distance: number;
-  };
+export type Post<T extends boolean = true | false> = {
+  id: Database["public"]["Tables"]["posts"]["Row"]["id"];
+  poster_id: Database["public"]["Tables"]["posts"]["Row"]["poster_id"];
+  created_at: Database["public"]["Tables"]["posts"]["Row"]["created_at"];
+  radius: Database["public"]["Tables"]["posts"]["Row"]["radius"];
+  content: Database["public"]["Tables"]["posts"]["Row"]["content"];
+  has_media: T;
+
+  upvotes: Database["utilities"]["Views"]["cached_posts"]["Row"]["upvotes"];
+  downvotes: Database["utilities"]["Views"]["cached_posts"]["Row"]["downvotes"];
+
+  poster_color: Database["public"]["Tables"]["profiles"]["Row"]["color"];
+  poster_emoji: Database["public"]["Tables"]["profiles"]["Row"]["emoji"];
+} & (T extends true
+  ? {
+      blur_hash: NonNullable<
+        Database["public"]["Tables"]["posts"]["Row"]["blur_hash"]
+      >;
+      aspect_ratio: NonNullable<
+        Database["public"]["Tables"]["posts"]["Row"]["aspect_ratio"]
+      >;
+    }
+  : {});
 
 /**
  * Post creation data

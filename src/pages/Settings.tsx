@@ -62,6 +62,28 @@ export const Settings: React.FC = () => {
 
   const [present] = useIonActionSheet();
 
+  /**
+   * Reset all settings
+   * @returns Promise
+   */
+  const resetSettings = () =>
+    present({
+      header: "Reset all settings",
+      subHeader:
+        "Are you sure you want to reset all settings? You will be signed out.",
+      buttons: [
+        {
+          text: "Cancel",
+          role: "cancel",
+        },
+        {
+          text: "Reset",
+          role: "destructive",
+          handler: reset,
+        },
+      ],
+    });
+
   // Methods
   /**
    * Register a passkey
@@ -170,28 +192,6 @@ export const Settings: React.FC = () => {
       ],
     });
 
-  /**
-   * Reset all settings
-   * @returns Promise
-   */
-  const resetSettings = () =>
-    present({
-      header: "Reset all settings",
-      subHeader:
-        "Are you sure you want to reset all settings? You will be signed out.",
-      buttons: [
-        {
-          text: "Cancel",
-          role: "cancel",
-        },
-        {
-          text: "Reset",
-          role: "destructive",
-          handler: reset,
-        },
-      ],
-    });
-
   return (
     <IonPage>
       <IonHeader>
@@ -204,7 +204,7 @@ export const Settings: React.FC = () => {
         </IonToolbar>
       </IonHeader>
 
-      <IonContent forceOverscroll={false}>
+      <IonContent color="light">
         <IonList className="py-0" inset={true}>
           <IonItemGroup>
             <IonItemDivider>
@@ -260,6 +260,17 @@ export const Settings: React.FC = () => {
 
           <IonItemGroup>
             <IonItemDivider>
+              <IonLabel>Miscellaneous</IonLabel>
+            </IonItemDivider>
+
+            <IonItem button={true} onClick={resetSettings}>
+              <IonLabel>Reset all settings</IonLabel>
+              <IonIcon slot="end" ios={refreshOutline} md={refreshSharp} />
+            </IonItem>
+          </IonItemGroup>
+
+          <IonItemGroup>
+            <IonItemDivider>
               <IonLabel>Account</IonLabel>
             </IonItemDivider>
 
@@ -283,37 +294,26 @@ export const Settings: React.FC = () => {
 
           <IonItemGroup>
             <IonItemDivider>
-              <IonLabel>Miscellaneous</IonLabel>
-            </IonItemDivider>
-
-            <IonItem button={true} onClick={resetSettings}>
-              <IonLabel>Reset all settings</IonLabel>
-              <IonIcon slot="end" ios={refreshOutline} md={refreshSharp} />
-            </IonItem>
-          </IonItemGroup>
-
-          <IonItemGroup>
-            <IonItemDivider>
               <IonLabel>About</IonLabel>
             </IonItemDivider>
 
             <IonItem>
               <IonLabel>Version</IonLabel>
-              <IonNote className="ml-0 my-4 p-0 text-[1rem]" slot="end">
+              <IonNote className="ml-0 my-4 p-0" slot="end">
                 {VERSION}
               </IonNote>
             </IonItem>
 
             <IonItem>
               <IonLabel>Branch</IonLabel>
-              <IonNote className="ml-0 my-4 p-0 text-[1rem]" slot="end">
+              <IonNote className="ml-0 my-4 p-0" slot="end">
                 {GIT_BRANCH}
               </IonNote>
             </IonItem>
 
             <IonItem>
               <IonLabel>Commit</IonLabel>
-              <IonNote className="ml-0 my-4 p-0 text-[1rem]" slot="end">
+              <IonNote className="ml-0 my-4 p-0" slot="end">
                 {GIT_COMMIT}
               </IonNote>
             </IonItem>
@@ -325,7 +325,7 @@ export const Settings: React.FC = () => {
             >
               <IonLabel>Source</IonLabel>
               <IonNote className="ml-0 my-4 p-0 text-[0.9rem]" slot="end">
-                github.com/ColoradoSchoolOfMines/Beacon
+                github.com
               </IonNote>
             </IonItem>
           </IonItemGroup>

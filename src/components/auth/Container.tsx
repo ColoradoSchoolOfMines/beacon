@@ -35,8 +35,6 @@ export interface AuthContainerProps {
 /**
  * Auth page container component
  * @param props Props
- * @param props.back Whether to show the back button or the menu button
- * @param props.children Children
  * @returns JSX
  */
 export const AuthContainer: React.FC<AuthContainerProps> = ({
@@ -54,7 +52,7 @@ export const AuthContainer: React.FC<AuthContainerProps> = ({
       </IonToolbar>
     </IonHeader>
 
-    <IonContent forceOverscroll={false}>
+    <IonContent>
       <div className="flex flex-col items-center justify-center h-full w-full">
         <IonCard>
           <IonCardHeader>

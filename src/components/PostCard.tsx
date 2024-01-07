@@ -7,16 +7,16 @@ import {
   IonCardContent,
   IonCardHeader,
   IonCardTitle,
-  IonSkeletonText,
 } from "@ionic/react";
 import {clamp} from "lodash-es";
 import {useEffect, useState} from "react";
 import {useWindowSize} from "react-use";
 
 import {Avatar} from "~/components/Avatar";
+import {Blurhash} from "~/components/Blurhash";
 import {Markdown} from "~/components/Markdown";
 import {client} from "~/lib/supabase";
-import {MediaCategory, Post} from "~/lib/types";
+import {MediaCategory, MediaDimensions, Post} from "~/lib/types";
 import {
   createDataURL,
   getCategory,
@@ -41,6 +41,8 @@ interface PostCardProps {
  */
 export const PostCard: React.FC<PostCardProps> = ({post}) => {
   // Hooks
+  const {width} = useWindowSize();
+
   const [media, setMedia] = useState<
     | {
         category: MediaCategory;
@@ -49,97 +51,135 @@ export const PostCard: React.FC<PostCardProps> = ({post}) => {
     | undefined
   >();
 
-  const {height, width} = useWindowSize();
+  const [size, setSize] = useState<MediaDimensions>({
+    height: 0,
+    width: 0,
+  });
 
   // Effects
   useEffect(() => {
-    (async () => {
-      // Load media
-      if (post.has_media) {
-        const urls = [
-          client.storage.from("media").getPublicUrl(`posts/${post.id}`, {
-            transform: {
-              quality: 90,
-              height: clamp(height, MIN_MEDIA_DIMENSION, MAX_MEDIA_DIMENSION),
-              width: clamp(width, MIN_MEDIA_DIMENSION, MAX_MEDIA_DIMENSION),
-            },
-          }).data.publicUrl,
-          client.storage.from("media").getPublicUrl(`posts/${post.id}`).data
-            .publicUrl,
-        ];
+    // Clamp the width
+    const clampedWidth = clamp(width, MIN_MEDIA_DIMENSION, MAX_MEDIA_DIMENSION);
 
-        // Fetch the media
-        let res: Response | undefined;
-
-        for (const url of urls) {
-          try {
-            res = await fetch(url);
-          } catch {
-            // Do nothing
+    setSize(
+      post.has_media
+        ? {
+            height: Math.round(
+              clampedWidth / (post as Post<true>).aspect_ratio,
+            ),
+            width: clampedWidth,
           }
-        }
+        : {
+            height: 0,
+            width: 0,
+          },
+    );
+  }, [post, width]);
 
-        if (res === undefined) {
-          setMedia(undefined);
-          return;
-        }
-
-        const blob = await res.blob();
-
-        // Get the category
-        const category = getCategory(blob.type);
-
-        if (category === undefined) {
-          setMedia(undefined);
-          return;
-        }
-
-        // Create a data URL for the blob
-        const url = await createDataURL(blob);
-
-        setMedia({
-          category,
-          url,
-        });
-      } else {
+  useEffect(() => {
+    (async () => {
+      if (!post.has_media || size.height === 0 || size.width === 0) {
         setMedia(undefined);
+        return;
       }
+
+      // Load media
+      const urls = [
+        client.storage.from("media").getPublicUrl(`posts/${post.id}`, {
+          transform: {
+            quality: 90,
+            height: size.height,
+            width: size.width,
+          },
+        }).data.publicUrl,
+        client.storage.from("media").getPublicUrl(`posts/${post.id}`).data
+          .publicUrl,
+      ];
+
+      // Fetch the media
+      let res: Response | undefined;
+
+      for (const url of urls) {
+        try {
+          res = await fetch(url);
+          break;
+        } catch {
+          // Do nothing
+        }
+      }
+
+      if (res === undefined) {
+        setMedia(undefined);
+        return;
+      }
+
+      const blob = await res.blob();
+
+      // Get the category
+      const category = getCategory(blob.type);
+
+      if (category === undefined) {
+        setMedia(undefined);
+        return;
+      }
+
+      // Create a data URL for the blob
+      const url = await createDataURL(blob);
+
+      setMedia({
+        category,
+        url,
+      });
     })();
-  }, [
-    height,
-    width,
-    post,
-  ]);
+  }, [post, size]);
 
   return (
-    <IonCard className="m-0 rounded-none">
-      {media !== undefined &&
-        (() => {
-          switch (media.category) {
-            case MediaCategory.IMAGE:
-              return (
-                <img
-                  alt="Post media"
-                  className="object-contain <md:w-full mx-auto"
-                  src={media.url}
-                />
-              );
+    <IonCard className="m-0 rounded-none w-full">
+      {post.has_media && (
+        <div
+          className="relative"
+          style={{
+            height: size.height,
+            width: size.width,
+          }}
+        >
+          <Blurhash
+            className="absolute"
+            hash={(post as Post<true>).blur_hash}
+            height={size.height}
+            width={size.width}
+          />
+          {media !== undefined && (
+            <div className="absolute animate-fade-in animate-duration-300 animate-ease-in-out">
+              {(() => {
+                switch (media.category) {
+                  case MediaCategory.IMAGE:
+                    return (
+                      <img
+                        alt="Post media"
+                        height={size.height}
+                        src={media.url}
+                        width={size.width}
+                      />
+                    );
 
-            case MediaCategory.VIDEO:
-              return (
-                <video
-                  autoPlay
-                  className="object-contain <md:w-full mx-auto"
-                  controls
-                  loop
-                  muted
-                  src={media.url}
-                />
-              );
-          }
-        })()}
-      {post.has_media && media === undefined && (
-        <IonSkeletonText animated className="h-10 m-0" />
+                  case MediaCategory.VIDEO:
+                    return (
+                      <video
+                        autoPlay
+                        controls
+                        height={size.height}
+                        loop
+                        muted
+                        src={media.url}
+                        width={size.width}
+                      />
+                    );
+                }
+              })()}
+            </div>
+          )}
+        </div>
       )}
       <IonCardHeader>
         <IonCardTitle>

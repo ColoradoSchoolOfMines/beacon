@@ -36,7 +36,9 @@ GRANT INSERT (
   private_anonymous,
   radius,
   content,
-  has_media
+  has_media,
+  blur_hash,
+  aspect_ratio
 )
 ON public.posts
 TO authenticated;

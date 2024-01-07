@@ -33,6 +33,8 @@ AS (
       post.radius,
       post.content,
       post.has_media,
+      post.blur_hash,
+      post.aspect_ratio,
 
       cached_post.upvotes,
       cached_post.downvotes,
@@ -53,6 +55,8 @@ AS (
     radius,
     content,
     has_media,
+    blur_hash,
+    aspect_ratio,
 
     upvotes,
     downvotes,

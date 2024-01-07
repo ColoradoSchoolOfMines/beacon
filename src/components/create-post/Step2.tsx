@@ -34,6 +34,14 @@ import {SupplementalError} from "~/components/SupplementalError";
 import {useStore} from "~/lib/state";
 import {client} from "~/lib/supabase";
 import {MeasurementSystem} from "~/lib/types";
+import {
+  BLURHASH_COMPONENT_X,
+  BLURHASH_COMPONENT_Y,
+  generateBlurhash,
+  generateMediaElement,
+  getCategory,
+  getMediaDimensions,
+} from "~/lib/utils";
 import {Error} from "~/pages/Error";
 
 /**
@@ -130,16 +138,41 @@ export const Step2: React.FC = () => {
    * @param form Form data
    */
   const onSubmit = async (form: FormSchema) => {
+    // eslint-disable-next-line unicorn/no-null
+    let blurHash: string | null = null;
+    // eslint-disable-next-line unicorn/no-null
+    let aspectRatio: number | null = null;
+
+    // Process the media
+    if (post?.media !== undefined) {
+      const category = getCategory(post.media.type)!;
+      const element = await generateMediaElement(post.media);
+      const dimensions = getMediaDimensions(category, element);
+
+      aspectRatio = dimensions.width / dimensions.height;
+
+      blurHash = await generateBlurhash(
+        element,
+        dimensions,
+        BLURHASH_COMPONENT_X,
+        BLURHASH_COMPONENT_Y,
+      );
+    }
+
     // Insert the post
     const {data, error} = await client
       .from("posts")
       .insert({
+        // eslint-disable-next-line camelcase
+        private_anonymous: form.anonymous,
+        radius: form.radius * conversionFactor,
         content: post!.content!,
         // eslint-disable-next-line camelcase
         has_media: post!.media !== undefined,
         // eslint-disable-next-line camelcase
-        private_anonymous: form.anonymous,
-        radius: form.radius * conversionFactor,
+        blur_hash: blurHash,
+        // eslint-disable-next-line camelcase
+        aspect_ratio: aspectRatio,
       })
       .select("id")
       .single<{

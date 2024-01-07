@@ -1015,6 +1015,8 @@ export interface Database {
       };
       posts: {
         Row: {
+          aspect_ratio: number | null;
+          blur_hash: string | null;
           content: string;
           created_at: string;
           has_media: boolean;
@@ -1026,6 +1028,8 @@ export interface Database {
           radius: number;
         };
         Insert: {
+          aspect_ratio?: number | null;
+          blur_hash?: string | null;
           content: string;
           created_at?: string;
           has_media?: boolean;
@@ -1037,6 +1041,8 @@ export interface Database {
           radius: number;
         };
         Update: {
+          aspect_ratio?: number | null;
+          blur_hash?: string | null;
           content?: string;
           created_at?: string;
           has_media?: boolean;

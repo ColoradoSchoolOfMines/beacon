@@ -40,7 +40,7 @@ export const Error: React.FC<ErrorProps> = ({
     <IonPage>
       <Header />
 
-      <IonContent forceOverscroll={false}>
+      <IonContent>
         <div className="flex flex-col h-full items-center justify-center text-center w-full">
           <h1 className="text-6xl">{name}</h1>
           <p className="my-4 text-xl">{description}</p>

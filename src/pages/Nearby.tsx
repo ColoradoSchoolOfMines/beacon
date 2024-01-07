@@ -3,22 +3,26 @@
  */
 
 import {
+  IonButtons,
   IonContent,
   IonFab,
   IonFabButton,
+  IonHeader,
   IonIcon,
   IonInfiniteScroll,
   IonInfiniteScrollContent,
   IonList,
+  IonMenuButton,
   IonPage,
   IonRefresher,
   IonRefresherContent,
+  IonTitle,
+  IonToolbar,
 } from "@ionic/react";
 import {addOutline, addSharp} from "ionicons/icons";
 import {useEffect, useState} from "react";
 import {useHistory} from "react-router-dom";
 
-import {Header} from "~/components/Header";
 import {PostCard} from "~/components/PostCard";
 import {useStore} from "~/lib/state";
 import {client} from "~/lib/supabase";
@@ -45,7 +49,10 @@ export const Nearby: React.FC = () => {
         return;
       }
 
-      setPosts(data as any);
+      // setPosts(data as any);
+      if (data?.length > 0) {
+        setPosts(Array.from({length: 1}).fill(data[0]) as any);
+      }
     })();
   }, []);
 
@@ -60,17 +67,29 @@ export const Nearby: React.FC = () => {
 
   return (
     <IonPage>
-      <Header />
+      <IonHeader>
+        <IonToolbar>
+          <IonButtons slot="start">
+            <IonMenuButton />
+          </IonButtons>
 
-      <IonContent forceOverscroll={false} fullscreen={true}>
+          <IonTitle>Nearby</IonTitle>
+        </IonToolbar>
+      </IonHeader>
+
+      <IonContent>
         <IonRefresher slot="fixed">
           <IonRefresherContent />
         </IonRefresher>
 
         {posts.length > 0 ? (
-          <IonList>
-            {posts.map(post => (
-              <PostCard key={post.id} post={post} />
+          <IonList className="py-0">
+            {posts.map((post, index) => (
+              <PostCard
+                /* key={post.id} */
+                key={index}
+                post={post}
+              />
             ))}
 
             <IonInfiniteScroll>

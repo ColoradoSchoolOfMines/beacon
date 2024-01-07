@@ -57,6 +57,7 @@
       }
     ],
     "eqeqeq": "error",
+    "jsdoc/check-param-names": "off",
     "jsdoc/require-jsdoc": [
       "warn",
       {

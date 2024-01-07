@@ -33,8 +33,6 @@ export interface CreatePostContainerProps {
 /**
  * Create post page container component
  * @param props Props
- * @param props.back Whether to show the back button or the menu button
- * @param props.children Children
  * @returns JSX
  */
 export const CreatePostContainer: React.FC<CreatePostContainerProps> = ({
@@ -56,8 +54,6 @@ export const CreatePostContainer: React.FC<CreatePostContainerProps> = ({
       </IonToolbar>
     </IonHeader>
 
-    <IonContent className={styles.content} forceOverscroll={false}>
-      {children}
-    </IonContent>
+    <IonContent className={styles.content}>{children}</IonContent>
   </IonPage>
 );

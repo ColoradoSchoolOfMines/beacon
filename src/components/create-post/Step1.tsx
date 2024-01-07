@@ -40,6 +40,7 @@ import {MediaCategory} from "~/lib/types";
 import {
   CATEGORIZED_MEDIA_MIME_TYPES,
   createDataURL,
+  generateMediaElement,
   getCategory,
   getMediaDimensions,
   MAX_MEDIA_DIMENSION,
@@ -87,19 +88,23 @@ const formSchema = z.object({
     .min(0)
     .max(1)
     .optional()
-    .refine(
-      value =>
-        value === undefined ||
-        value.length === 0 ||
-        MEDIA_MIME_TYPES.includes(value[0]!.type),
-      {
-        message: "Unsupported media type",
-      },
-    )
     .superRefine(async (value, ctx) => {
       if (value?.length === 1) {
         // Get the dimensions
-        const dimensions = await getMediaDimensions(value[0]!);
+        const category = getCategory(value[0]!.type);
+
+        if (category === undefined) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Unsupported media type ${value[0]!.type}`,
+            fatal: true,
+          });
+
+          return;
+        }
+
+        const element = await generateMediaElement(value[0]!);
+        const dimensions = await getMediaDimensions(category, element);
 
         // Check the media dimensions
         if (
@@ -296,7 +301,7 @@ export const Step1: React.FC = () => {
               name="media"
               render={({field: {onChange, onBlur}, fieldState: {error}}) => (
                 <>
-                  <label className="w-full">
+                  <label className="cursor-pointer w-full">
                     <div className="flex flex-row items-center justify-center relative w-full my-2">
                       <IonIcon
                         className="text-2xl"
@@ -339,29 +344,23 @@ export const Step1: React.FC = () => {
                       )}
                     </div>
                     {previewUrl !== undefined &&
-                      mediaCategory !== undefined &&
-                      (() => {
-                        switch (mediaCategory) {
-                          case MediaCategory.IMAGE:
-                            return (
-                              <img
-                                className="mb-4 object-fill overflow-hidden pointer-events-none rounded-lg w-full"
-                                src={previewUrl}
-                              />
-                            );
+                      mediaCategory !== undefined && (
+                        <div className="max-h-[50vh] mb-4 object-fill overflow-hidden pointer-events-none rounded-lg w-full">
+                          {(() => {
+                            switch (mediaCategory) {
+                              case MediaCategory.IMAGE:
+                                return (
+                                  <img alt="Media preview" src={previewUrl} />
+                                );
 
-                          case MediaCategory.VIDEO:
-                            return (
-                              <video
-                                autoPlay
-                                className="mb-4 object-fill overflow-hidden pointer-events-none rounded-lg w-full"
-                                loop
-                                muted
-                                src={previewUrl}
-                              />
-                            );
-                        }
-                      })()}
+                              case MediaCategory.VIDEO:
+                                return (
+                                  <video autoPlay loop muted src={previewUrl} />
+                                );
+                            }
+                          })()}
+                        </div>
+                      )}
                   </label>
 
                   <SupplementalError error={error?.message} />

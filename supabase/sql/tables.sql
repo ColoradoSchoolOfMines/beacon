@@ -100,7 +100,18 @@ CREATE TABLE public.posts (
   -- Whether or not the post has media (e.g.: an image or video)
   -- Note: media is stored in the `media` bucket with the name `posts/[Post ID]`, where `[Post ID]` refers to the `id` column of this table.
   -- Therefore, media can only be uploaded after a row is inserted into this table and its `id` column is retrieved.
-  has_media BOOLEAN NOT NULL DEFAULT FALSE
+  has_media BOOLEAN NOT NULL DEFAULT FALSE,
+
+  -- Media blur hash (Up to 6 x 8 components)
+  blur_hash VARCHAR(100) NULL,
+
+  -- Media aspect ratio (Used to prevent layout shifts)
+  aspect_ratio DOUBLE PRECISION NULL CHECK (aspect_ratio IS NULL OR (aspect_ratio > 0 AND aspect_ratio < 10)),
+
+  CHECK (
+    (has_media AND blur_hash IS NOT NULL AND aspect_ratio IS NOT NULL) OR
+    (NOT has_media AND blur_hash IS NULL AND aspect_ratio IS NULL)
+  )
 );
 
 -- Post votes

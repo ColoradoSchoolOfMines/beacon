@@ -203,6 +203,7 @@ export const useStore = create<Store>()(
         storage: createJSONStorage(() => stateStorage),
         partialize: state => ({
           showFABs: state.showFABs,
+          measurementSystem: state.measurementSystem,
           theme: state.theme,
         }),
         merge: (persisted, current) => merge({}, current, persisted),
