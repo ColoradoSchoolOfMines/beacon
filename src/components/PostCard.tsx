@@ -42,6 +42,12 @@ interface PostCardProps {
    * Post
    */
   post: Post;
+
+  /**
+   * Set the post
+   * @param newPost New post
+   */
+  setPost: (newPost: Post) => void;
 }
 
 /**
@@ -49,7 +55,7 @@ interface PostCardProps {
  * @param props Props
  * @returns JSX
  */
-export const PostCard: React.FC<PostCardProps> = ({post}) => {
+export const PostCard: React.FC<PostCardProps> = ({post, setPost}) => {
   // Hooks
   const [time, setTime] = useState<string | undefined>();
 
@@ -66,6 +72,7 @@ export const PostCard: React.FC<PostCardProps> = ({post}) => {
     width: 0,
   });
 
+  const showAmbientEffect = useStore(state => state.showAmbientEffect);
   const measurementSystem = useStore(state => state.measurementSystem);
   const [measured, {width}] = useMeasure<HTMLDivElement>();
 
@@ -165,8 +172,80 @@ export const PostCard: React.FC<PostCardProps> = ({post}) => {
     );
   };
 
+  /**
+   * Toggle the upvote on the post
+   */
+  const toggleUpvote = async () => {
+    // eslint-disable-next-line unicorn/prefer-ternary
+    if (post.upvote === true) {
+      // Delete the vote
+      await client.from("post_votes").delete().match({
+        // eslint-disable-next-line camelcase
+        post_id: post.id,
+      });
+
+      // Optimistically update the post
+      setPost({
+        ...post,
+        upvotes: post.upvotes - 1,
+        // eslint-disable-next-line unicorn/no-null
+        upvote: null,
+      });
+    } else {
+      // Create the vote
+      await client.from("post_votes").insert({
+        // eslint-disable-next-line camelcase
+        post_id: post.id,
+        upvote: true,
+      });
+
+      // Optimistically update the post
+      setPost({
+        ...post,
+        upvotes: post.upvotes + 1,
+        upvote: true,
+      });
+    }
+  };
+
+  /**
+   * Toggle the downvote on the post
+   */
+  const toggleDownvote = async () => {
+    // eslint-disable-next-line unicorn/prefer-ternary
+    if (post.upvote === false) {
+      // Delete the vote
+      await client.from("post_votes").delete().match({
+        // eslint-disable-next-line camelcase
+        post_id: post.id,
+      });
+
+      // Optimistically update the post
+      setPost({
+        ...post,
+        downvotes: post.downvotes - 1,
+        // eslint-disable-next-line unicorn/no-null
+        upvote: null,
+      });
+    } else {
+      // Create the vote
+      await client.from("post_votes").insert({
+        // eslint-disable-next-line camelcase
+        post_id: post.id,
+        upvote: false,
+      });
+
+      // Optimistically update the post
+      setPost({
+        ...post,
+        downvotes: post.downvotes + 1,
+        upvote: false,
+      });
+    }
+  };
+
   return (
-    <IonCard className="mx-4 my-2 rounded-xl">
+    <IonCard className="mx-4 my-2 rounded-xl overflow-hidden text-neutral-700 dark:text-neutral-300">
       <div className="w-full" ref={measured} />
 
       {post.has_media && (
@@ -179,6 +258,7 @@ export const PostCard: React.FC<PostCardProps> = ({post}) => {
         >
           <Blurhash
             className="absolute"
+            ambient={showAmbientEffect}
             hash={(post as Post<true>).blur_hash}
             height={size.height}
             width={size.width}
@@ -201,7 +281,6 @@ export const PostCard: React.FC<PostCardProps> = ({post}) => {
                     return (
                       <video
                         autoPlay
-                        controls
                         height={size.height}
                         loop
                         muted
@@ -231,7 +310,7 @@ export const PostCard: React.FC<PostCardProps> = ({post}) => {
               ios={locationOutline}
               md={locationSharp}
             />
-            <p className="!mb-0 !ml-1.5 !mr-4">
+            <p className="!mb-0 !ml-1.5 !mr-4 !mt-0.5">
               {formatDistance(post.distance, measurementSystem)} away
             </p>
 
@@ -242,7 +321,7 @@ export const PostCard: React.FC<PostCardProps> = ({post}) => {
                   ios={timeOutline}
                   md={timeSharp}
                 />
-                <p className="!mb-0 !ml-1.5">{time}</p>
+                <p className="!mb-0 !ml-1.5 !mt-0.5">{time}</p>
               </>
             )}
           </div>
@@ -251,29 +330,22 @@ export const PostCard: React.FC<PostCardProps> = ({post}) => {
         <Markdown className="mt-4 mb-1" raw={post.content} />
 
         <div className="flex flex-row items-center justify-between">
-          <div className="flex flex-row items-center justify-center">
-            <IonButton
-              className={styles.voteButton}
-              color="medium"
-              fill="clear"
-            >
-              <div className="flex flex-row items-center justify-center mx-2">
-                <IonIcon
-                  className="text-[1.8rem]"
-                  slot="start"
-                  ios={chatbubblesOutline}
-                  md={chatbubblesSharp}
-                />
-                <p className="!mb-0 !ml-1.5">{formatScalar(post.comments)}</p>
-              </div>
-            </IonButton>
+          <div className="flex flex-row items-center justify-center px-1">
+            <IonIcon
+              className="text-[1.8rem]"
+              slot="start"
+              ios={chatbubblesOutline}
+              md={chatbubblesSharp}
+            />
+            <p className="!mb-0 !ml-1.5">{formatScalar(post.comments)}</p>
           </div>
 
           <div className="flex flex-row items-center">
             <IonButton
-              className={styles.voteButton}
+              className={`m-0 ${styles.voteButton}`}
               color={post.upvote === true ? "success" : "medium"}
               fill="clear"
+              onClick={toggleUpvote}
             >
               <IonIcon
                 slot="icon-only"
@@ -285,9 +357,10 @@ export const PostCard: React.FC<PostCardProps> = ({post}) => {
               {formatScalar(post.upvotes - post.downvotes)}
             </p>
             <IonButton
-              className={styles.voteButton}
+              className={`m-0 ${styles.voteButton}`}
               color={post.upvote === false ? "danger" : "medium"}
               fill="clear"
+              onClick={toggleDownvote}
             >
               <IonIcon
                 slot="icon-only"

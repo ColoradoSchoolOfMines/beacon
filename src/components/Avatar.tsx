@@ -39,7 +39,7 @@ export const Avatar: React.FC<AvatarProps> = ({profile}) => {
       className="flex flex-row h-9 items-center justify-center rounded-full w-9"
       style={{
         backgroundColor: color,
-        boxShadow: `0 0 20px -1px ${color}`,
+        boxShadow: `0 0 20px -2px ${color}`,
       }}
     >
       {profile.emoji === undefined ? (

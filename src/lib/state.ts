@@ -99,6 +99,17 @@ interface Store {
   setShowFABs: (newShowFABs: boolean) => void;
 
   /**
+   * Whether or not the ambient effect should be shown
+   */
+  showAmbientEffect: boolean;
+
+  /**
+   * Set whether or not the ambient effect should be shown
+   * @param newAmbientEffect New value
+   */
+  setShowAmbientEffect: (newAmbientEffect: boolean) => void;
+
+  /**
    * Measurement system
    */
   measurementSystem: MeasurementSystem;
@@ -135,6 +146,7 @@ const defaultState: DeepPartial<Store> = {
       ? Theme.DARK
       : Theme.LIGHT,
   showFABs: true,
+  showAmbientEffect: true,
   measurementSystem: MeasurementSystem.IMPERIAL,
 };
 
@@ -186,6 +198,11 @@ export const useStore = create<Store>()(
               ...state,
               showFABs: newShowFABs,
             })),
+          setShowAmbientEffect: (newAmbientEffect: boolean) =>
+            set(state => ({
+              ...state,
+              showAmbientEffect: newAmbientEffect,
+            })),
           setMeasurementSystem: (newMeasurementSystem: MeasurementSystem) =>
             set(state => ({
               ...state,
@@ -203,6 +220,7 @@ export const useStore = create<Store>()(
         storage: createJSONStorage(() => stateStorage),
         partialize: state => ({
           showFABs: state.showFABs,
+          showAmbientEffect: state.showAmbientEffect,
           measurementSystem: state.measurementSystem,
           theme: state.theme,
         }),

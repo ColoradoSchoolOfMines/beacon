@@ -56,6 +56,8 @@ export const Settings: React.FC = () => {
   const setTheme = useStore(state => state.setTheme);
   const showFABs = useStore(state => state.showFABs);
   const setShowFABs = useStore(state => state.setShowFABs);
+  const showAmbientEffect = useStore(state => state.showAmbientEffect);
+  const setShowAmbientEffect = useStore(state => state.setShowAmbientEffect);
   const measurementSystem = useStore(state => state.measurementSystem);
   const setMeasurementSystem = useStore(state => state.setMeasurementSystem);
   const reset = useStore(state => state.reset);
@@ -233,6 +235,17 @@ export const Settings: React.FC = () => {
                 onIonChange={event => setShowFABs(event.detail.checked)}
               >
                 Show floating action buttons
+              </IonToggle>
+            </IonItem>
+
+            <IonItem>
+              <IonToggle
+                checked={showAmbientEffect}
+                onIonChange={event =>
+                  setShowAmbientEffect(event.detail.checked)
+                }
+              >
+                Show ambient effect
               </IonToggle>
             </IonItem>
 

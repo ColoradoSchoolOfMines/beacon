@@ -64,6 +64,14 @@ export const Nearby: React.FC = () => {
     history.push("/posts/create");
   };
 
+  /**
+   * Set the post
+   * @param newPost New post
+   * @returns Void
+   */
+  const setPost = (newPost: Post) =>
+    setPosts(posts.map(post => (post.id === newPost.id ? newPost : post)));
+
   return (
     <IonPage>
       <IonHeader className="ion-no-border" translucent={true}>
@@ -87,12 +95,8 @@ export const Nearby: React.FC = () => {
             height,
           }}
         >
-          {posts.map((post, index) => (
-            <PostCard
-              /* key={post.id} */
-              key={index}
-              post={post}
-            />
+          {posts.map(post => (
+            <PostCard key={post.id} post={post} setPost={setPost} />
           ))}
 
           <IonInfiniteScroll>
