@@ -42,7 +42,7 @@ export const AuthContainer: React.FC<AuthContainerProps> = ({
   children,
 }) => (
   <IonPage>
-    <IonHeader>
+    <IonHeader className="ion-no-border">
       <IonToolbar>
         <IonButtons slot="start">
           {back ? <IonBackButton defaultHref="/auth" /> : <IonMenuButton />}

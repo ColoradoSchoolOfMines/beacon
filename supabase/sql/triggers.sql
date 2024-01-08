@@ -44,6 +44,11 @@ AFTER DELETE ON public.posts
 FOR EACH ROW
 EXECUTE FUNCTION utilities.post_modified_trigger();
 
+CREATE TRIGGER post_deleted_after_delete
+AFTER DELETE ON public.posts
+FOR EACH ROW
+EXECUTE FUNCTION utilities.post_deleted_trigger();
+
 -- Comment modified
 CREATE TRIGGER comment_modified_after_insert
 AFTER INSERT ON public.comments

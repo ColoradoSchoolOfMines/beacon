@@ -3,14 +3,25 @@
  */
 
 import {User} from "@supabase/supabase-js";
-import {encode} from "blurhash";
+import humanizeDuration, {Options} from "humanize-duration";
+import {Duration} from "luxon";
 
-import {
-  MediaCategory,
-  MediaCategoryElement,
-  MediaDimensions,
-  RequiredAuthState,
-} from "~/lib/types";
+import {MeasurementSystem, RequiredAuthState} from "~/lib/types";
+
+/**
+ * Meters to feet conversion factor
+ */
+export const METERS_TO_FEET = 3.280839895;
+
+/**
+ * Meters to kilometers conversion factor
+ */
+export const METERS_TO_KILOMETERS = 0.001;
+
+/**
+ * Miles to meters conversion factor
+ */
+export const METERS_TO_MILES = 0.000621371;
 
 /**
  * Check if the user meets the required authentication state
@@ -35,221 +46,81 @@ export const checkRequiredAuthState = (
 };
 
 /**
- * Create a data URL for the blob
- * @param raw Raw blob
- * @returns Data URL
+ * Format a scalar value in a compact notation
+ * @param value Scalar value
+ * @returns Formatted scalar value
  */
-export const createDataURL = async (raw: Blob) => {
-  const reader = new FileReader();
-  reader.readAsDataURL(raw);
-
-  await new Promise(resolve =>
-    reader.addEventListener("load", resolve, {
-      once: true,
-    }),
-  );
-
-  return reader.result as string;
-};
+export const formatScalar = (value: number) =>
+  new Intl.NumberFormat(navigator.language, {
+    style: "decimal",
+    notation: "compact",
+  }).format(value);
 
 /**
- * Minimum media dimension
+ * Format a distance
+ * @param distance Distance in meters
+ * @param measurementSystem Desired measurement system
+ * @returns Formatted distance
  */
-export const MIN_MEDIA_DIMENSION = 128;
+export const formatDistance = (
+  distance: number,
+  measurementSystem: MeasurementSystem,
+) => {
+  // Get the unit and convert the distance to the desired measurement system
+  let unit: string;
+  let convertedDistance: number;
 
-/**
- * Maximum media dimension
- * @see https://github.com/supabase/imgproxy/blob/c15dbefb4ba85ac6ca807949073707ea7fceb270/config/config.go#L235 (Must be smaller than the square root of this)
- */
-export const MAX_MEDIA_DIMENSION = 4096;
+  switch (measurementSystem) {
+    case MeasurementSystem.METRIC:
+      if (distance < 1000) {
+        unit = "meter";
+        convertedDistance = distance;
+      } else {
+        unit = "kilometer";
+        convertedDistance = distance * METERS_TO_KILOMETERS;
+      }
 
-/**
- * Default blurhash X component count
- */
-export const BLURHASH_COMPONENT_X = 4;
-
-/**
- * Default blurhash Y component count
- */
-export const BLURHASH_COMPONENT_Y = 5;
-
-/**
- * Default blurhash pixels per component
- */
-export const BLURHASH_PIXELS_PER_COMPONENT = 8;
-
-/**
- * Allowed media MIME types
- */
-export const CATEGORIZED_MEDIA_MIME_TYPES = {
-  [MediaCategory.IMAGE]: [
-    "image/avif",
-    "image/gif",
-    "image/jpeg",
-    "image/png",
-    "image/svg+xml",
-    "image/webp",
-  ],
-  [MediaCategory.VIDEO]: [
-    "video/mp4",
-    "video/mpeg",
-    "video/webm",
-  ],
-} as Record<MediaCategory, string[]>;
-
-/**
- * Get the media category for the MIME type
- * @param mimeType MIME type
- * @returns Media category or undefined if the MIME type is not allowed
- */
-export const getCategory = (mimeType: string): MediaCategory | undefined => {
-  for (const [category, mimeTypes] of Object.entries(
-    CATEGORIZED_MEDIA_MIME_TYPES,
-  )) {
-    if (mimeTypes.includes(mimeType)) {
-      return category as MediaCategory;
-    }
-  }
-
-  return undefined;
-};
-
-/**
- * Generate the appropriate element for the media blob
- * @param raw Raw media blob
- * @returns Media element
- */
-export const generateMediaElement = async <T extends MediaCategory = any>(
-  raw: Blob,
-): Promise<MediaCategoryElement<T>> => {
-  // Create a data URL for the blob
-  const dataURL = await createDataURL(raw);
-
-  // Get the category of the media
-  const category = getCategory(raw.type);
-
-  if (category === undefined) {
-    throw new Error(`Invalid media category for MIME type: ${raw.type}`);
-  }
-
-  // Create the element
-  let element: MediaCategoryElement<T>;
-
-  switch (category) {
-    case MediaCategory.IMAGE:
-      element = document.createElement("img") as MediaCategoryElement<T>;
       break;
 
-    case MediaCategory.VIDEO:
-      element = document.createElement("video") as MediaCategoryElement<T>;
+    case MeasurementSystem.IMPERIAL:
+      if (distance < 1 / METERS_TO_MILES) {
+        unit = "foot";
+        convertedDistance = distance * METERS_TO_FEET;
+      } else {
+        unit = "mile";
+        convertedDistance = distance * METERS_TO_MILES;
+      }
+
       break;
   }
 
-  // Wait for the media to load
-  await new Promise((resolve, reject) => {
-    // Register event listeners
-    element.addEventListener("error", reject);
-
-    switch (category) {
-      case MediaCategory.IMAGE:
-        element.addEventListener("load", resolve);
-        break;
-
-      case MediaCategory.VIDEO:
-        element.addEventListener("loadeddata", resolve);
-        break;
-    }
-
-    // Set a timeout
-    setTimeout(() => reject("Timed out waiting for media to load"), 2000);
-
-    // Load the media
-    element.src = dataURL;
-  });
-
-  return element;
+  return new Intl.NumberFormat(navigator.language, {
+    style: "unit",
+    unit,
+    unitDisplay: "short",
+    maximumFractionDigits: 0,
+  }).format(convertedDistance);
 };
 
 /**
- * Get the dimensions of the media blob
- * @param category Media category
- * @param element Media element
- * @returns Media dimensions
+ * Format a duration
+ * @param value Duration (In milliseconds)
+ * @returns Formatted duration
  */
-export const getMediaDimensions = <T extends MediaCategory = any>(
-  category: T,
-  element: MediaCategoryElement<T>,
-) => {
-  // Get the dimensions
-  switch (category) {
-    case MediaCategory.IMAGE:
-      return {
-        width: (element as HTMLImageElement).naturalWidth,
-        height: (element as HTMLImageElement).naturalHeight,
-      } as MediaDimensions;
+export const formatDuration = (value: number) => {
+  const duration = Duration.fromMillis(value);
 
-    case MediaCategory.VIDEO:
-      return {
-        width: (element as HTMLVideoElement).videoWidth,
-        height: (element as HTMLVideoElement).videoHeight,
-      } as MediaDimensions;
+  const options: Options = {
+    round: true,
+  };
 
-    default:
-      throw new Error(`Invalid media category: ${category}`);
+  if (duration.as("minutes") < 60) {
+    options.units = ["m"];
+  } else if (duration.as("hours") < 24) {
+    options.units = ["h"];
+  } else {
+    options.units = ["d"];
   }
-};
 
-/**
- * Generate a blurhash for the media blob
- * @param element Media element
- * @param dimensions Media dimensions
- * @param componentX Number of X components
- * @param componentY Number of Y components
- * @returns Blurhash
- */
-export const generateBlurhash = async <T extends MediaCategory = any>(
-  element: MediaCategoryElement<T>,
-  dimensions: MediaDimensions,
-  componentX: number,
-  componentY: number,
-) => {
-  // Create the canvas
-  const canvas = document.createElement("canvas");
-  const context = canvas.getContext("2d")!;
-
-  canvas.height = dimensions.height;
-  canvas.width = dimensions.width;
-
-  // Draw the media
-  context.drawImage(element, 0, 0);
-
-  // Scale down the canvas to speed up blurhash generation
-  const scaledDimensions = {
-    width: componentX * BLURHASH_PIXELS_PER_COMPONENT,
-    height: componentY * BLURHASH_PIXELS_PER_COMPONENT,
-  } as MediaDimensions;
-
-  context.scale(
-    scaledDimensions.width / dimensions.width,
-    scaledDimensions.height / dimensions.height,
-  );
-
-  // Get the image data
-  const imageData = context.getImageData(
-    0,
-    0,
-    scaledDimensions.width,
-    scaledDimensions.height,
-  );
-
-  // Generate the blurhash
-  const hash = encode(
-    imageData.data,
-    scaledDimensions.width,
-    scaledDimensions.height,
-    componentX,
-    componentY,
-  );
-
-  return hash;
+  return humanizeDuration(value, options);
 };

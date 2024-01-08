@@ -23,10 +23,10 @@ const FRAME_COUNT = 5;
 export const Home: React.FC = () => {
   // Hooks
   const theme = useStore(state => state.theme);
-  const [content, {height, width}] = useMeasure();
+  const [measured, {height, width}] = useMeasure();
 
   return (
-    <IonPage ref={content}>
+    <IonPage ref={measured}>
       <Header />
 
       <IonContent

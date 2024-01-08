@@ -40,7 +40,7 @@ export const CreatePostContainer: React.FC<CreatePostContainerProps> = ({
   children,
 }) => (
   <IonPage>
-    <IonHeader>
+    <IonHeader className="ion-no-border">
       <IonToolbar>
         <IonButtons slot="start">
           {back ? (

@@ -92,7 +92,7 @@ CREATE TABLE public.posts (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW() CHECK (created_at <= NOW()),
 
   -- Filter radius in meters (Clamped between 500 meters and 50 kilometers)
-  radius DOUBLE PRECISION NOT NULL CHECK (500 < radius AND radius < 50000),
+  radius DOUBLE PRECISION NOT NULL CHECK (500 <= radius AND radius <= 50000),
 
   -- Plain-text content (Up to 300 characters)
   content VARCHAR(300) NOT NULL,

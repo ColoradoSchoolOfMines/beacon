@@ -22,6 +22,7 @@ import {
   locationOutline,
   locationSharp,
 } from "ionicons/icons";
+import {round} from "lodash-es";
 import {useEffect} from "react";
 import {Controller, useForm} from "react-hook-form";
 import {useHistory} from "react-router-dom";
@@ -31,28 +32,46 @@ import {CreatePostContainer} from "~/components/create-post/Container";
 import styles from "~/components/create-post/Step2.module.css";
 import {Map} from "~/components/Map";
 import {SupplementalError} from "~/components/SupplementalError";
-import {useStore} from "~/lib/state";
-import {client} from "~/lib/supabase";
-import {MeasurementSystem} from "~/lib/types";
 import {
   BLURHASH_COMPONENT_X,
   BLURHASH_COMPONENT_Y,
-  generateBlurhash,
-  generateMediaElement,
+  createBlurhash,
+  createMediaElement,
   getCategory,
   getMediaDimensions,
-} from "~/lib/utils";
+} from "~/lib/media";
+import {useStore} from "~/lib/state";
+import {client} from "~/lib/supabase";
+import {MeasurementSystem} from "~/lib/types";
+import {METERS_TO_KILOMETERS, METERS_TO_MILES} from "~/lib/utils";
 import {Error} from "~/pages/Error";
 
 /**
- * Kilometers to meters conversion factor
+ * Minimum radius (In meters)
  */
-const KILOMETERS_TO_METERS = 1000;
+const MIN_RADIUS = 500;
 
 /**
- * Miles to meters conversion factor
+ * Maximum radius (In meters)
  */
-const MILES_TO_METERS = 1609.344;
+const MAX_RADIUS = 50000;
+
+/**
+ * Form schema
+ */
+const formSchema = z.object({
+  anonymous: z.boolean(),
+  radius: z
+    .number()
+    .min(MIN_RADIUS - 1e-4)
+    .max(MAX_RADIUS + 1e-4),
+});
+
+// Types
+/**
+ * Form schema type
+ */
+type FormSchema = z.infer<typeof formSchema>;
 
 /**
  * Create post step 2 component
@@ -68,46 +87,33 @@ export const Step2: React.FC = () => {
 
   // Variables
   /**
-   * Minimum radius (In kilometers or miles, depending on the current measurement system)
-   */
-  const minRadius = measurementSystem === MeasurementSystem.METRIC ? 1 : 0.5;
-
-  /**
-   * Maximum radius (In kilometers or miles, depending on the current measurement system)
-   */
-  const maxRadius = measurementSystem === MeasurementSystem.METRIC ? 50 : 30;
-
-  /**
-   * Default radius (In kilometers or miles, depending on the current measurement system)
-   */
-  const defaultRadius = measurementSystem === MeasurementSystem.METRIC ? 5 : 3;
-
-  /**
-   * Radius step (In kilometers or miles, depending on the current measurement system)
-   */
-  const radiusStep = measurementSystem === MeasurementSystem.METRIC ? 1 : 0.5;
-
-  /**
    * Conversion factor
    */
   const conversionFactor =
     measurementSystem === MeasurementSystem.METRIC
-      ? KILOMETERS_TO_METERS
-      : MILES_TO_METERS;
+      ? METERS_TO_KILOMETERS
+      : METERS_TO_MILES;
 
-  /**
-   * Form schema
-   */
-  const formSchema = z.object({
-    anonymous: z.boolean(),
-    radius: z.number().min(minRadius).max(maxRadius),
-  });
+  let minRadius: number;
+  let maxRadius: number;
+  let defaultRadius: number;
+  let radiusStep: number;
 
-  // Types
-  /**
-   * Form schema type
-   */
-  type FormSchema = z.infer<typeof formSchema>;
+  switch (measurementSystem) {
+    case MeasurementSystem.METRIC:
+      minRadius = 1;
+      maxRadius = 50;
+      defaultRadius = 5 / conversionFactor;
+      radiusStep = 1;
+      break;
+
+    case MeasurementSystem.IMPERIAL:
+      minRadius = 0.5;
+      maxRadius = 30;
+      defaultRadius = 3 / conversionFactor;
+      radiusStep = 0.5;
+      break;
+  }
 
   // More hooks
   const {control, handleSubmit, setValue, watch} = useForm<FormSchema>({
@@ -146,12 +152,15 @@ export const Step2: React.FC = () => {
     // Process the media
     if (post?.media !== undefined) {
       const category = getCategory(post.media.type)!;
-      const element = await generateMediaElement(post.media);
+      const objectURL = URL.createObjectURL(post.media!);
+      const element = await createMediaElement(category, objectURL);
+      URL.revokeObjectURL(objectURL);
       const dimensions = getMediaDimensions(category, element);
 
       aspectRatio = dimensions.width / dimensions.height;
 
-      blurHash = await generateBlurhash(
+      blurHash = await createBlurhash(
+        category,
         element,
         dimensions,
         BLURHASH_COMPONENT_X,
@@ -165,7 +174,7 @@ export const Step2: React.FC = () => {
       .insert({
         // eslint-disable-next-line camelcase
         private_anonymous: form.anonymous,
-        radius: form.radius * conversionFactor,
+        radius: form.radius,
         content: post!.content!,
         // eslint-disable-next-line camelcase
         has_media: post!.media !== undefined,
@@ -258,8 +267,12 @@ export const Step2: React.FC = () => {
                       max={maxRadius}
                       step={radiusStep}
                       onIonBlur={onBlur}
-                      onIonInput={onChange}
-                      value={value}
+                      onIonInput={event =>
+                        onChange(
+                          (event.detail.value as number) / conversionFactor,
+                        )
+                      }
+                      value={value * conversionFactor}
                     >
                       <IonIcon
                         slot="start"
@@ -274,13 +287,16 @@ export const Step2: React.FC = () => {
                       fill="outline"
                       onIonBlur={onBlur}
                       onIonChange={event =>
-                        onChange(Number.parseInt(event.detail.value ?? ""))
+                        onChange(
+                          Number.parseInt(event.detail.value ?? "0") /
+                            conversionFactor,
+                        )
                       }
                       type="number"
                       min={minRadius}
                       max={maxRadius}
                       step={radiusStep.toString()}
-                      value={value}
+                      value={round(value * conversionFactor, 1)}
                     >
                       <IonLabel class="!ml-2" slot="end">
                         {measurementSystem === MeasurementSystem.METRIC

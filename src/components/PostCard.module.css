@@ -1,0 +1,3 @@
+.voteButton:global(::part(native)) {
+  @apply px-1;
+}

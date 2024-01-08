@@ -35,17 +35,16 @@ import styles from "~/components/create-post/Step1.module.css";
 import {Step2} from "~/components/create-post/Step2";
 import {Markdown} from "~/components/Markdown";
 import {SupplementalError} from "~/components/SupplementalError";
-import {useStore} from "~/lib/state";
-import {MediaCategory} from "~/lib/types";
 import {
   CATEGORIZED_MEDIA_MIME_TYPES,
-  createDataURL,
-  generateMediaElement,
+  createMediaElement,
   getCategory,
   getMediaDimensions,
   MAX_MEDIA_DIMENSION,
   MIN_MEDIA_DIMENSION,
-} from "~/lib/utils";
+} from "~/lib/media";
+import {useStore} from "~/lib/state";
+import {MediaCategory} from "~/lib/types";
 import {CreatePostNavContext} from "~/pages/CreatePost";
 
 /**
@@ -103,8 +102,10 @@ const formSchema = z.object({
           return;
         }
 
-        const element = await generateMediaElement(value[0]!);
-        const dimensions = await getMediaDimensions(category, element);
+        const objectURL = URL.createObjectURL(value[0]!);
+        const element = await createMediaElement(category, objectURL);
+        URL.revokeObjectURL(objectURL);
+        const dimensions = getMediaDimensions(category, element);
 
         // Check the media dimensions
         if (
@@ -204,7 +205,7 @@ export const Step1: React.FC = () => {
       let url: string | undefined;
 
       if (media !== undefined && media.length > 0) {
-        url = await createDataURL(media[0]!);
+        url = URL.createObjectURL(media[0]!);
       }
 
       setPreviewUrl(url);
@@ -239,7 +240,7 @@ export const Step1: React.FC = () => {
               fieldState: {error},
             }) => (
               <div className="flex flex-col flex-1 px-4 pt-4">
-                <IonLabel>Content</IonLabel>
+                <IonLabel className="pb-2">Content</IonLabel>
 
                 <div className="flex-1 relative">
                   <div className="absolute flex flex-col left-0 right-0 bottom-0 top-0">

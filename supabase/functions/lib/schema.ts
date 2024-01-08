@@ -1102,6 +1102,7 @@ export interface Database {
           id: string | null
           parent_id: string | null
           post_id: string | null
+          upvote: boolean | null
           upvotes: number | null
         }
         Relationships: [
@@ -1151,6 +1152,9 @@ export interface Database {
       }
       personalized_posts: {
         Row: {
+          aspect_ratio: number | null
+          blur_hash: string | null
+          comments: number | null
           content: string | null
           created_at: string | null
           distance: number | null
@@ -1161,6 +1165,7 @@ export interface Database {
           poster_emoji: string | null
           poster_id: string | null
           radius: number | null
+          upvote: boolean | null
           upvotes: number | null
         }
         Relationships: []
@@ -1174,6 +1179,7 @@ export interface Database {
       distance_to: {
         Args: {
           _other_location: unknown
+          _uncertainty_scale: number
         }
         Returns: number
       }
@@ -1200,6 +1206,7 @@ export interface Database {
       }
       cached_posts: {
         Row: {
+          comments: number | null
           downvotes: number | null
           id: string | null
           upvotes: number | null

@@ -181,25 +181,49 @@ export type Location = Database["public"]["Tables"]["locations"]["Row"];
  * @param T Whether or not the post has media
  */
 export type Post<T extends boolean = true | false> = {
-  id: Database["public"]["Tables"]["posts"]["Row"]["id"];
-  poster_id: Database["public"]["Tables"]["posts"]["Row"]["poster_id"];
-  created_at: Database["public"]["Tables"]["posts"]["Row"]["created_at"];
-  radius: Database["public"]["Tables"]["posts"]["Row"]["radius"];
-  content: Database["public"]["Tables"]["posts"]["Row"]["content"];
+  id: NonNullable<
+    Database["public"]["Views"]["personalized_posts"]["Row"]["id"]
+  >;
+  poster_id: Database["public"]["Views"]["personalized_posts"]["Row"]["poster_id"];
+  created_at: NonNullable<
+    Database["public"]["Views"]["personalized_posts"]["Row"]["created_at"]
+  >;
+  radius: NonNullable<
+    Database["public"]["Views"]["personalized_posts"]["Row"]["radius"]
+  >;
+  content: NonNullable<
+    Database["public"]["Views"]["personalized_posts"]["Row"]["content"]
+  >;
   has_media: T;
+  distance: NonNullable<
+    Database["public"]["Views"]["personalized_posts"]["Row"]["distance"]
+  >;
 
-  upvotes: Database["utilities"]["Views"]["cached_posts"]["Row"]["upvotes"];
-  downvotes: Database["utilities"]["Views"]["cached_posts"]["Row"]["downvotes"];
+  upvotes: NonNullable<
+    Database["public"]["Views"]["personalized_posts"]["Row"]["upvotes"]
+  >;
+  downvotes: NonNullable<
+    Database["public"]["Views"]["personalized_posts"]["Row"]["downvotes"]
+  >;
+  comments: NonNullable<
+    Database["public"]["Views"]["personalized_posts"]["Row"]["comments"]
+  >;
 
-  poster_color: Database["public"]["Tables"]["profiles"]["Row"]["color"];
-  poster_emoji: Database["public"]["Tables"]["profiles"]["Row"]["emoji"];
+  poster_color: NonNullable<
+    Database["public"]["Views"]["personalized_posts"]["Row"]["poster_color"]
+  >;
+  poster_emoji: NonNullable<
+    Database["public"]["Views"]["personalized_posts"]["Row"]["poster_emoji"]
+  >;
+
+  upvote: Database["public"]["Views"]["personalized_posts"]["Row"]["upvote"];
 } & (T extends true
   ? {
       blur_hash: NonNullable<
-        Database["public"]["Tables"]["posts"]["Row"]["blur_hash"]
+        Database["public"]["Views"]["personalized_posts"]["Row"]["blur_hash"]
       >;
       aspect_ratio: NonNullable<
-        Database["public"]["Tables"]["posts"]["Row"]["aspect_ratio"]
+        Database["public"]["Views"]["personalized_posts"]["Row"]["aspect_ratio"]
       >;
     }
   : {});
@@ -242,14 +266,42 @@ export type PostReport = Database["public"]["Tables"]["post_reports"]["Row"];
 /**
  * Comment
  */
-export type Comment = Pick<
-  Database["public"]["Tables"]["comments"]["Row"],
-  "id" | "commenter_id" | "created_at" | "content"
-> &
-  Pick<
-    DeepMandatory<Database["utilities"]["Views"]["cached_comments"]["Row"]>,
-    "upvotes" | "downvotes"
+export interface Comment {
+  id: NonNullable<
+    Database["public"]["Views"]["personalized_comments"]["Row"]["id"]
   >;
+  commenter_id: Database["public"]["Views"]["personalized_comments"]["Row"]["commenter_id"];
+  post_id: NonNullable<
+    Database["public"]["Views"]["personalized_comments"]["Row"]["post_id"]
+  >;
+  parent_id: NonNullable<
+    Database["public"]["Views"]["personalized_comments"]["Row"]["parent_id"]
+  >;
+  created_at: NonNullable<
+    Database["public"]["Views"]["personalized_comments"]["Row"]["created_at"]
+  >;
+  content: NonNullable<
+    Database["public"]["Views"]["personalized_comments"]["Row"]["content"]
+  >;
+
+  upvotes: NonNullable<
+    Database["public"]["Views"]["personalized_comments"]["Row"]["upvotes"]
+  >;
+  downvotes: NonNullable<
+    Database["public"]["Views"]["personalized_comments"]["Row"]["downvotes"]
+  >;
+
+  commenter_color: NonNullable<
+    Database["public"]["Views"]["personalized_comments"]["Row"]["commenter_color"]
+  >;
+  commenter_emoji: NonNullable<
+    Database["public"]["Views"]["personalized_comments"]["Row"]["commenter_emoji"]
+  >;
+
+  upvote: NonNullable<
+    Database["public"]["Views"]["personalized_comments"]["Row"]["upvote"]
+  >;
+}
 
 /**
  * Comment vote

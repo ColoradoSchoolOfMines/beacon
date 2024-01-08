@@ -3,7 +3,7 @@
  */
 
 import {Schema} from "hast-util-sanitize";
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, {Options} from "react-markdown";
 import rehypeSanitize from "rehype-sanitize";
 import remarkGfm from "remark-gfm";
 
@@ -54,7 +54,7 @@ const schema = {
 /**
  * Markdown renderer component props
  */
-interface MarkdownProps extends React.HTMLAttributes<HTMLDivElement> {
+interface MarkdownProps extends Options {
   /**
    * Raw Github-Flavored Markdown (GFM) content
    */
@@ -66,13 +66,12 @@ interface MarkdownProps extends React.HTMLAttributes<HTMLDivElement> {
  * @returns JSX
  */
 export const Markdown: React.FC<MarkdownProps> = ({raw, ...props}) => (
-  <div {...props}>
-    <ReactMarkdown
-      className={styles.markdown}
-      remarkPlugins={[remarkGfm]}
-      rehypePlugins={[[rehypeSanitize, schema]]}
-    >
-      {raw}
-    </ReactMarkdown>
-  </div>
+  <ReactMarkdown
+    {...props}
+    className={`${styles.markdown} ${props.className ?? ""}`}
+    remarkPlugins={[remarkGfm]}
+    rehypePlugins={[[rehypeSanitize, schema]]}
+  >
+    {raw}
+  </ReactMarkdown>
 );

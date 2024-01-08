@@ -64,7 +64,6 @@ useStore.subscribe(async state => {
         // Update the backend
         if (!isEqual(location, oldLocation)) {
           const {error} = await client.from("locations").insert({
-            // eslint-disable-next-line camelcase
             location: `POINT(${location.coords.longitude} ${location.coords.latitude})`,
           });
 

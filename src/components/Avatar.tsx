@@ -5,7 +5,8 @@
 import {IonIcon} from "@ionic/react";
 import {helpOutline, helpSharp} from "ionicons/icons";
 
-import {Profile} from "~/lib/types";
+import {useStore} from "~/lib/state";
+import {Profile, Theme} from "~/lib/types";
 
 /**
  * Profile avatar component props
@@ -23,17 +24,28 @@ export interface AvatarProps {
  * @returns JSX
  */
 export const Avatar: React.FC<AvatarProps> = ({profile}) => {
+  // Hooks
+  const theme = useStore(state => state.theme);
+
+  // Variables
+  let color = profile.color;
+
+  if (color === undefined) {
+    color = theme === Theme.DARK ? "#404040" : "#e5e5e5";
+  }
+
   return (
     <div
-      className="flex flex-row h-12 items-center justify-center rounded-full text-2xl w-12 bg-neutral-200 dark:bg-neutral-700"
+      className="flex flex-row h-9 items-center justify-center rounded-full w-9"
       style={{
-        backgroundColor: profile.color,
+        backgroundColor: color,
+        boxShadow: `0 0 20px -1px ${color}`,
       }}
     >
       {profile.emoji === undefined ? (
-        <IonIcon ios={helpOutline} md={helpSharp} />
+        <IonIcon className="!text-lg" ios={helpOutline} md={helpSharp} />
       ) : (
-        <p>{profile.emoji}</p>
+        <p className="!text-lg">{profile.emoji}</p>
       )}
     </div>
   );

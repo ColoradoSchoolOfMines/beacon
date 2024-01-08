@@ -386,9 +386,10 @@ BEGIN
   _old_location = NEW.private_location::GEOMETRY;
 
   -- Add some uncertainty relative to the post's radius (To increase resistance against static trilateration attacks)
-  NEW.private_location = extensions.ST_MakePoint(
-    extensions.ST_X(_old_location) - ((_uncertainty / 2) * NEW.radius) + (_uncertainty * NEW.radius * utilities.safe_random()),
-    extensions.ST_Y(_old_location) - ((_uncertainty / 2) * NEW.radius) + (_uncertainty * NEW.radius * utilities.safe_random())
+  NEW.private_location = extensions.ST_Project(
+    _old_location::GEOGRAPHY,
+    (-(_uncertainty / 2) * NEW.radius) + (_uncertainty * NEW.radius * utilities.safe_random()),
+    2 * PI() * utilities.safe_random()
   );
 
   RETURN NEW;
@@ -405,6 +406,25 @@ AS $$
 BEGIN
   -- Refresh the cached posts
   REFRESH MATERIALIZED VIEW utilities.cached_posts;
+
+  RETURN NULL;
+END;
+$$;
+
+-- Post deleted trigger function
+CREATE OR REPLACE FUNCTION utilities.post_deleted_trigger()
+RETURNS TRIGGER
+SECURITY DEFINER
+VOLATILE
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  -- Delete the media
+  IF OLD.has_media THEN
+    DELETE FROM storage.objects
+    WHERE bucket_id = 'media'
+    AND name = 'posts/' || OLD.id::TEXT;
+  END IF;
 
   RETURN NULL;
 END;
@@ -451,7 +471,7 @@ BEGIN
     -- Ensure the ancestor comment's post matches the child comment's post
     IF (
       SELECT post_id
-      FROM public.private_comments
+      FROM public.comments
       WHERE id = _ancestor_id
     ) != _post_id THEN
       RAISE EXCEPTION 'The ancestor''s comment''s post does not match the child comment''s post';
@@ -467,7 +487,7 @@ BEGIN
 
     -- Get the next parent ID
     SELECT parent_id INTO _ancestor_id
-    FROM public.private_comments
+    FROM public.comments
     WHERE id = _ancestor_id;
   END LOOP;
 
@@ -496,7 +516,7 @@ BEGIN
   -- Delete the post if the net votes is less than or equal to -5
   IF (
     SELECT upvotes - downvotes
-    FROM public.posts
+    FROM utilities.cached_posts
     WHERE id = _post_id
   ) <= -5 THEN
     DELETE FROM public.posts
@@ -527,10 +547,10 @@ BEGIN
   -- Delete the comment if the net votes is less than or equal to -5
   IF (
     SELECT upvotes - downvotes
-    FROM public.private_comments
+    FROM utilities.cached_comments
     WHERE id = _comment_id
   ) <= -5 THEN
-    DELETE FROM public.private_comments
+    DELETE FROM public.comments
     WHERE id = _comment_id;
   END IF;
 
@@ -557,7 +577,10 @@ $$;
 -- Calculate the distance from the current user's location to a specified location
 CREATE OR REPLACE FUNCTION public.distance_to(
   -- Other location to calculate the distance to
-  _other_location GEOGRAPHY(POINT, 4326)
+  _other_location GEOGRAPHY(POINT, 4326),
+
+  -- Scale for the uncertainty
+  _uncertainty_scale DOUBLE PRECISION
 )
 RETURNS DOUBLE PRECISION
 SECURITY DEFINER
@@ -565,13 +588,13 @@ VOLATILE
 LANGUAGE plpgsql
 AS $$
 DECLARE
-  -- Current user's location
+  -- Relative uncertainty
   _uncertainty DOUBLE PRECISION := 0.05;
 
   -- Current user's location
   _user_location GEOGRAPHY(POINT, 4326) := utilities.get_latest_location(auth.uid());
 BEGIN
   -- Add some uncertainty relative to the total distance (To increase resistance against dynamic trilateration attacks)
-  RETURN extensions.ST_Distance(_user_location, _other_location) - (0.5 * _uncertainty) + (_uncertainty * utilities.safe_random());
+  RETURN extensions.ST_Distance(_user_location, _other_location) + (_uncertainty * _uncertainty_scale * utilities.safe_random());
 END;
 $$;

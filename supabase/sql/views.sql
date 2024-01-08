@@ -11,9 +11,11 @@ AS (
     post.id,
 
     SUM(CASE WHEN post_vote.upvote THEN 1 ELSE 0 END) AS upvotes,
-    SUM(CASE WHEN NOT post_vote.upvote THEN 1 ELSE 0 END) AS downvotes
+    SUM(CASE WHEN NOT post_vote.upvote THEN 1 ELSE 0 END) AS downvotes,
+    COUNT(comment.id) as comments
   FROM public.posts post
   LEFT JOIN public.post_votes post_vote ON post_vote.post_id = post.id
+  LEFT JOIN public.comments comment ON comment.post_id = post.id
   GROUP BY post.id
 );
 
@@ -35,18 +37,20 @@ AS (
       post.has_media,
       post.blur_hash,
       post.aspect_ratio,
+      public.distance_to(post.private_location, post.radius) AS distance,
 
       cached_post.upvotes,
       cached_post.downvotes,
+      cached_post.comments,
 
       profile.color AS poster_color,
       profile.emoji AS poster_emoji,
 
-      -- Distance between the post and the user
-      public.distance_to(post.private_location) AS distance
+      vote.upvote
     FROM public.posts post
     LEFT JOIN utilities.cached_posts cached_post ON cached_post.id = post.id
     LEFT JOIN public.profiles profile ON profile.id = post.poster_id
+    LEFT JOIN public.post_votes vote ON vote.post_id = post.id AND vote.voter_id = auth.uid()
   )
   SELECT
     id,
@@ -57,14 +61,16 @@ AS (
     has_media,
     blur_hash,
     aspect_ratio,
+    distance,
 
     upvotes,
     downvotes,
+    comments,
 
     poster_color,
     poster_emoji,
 
-    distance
+    upvote
   FROM personalized_post
   -- This view doesn't have RLS, so we need to filter out posts the user can't see
   WHERE (
@@ -110,10 +116,13 @@ AS (
       cached_comment.downvotes,
 
       profile.color AS commenter_color,
-      profile.emoji AS commenter_emoji
+      profile.emoji AS commenter_emoji,
+
+      vote.upvote
     FROM public.comments comment
     LEFT JOIN utilities.cached_comments cached_comment ON cached_comment.id = comment.id
     LEFT JOIN public.profiles profile ON profile.id = comment.commenter_id
+    LEFT JOIN public.post_votes vote ON vote.post_id = comment.post_id AND vote.voter_id = auth.uid()
   )
   SELECT
     id,
@@ -127,7 +136,9 @@ AS (
     downvotes,
 
     commenter_color,
-    commenter_emoji
+    commenter_emoji,
+
+    upvote
   FROM personalized_comment
   -- This view doesn't have RLS, so we need to filter out comments the user can't see
   WHERE (
@@ -143,7 +154,7 @@ AS (
         post.private_poster_id = auth.uid()
 
         -- Or only get posts for which the user is within the post's radius
-        OR public.distance_to(post.private_location) <= post.radius
+        OR public.distance_to(post.private_location, post.radius) <= post.radius
     )
   )
 );

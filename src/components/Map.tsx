@@ -94,7 +94,7 @@ export const Map: React.FC<MapProps> = ({
   // Hooks
   const mapRef = useRef<MapContainerProps & LeafletMap>(null);
   const theme = useStore(state => state.theme);
-  const [container, {height, width}] = useMeasure<HTMLDivElement>();
+  const [measured, {height, width}] = useMeasure<HTMLDivElement>();
 
   // Effects
   useEffect(() => {
@@ -109,7 +109,7 @@ export const Map: React.FC<MapProps> = ({
     <div
       {...props}
       className={`${styles.container} ${props.className ?? ""}`}
-      ref={container}
+      ref={measured}
     >
       <MapContainer
         className="h-full w-full !bg-white dark:!bg-black"

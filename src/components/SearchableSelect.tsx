@@ -208,7 +208,7 @@ export const SearchableSelect = <T extends object>({
       {children(open)}
 
       <IonModal ref={modal}>
-        <IonHeader>
+        <IonHeader className="ion-no-border">
           <IonToolbar>
             <IonButtons slot="start">
               <IonButton onClick={closeDiscard}>Cancel</IonButton>

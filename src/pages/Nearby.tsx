@@ -11,7 +11,6 @@ import {
   IonIcon,
   IonInfiniteScroll,
   IonInfiniteScrollContent,
-  IonList,
   IonMenuButton,
   IonPage,
   IonRefresher,
@@ -22,6 +21,8 @@ import {
 import {addOutline, addSharp} from "ionicons/icons";
 import {useEffect, useState} from "react";
 import {useHistory} from "react-router-dom";
+import {useMeasure} from "react-use";
+import {VList} from "virtua";
 
 import {PostCard} from "~/components/PostCard";
 import {useStore} from "~/lib/state";
@@ -34,9 +35,10 @@ import {Post} from "~/lib/types";
  */
 export const Nearby: React.FC = () => {
   // Hooks
-  const history = useHistory();
   const [posts, setPosts] = useState<Post[]>([]);
   const showFABs = useStore(state => state.showFABs);
+  const history = useHistory();
+  const [measured, {height}] = useMeasure<HTMLIonContentElement>();
 
   // Effects
   useEffect(() => {
@@ -49,10 +51,7 @@ export const Nearby: React.FC = () => {
         return;
       }
 
-      // setPosts(data as any);
-      if (data?.length > 0) {
-        setPosts(Array.from({length: 1}).fill(data[0]) as any);
-      }
+      setPosts(data as any);
     })();
   }, []);
 
@@ -67,7 +66,7 @@ export const Nearby: React.FC = () => {
 
   return (
     <IonPage>
-      <IonHeader>
+      <IonHeader className="ion-no-border" translucent={true}>
         <IonToolbar>
           <IonButtons slot="start">
             <IonMenuButton />
@@ -77,27 +76,32 @@ export const Nearby: React.FC = () => {
         </IonToolbar>
       </IonHeader>
 
-      <IonContent>
+      <IonContent className="relative" scrollY={false} ref={measured}>
         <IonRefresher slot="fixed">
           <IonRefresherContent />
         </IonRefresher>
 
-        {posts.length > 0 ? (
-          <IonList className="py-0">
-            {posts.map((post, index) => (
-              <PostCard
-                /* key={post.id} */
-                key={index}
-                post={post}
-              />
-            ))}
+        <VList
+          className="absolute bottom-0 ion-content-scroll-host left-0 overflow-y-auto py-2 right-0 top-0"
+          style={{
+            height,
+          }}
+        >
+          {posts.map((post, index) => (
+            <PostCard
+              /* key={post.id} */
+              key={index}
+              post={post}
+            />
+          ))}
 
-            <IonInfiniteScroll>
-              <IonInfiniteScrollContent />
-            </IonInfiniteScroll>
-          </IonList>
-        ) : (
-          <div className="flex flex-col h-full items-center justify-center text-center w-full">
+          <IonInfiniteScroll>
+            <IonInfiniteScrollContent />
+          </IonInfiniteScroll>
+        </VList>
+
+        {posts.length === 0 && (
+          <div className="absolute left-0 right-0 bottom-0 top-0 flex flex-col h-full items-center justify-center text-center w-full z-10">
             <h1 className="text-8xl">😢</h1>
             <p className="mt-4 text-xl">
               No posts to see here :(

@@ -5,12 +5,12 @@
 import {decode} from "blurhash";
 import {useEffect, useRef} from "react";
 
-import {MediaDimensions} from "~/lib/types";
 import {
   BLURHASH_COMPONENT_X,
   BLURHASH_COMPONENT_Y,
   BLURHASH_PIXELS_PER_COMPONENT,
-} from "~/lib/utils";
+} from "~/lib/media";
+import {MediaDimensions} from "~/lib/types";
 
 /**
  * Blurhash component props

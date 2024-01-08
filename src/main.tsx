@@ -15,7 +15,7 @@ import "@ionic/react/css/flex-utils.css";
 import "@ionic/react/css/display.css";
 import "@unocss/reset/tailwind.css";
 import "virtual:uno.css";
-import "~/styles/theme.css";
+import "~/theme.css";
 // Setup geolocation
 import "~/lib/geolocation";
 
