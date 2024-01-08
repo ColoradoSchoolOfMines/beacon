@@ -6,10 +6,10 @@ import {IonButton, IonContent, IonIcon, IonPage} from "@ionic/react";
 import {navigateCircleOutline, navigateCircleSharp} from "ionicons/icons";
 import {useMeasure} from "react-use";
 
-import {Header} from "~/components/Header";
-import {useStore} from "~/lib/state";
+import {Header} from "~/components/header";
+import {useSettingsStore} from "~/lib/stores/settings";
 import {Theme} from "~/lib/types";
-import styles from "~/pages/Home.module.css";
+import styles from "~/pages/home.module.css";
 
 /**
  * Number of frames
@@ -22,7 +22,7 @@ const FRAME_COUNT = 5;
  */
 export const Home: React.FC = () => {
   // Hooks
-  const theme = useStore(state => state.theme);
+  const theme = useSettingsStore(state => state.theme);
   const [measured, {height, width}] = useMeasure();
 
   return (
@@ -84,7 +84,7 @@ export const Home: React.FC = () => {
             className="my-2"
             color="primary"
             fill="outline"
-            routerLink="/auth"
+            routerLink="/auth/1"
           >
             <IonIcon
               slot="start"
@@ -134,7 +134,7 @@ export const Home: React.FC = () => {
             className="my-2"
             color="dark"
             fill="outline"
-            routerLink="/auth"
+            routerLink="/auth/1"
           >
             <IonIcon
               slot="start"

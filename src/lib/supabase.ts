@@ -5,7 +5,7 @@
 import {SupabaseClient} from "@supabase/supabase-js";
 
 import {Database} from "~/lib/schema";
-import {useStore} from "~/lib/state";
+import {useStore} from "~/lib/stores/global";
 import {FUNCTIONS_URL, SUPABASE_ANON_KEY, SUPABASE_URL} from "~/lib/vars";
 
 /**

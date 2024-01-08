@@ -1,3 +1,5 @@
+/* eslint-disable unicorn/no-null */
+/* eslint-disable camelcase */
 /**
  * @file Post card component
  */
@@ -20,16 +22,17 @@ import {Duration} from "luxon";
 import {useEffect, useState} from "react";
 import {useMeasure} from "react-use";
 
-import {Avatar} from "~/components/Avatar";
-import {Blurhash} from "~/components/Blurhash";
-import {Markdown} from "~/components/Markdown";
-import styles from "~/components/PostCard.module.css";
+import {Avatar} from "~/components/avatar";
+import {Blurhash} from "~/components/blurhash";
+import {Markdown} from "~/components/markdown";
+import styles from "~/components/post-card.module.css";
 import {
   getCategory,
   MAX_MEDIA_DIMENSION,
   MIN_MEDIA_DIMENSION,
 } from "~/lib/media";
-import {useStore} from "~/lib/state";
+import {useStore} from "~/lib/stores/global";
+import {useSettingsStore} from "~/lib/stores/settings";
 import {client} from "~/lib/supabase";
 import {MediaCategory, MediaDimensions, Post} from "~/lib/types";
 import {formatDistance, formatDuration, formatScalar} from "~/lib/utils";
@@ -72,8 +75,10 @@ export const PostCard: React.FC<PostCardProps> = ({post, setPost}) => {
     width: 0,
   });
 
-  const showAmbientEffect = useStore(state => state.showAmbientEffect);
-  const measurementSystem = useStore(state => state.measurementSystem);
+  const user = useStore(state => state.user);
+
+  const showAmbientEffect = useSettingsStore(state => state.showAmbientEffect);
+  const measurementSystem = useSettingsStore(state => state.measurementSystem);
   const [measured, {width}] = useMeasure<HTMLDivElement>();
 
   // Effects
@@ -173,74 +178,83 @@ export const PostCard: React.FC<PostCardProps> = ({post, setPost}) => {
   };
 
   /**
-   * Toggle the upvote on the post
+   * Toggle a vote on the post
+   * @param upvote Whether the vote is an upvote or a downvote
    */
-  const toggleUpvote = async () => {
-    // eslint-disable-next-line unicorn/prefer-ternary
-    if (post.upvote === true) {
-      // Delete the vote
-      await client.from("post_votes").delete().match({
-        // eslint-disable-next-line camelcase
-        post_id: post.id,
-      });
-
-      // Optimistically update the post
-      setPost({
-        ...post,
-        upvotes: post.upvotes - 1,
-        // eslint-disable-next-line unicorn/no-null
-        upvote: null,
-      });
-    } else {
-      // Create the vote
-      await client.from("post_votes").insert({
-        // eslint-disable-next-line camelcase
-        post_id: post.id,
-        upvote: true,
-      });
-
+  const toggleVote = async (upvote: boolean) => {
+    // Upvote the post
+    if (post.upvote !== true && upvote) {
       // Optimistically update the post
       setPost({
         ...post,
         upvotes: post.upvotes + 1,
+        downvotes: post.upvote === false ? post.downvotes - 1 : post.downvotes,
         upvote: true,
       });
+
+      // Upsert the vote
+      const {error} = await client.from("post_votes").upsert(
+        {
+          post_id: post.id,
+          upvote: true,
+        },
+        {
+          onConflict: "post_id, voter_id",
+        },
+      );
+
+      // Handle error
+      if (error !== null) {
+        return;
+      }
     }
-  };
-
-  /**
-   * Toggle the downvote on the post
-   */
-  const toggleDownvote = async () => {
-    // eslint-disable-next-line unicorn/prefer-ternary
-    if (post.upvote === false) {
-      // Delete the vote
-      await client.from("post_votes").delete().match({
-        // eslint-disable-next-line camelcase
-        post_id: post.id,
-      });
-
+    // Downvote the post
+    else if (post.upvote !== false && !upvote) {
       // Optimistically update the post
       setPost({
         ...post,
-        downvotes: post.downvotes - 1,
-        // eslint-disable-next-line unicorn/no-null
-        upvote: null,
-      });
-    } else {
-      // Create the vote
-      await client.from("post_votes").insert({
-        // eslint-disable-next-line camelcase
-        post_id: post.id,
-        upvote: false,
-      });
-
-      // Optimistically update the post
-      setPost({
-        ...post,
+        upvotes: post.upvote === true ? post.upvotes - 1 : post.upvotes,
         downvotes: post.downvotes + 1,
         upvote: false,
       });
+
+      // Upsert the vote
+      const {error} = await client.from("post_votes").upsert(
+        {
+          post_id: post.id,
+          upvote: false,
+        },
+        {
+          onConflict: "post_id, voter_id",
+        },
+      );
+
+      // Handle error
+      if (error !== null) {
+        return;
+      }
+    }
+    // Delete the vote
+    else {
+      // Optimistically update the post
+      setPost({
+        ...post,
+        upvotes: post.upvote === true ? post.upvotes - 1 : post.upvotes,
+        downvotes: post.upvote === false ? post.downvotes - 1 : post.downvotes,
+        upvote: null,
+      });
+
+      // Delete the vote
+      const {error} = await client
+        .from("post_votes")
+        .delete()
+        .eq("post_id", post.id)
+        .eq("voter_id", user!.id);
+
+      // Handle error
+      if (error !== null) {
+        return;
+      }
     }
   };
 
@@ -345,7 +359,7 @@ export const PostCard: React.FC<PostCardProps> = ({post, setPost}) => {
               className={`m-0 ${styles.voteButton}`}
               color={post.upvote === true ? "success" : "medium"}
               fill="clear"
-              onClick={toggleUpvote}
+              onClick={() => toggleVote(true)}
             >
               <IonIcon
                 slot="icon-only"
@@ -360,7 +374,7 @@ export const PostCard: React.FC<PostCardProps> = ({post, setPost}) => {
               className={`m-0 ${styles.voteButton}`}
               color={post.upvote === false ? "danger" : "medium"}
               fill="clear"
-              onClick={toggleDownvote}
+              onClick={() => toggleVote(false)}
             >
               <IonIcon
                 slot="icon-only"

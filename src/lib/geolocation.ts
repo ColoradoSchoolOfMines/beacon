@@ -4,7 +4,7 @@
 
 import {isEqual} from "lodash-es";
 
-import {useStore} from "~/lib/state";
+import {useStore} from "~/lib/stores/global";
 import {client} from "~/lib/supabase";
 
 const setMessage = useStore.getState().setMessage;

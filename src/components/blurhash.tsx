@@ -10,7 +10,7 @@ import {
   BLURHASH_COMPONENT_Y,
   BLURHASH_PIXELS_PER_COMPONENT,
 } from "~/lib/media";
-import {useStore} from "~/lib/state";
+import {useSettingsStore} from "~/lib/stores/settings";
 import {MediaDimensions, Theme} from "~/lib/types";
 
 /**
@@ -55,7 +55,7 @@ export const Blurhash: React.FC<BlurhashProps> = ({
   const [pixels, setPixels] = useState<Uint8ClampedArray | undefined>();
   const [avg, setAvg] = useState<string | undefined>();
 
-  const theme = useStore(state => state.theme);
+  const theme = useSettingsStore(state => state.theme);
 
   // Constants
   const scaledDimensions = {

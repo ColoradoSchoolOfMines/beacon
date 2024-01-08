@@ -29,7 +29,7 @@ import {useRef} from "react";
 import {useLocation} from "react-router-dom";
 
 import logo from "~/assets/logo.png";
-import {useStore} from "~/lib/state";
+import {useStore} from "~/lib/stores/global";
 import {RequiredAuthState} from "~/lib/types";
 import {checkRequiredAuthState} from "~/lib/utils";
 
@@ -107,7 +107,7 @@ const navItems: NavItem[] = [
   {
     title: "Create Post",
     requiredState: RequiredAuthState.AUTHENTICATED,
-    url: "/posts/create",
+    url: "/posts/create/1",
     position: NavItemPosition.TOP,
     iosIcon: createOutline,
     mdIcon: createSharp,

@@ -1,6 +1,7 @@
 /**
- * @file ACreate post page container component
+ * @file Create post page container component
  */
+/* eslint-disable jsdoc/require-jsdoc */
 
 import {
   IonBackButton,
@@ -13,12 +14,12 @@ import {
   IonToolbar,
 } from "@ionic/react";
 
-import styles from "~/components/create-post/Container.module.css";
+import styles from "~/components/create-post-container.module.css";
 
 /**
  * Create post page container component props
  */
-export interface CreatePostContainerProps {
+interface CreatePostContainerProps {
   /**
    * Whether to show the back button or the menu button
    */
@@ -44,7 +45,7 @@ export const CreatePostContainer: React.FC<CreatePostContainerProps> = ({
       <IonToolbar>
         <IonButtons slot="start">
           {back ? (
-            <IonBackButton defaultHref="/posts/create" />
+            <IonBackButton defaultHref="/posts/create/1" />
           ) : (
             <IonMenuButton />
           )}

@@ -5,13 +5,13 @@
 import {IonIcon} from "@ionic/react";
 import {helpOutline, helpSharp} from "ionicons/icons";
 
-import {useStore} from "~/lib/state";
+import {useSettingsStore} from "~/lib/stores/settings";
 import {Profile, Theme} from "~/lib/types";
 
 /**
  * Profile avatar component props
  */
-export interface AvatarProps {
+interface AvatarProps {
   /**
    * Profile
    */
@@ -25,7 +25,7 @@ export interface AvatarProps {
  */
 export const Avatar: React.FC<AvatarProps> = ({profile}) => {
   // Hooks
-  const theme = useStore(state => state.theme);
+  const theme = useSettingsStore(state => state.theme);
 
   // Variables
   let color = profile.color;

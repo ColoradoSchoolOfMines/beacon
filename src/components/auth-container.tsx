@@ -20,7 +20,7 @@ import {
 /**
  * Auth page container component props
  */
-export interface AuthContainerProps {
+interface AuthContainerProps {
   /**
    * Whether to show the back button or the menu button
    */
@@ -45,7 +45,7 @@ export const AuthContainer: React.FC<AuthContainerProps> = ({
     <IonHeader className="ion-no-border">
       <IonToolbar>
         <IonButtons slot="start">
-          {back ? <IonBackButton defaultHref="/auth" /> : <IonMenuButton />}
+          {back ? <IonBackButton defaultHref="/auth/1" /> : <IonMenuButton />}
         </IonButtons>
 
         <IonTitle>Authentication</IonTitle>

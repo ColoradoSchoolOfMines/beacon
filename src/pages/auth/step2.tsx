@@ -1,23 +1,23 @@
 /**
- * @file Auth step 2 component
+ * @file Auth step 2 page
  */
 
 import HCaptcha from "@hcaptcha/react-hcaptcha";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {IonButton, IonIcon, IonInput} from "@ionic/react";
 import {paperPlaneOutline, paperPlaneSharp} from "ionicons/icons";
-import {useContext, useRef} from "react";
+import {useRef} from "react";
 import {Controller, useForm} from "react-hook-form";
+import {useHistory} from "react-router-dom";
 import {z} from "zod";
 
-import {AuthContainer} from "~/components/auth/Container";
-import {Step3} from "~/components/auth/Step3";
-import {SupplementalError} from "~/components/SupplementalError";
-import {useStore} from "~/lib/state";
+import {AuthContainer} from "~/components/auth-container";
+import {SupplementalError} from "~/components/supplemental-error";
+import {useSettingsStore} from "~/lib/stores/settings";
+import {useTemporaryStore} from "~/lib/stores/temporary";
 import {client} from "~/lib/supabase";
 import {Theme} from "~/lib/types";
 import {HCAPTCHA_SITE_KEY} from "~/lib/vars";
-import {AuthNavContext} from "~/pages/Auth";
 
 /**
  * Form schema
@@ -44,9 +44,9 @@ type FormSchema = z.infer<typeof formSchema>;
 export const Step2: React.FC = () => {
   // Hooks
   const captcha = useRef<HCaptcha>(null);
-  const nav = useContext(AuthNavContext);
-  const setEmail = useStore(state => state.setEmail);
-  const theme = useStore(state => state.theme);
+  const setEmail = useTemporaryStore(state => state.setEmail);
+  const theme = useSettingsStore(state => state.theme);
+  const history = useHistory();
 
   const {control, handleSubmit, reset} = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
@@ -84,7 +84,7 @@ export const Step2: React.FC = () => {
     }
 
     // Go to the next step
-    nav?.push(() => <Step3 />);
+    history.push("/auth/3");
   };
 
   return (

@@ -1,5 +1,5 @@
 /**
- * @file Create post step 1 component
+ * @file Create post step 1 page
  */
 
 import {zodResolver} from "@hookform/resolvers/zod";
@@ -26,15 +26,14 @@ import {
   imageSharp,
 } from "ionicons/icons";
 import {flatten} from "lodash-es";
-import {useContext, useEffect, useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {Controller, useForm} from "react-hook-form";
+import {useHistory} from "react-router-dom";
 import {z} from "zod";
 
-import {CreatePostContainer} from "~/components/create-post/Container";
-import styles from "~/components/create-post/Step1.module.css";
-import {Step2} from "~/components/create-post/Step2";
-import {Markdown} from "~/components/Markdown";
-import {SupplementalError} from "~/components/SupplementalError";
+import {CreatePostContainer} from "~/components/create-post-container";
+import {Markdown} from "~/components/markdown";
+import {SupplementalError} from "~/components/supplemental-error";
 import {
   CATEGORIZED_MEDIA_MIME_TYPES,
   createMediaElement,
@@ -43,9 +42,9 @@ import {
   MAX_MEDIA_DIMENSION,
   MIN_MEDIA_DIMENSION,
 } from "~/lib/media";
-import {useStore} from "~/lib/state";
+import {useTemporaryStore} from "~/lib/stores/temporary";
 import {MediaCategory} from "~/lib/types";
-import {CreatePostNavContext} from "~/pages/CreatePost";
+import styles from "~/pages/create-post/step1.module.css";
 
 /**
  * Content mode
@@ -139,7 +138,7 @@ const formSchema = z.object({
 type FormSchema = z.infer<typeof formSchema>;
 
 /**
- * Create post step 1 component
+ * Create post step 1 page
  * @returns JSX
  */
 export const Step1: React.FC = () => {
@@ -152,12 +151,12 @@ export const Step1: React.FC = () => {
   const [previewUrl, setPreviewUrl] = useState<string | undefined>(undefined);
   const mediaInput = useRef<HTMLInputElement | null>(null);
 
-  const post = useStore(state => state.post);
-  const setPost = useStore(state => state.setPost);
+  const post = useTemporaryStore(state => state.post);
+  const setPost = useTemporaryStore(state => state.setPost);
 
-  const nav = useContext(CreatePostNavContext);
+  const history = useHistory();
 
-  const {control, handleSubmit, setValue, watch} = useForm<FormSchema>({
+  const {control, handleSubmit, watch, reset} = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
   });
 
@@ -181,13 +180,9 @@ export const Step1: React.FC = () => {
   }, [contentMode, contentTextarea]);
 
   useEffect(() => {
-    // Update the form
-    if (post?.content !== undefined) {
-      setValue("content", post.content);
-    }
-
-    if (post?.media !== undefined) {
-      setValue("media", [post.media]);
+    // Reset the form
+    if (post === undefined) {
+      reset();
     }
   }, [post]);
 
@@ -225,7 +220,7 @@ export const Step1: React.FC = () => {
     });
 
     // Go to the next step
-    nav?.push(() => <Step2 />);
+    history.push("/posts/create/2");
   };
 
   return (

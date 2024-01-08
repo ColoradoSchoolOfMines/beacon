@@ -1,5 +1,7 @@
+/* eslint-disable unicorn/no-null */
+/* eslint-disable camelcase */
 /**
- * @file Create post step 2 component
+ * @file Create post step 2 page
  */
 
 import {zodResolver} from "@hookform/resolvers/zod";
@@ -28,10 +30,9 @@ import {Controller, useForm} from "react-hook-form";
 import {useHistory} from "react-router-dom";
 import {z} from "zod";
 
-import {CreatePostContainer} from "~/components/create-post/Container";
-import styles from "~/components/create-post/Step2.module.css";
-import {Map} from "~/components/Map";
-import {SupplementalError} from "~/components/SupplementalError";
+import {CreatePostContainer} from "~/components/create-post-container";
+import {Map} from "~/components/map";
+import {SupplementalError} from "~/components/supplemental-error";
 import {
   BLURHASH_COMPONENT_X,
   BLURHASH_COMPONENT_Y,
@@ -40,11 +41,14 @@ import {
   getCategory,
   getMediaDimensions,
 } from "~/lib/media";
-import {useStore} from "~/lib/state";
+import {useStore} from "~/lib/stores/global";
+import {useSettingsStore} from "~/lib/stores/settings";
+import {useTemporaryStore} from "~/lib/stores/temporary";
 import {client} from "~/lib/supabase";
 import {MeasurementSystem} from "~/lib/types";
 import {METERS_TO_KILOMETERS, METERS_TO_MILES} from "~/lib/utils";
-import {Error} from "~/pages/Error";
+import styles from "~/pages/create-post/step2.module.css";
+import {Error} from "~/pages/error";
 
 /**
  * Minimum radius (In meters)
@@ -74,15 +78,18 @@ const formSchema = z.object({
 type FormSchema = z.infer<typeof formSchema>;
 
 /**
- * Create post step 2 component
+ * Create post step 2 page
  * @returns JSX
  */
 export const Step2: React.FC = () => {
   // Hooks
-  const post = useStore(state => state.post);
   const location = useStore(state => state.location);
-  const measurementSystem = useStore(state => state.measurementSystem);
+  const measurementSystem = useSettingsStore(state => state.measurementSystem);
   const setMessage = useStore(state => state.setMessage);
+
+  const post = useTemporaryStore(state => state.post);
+  const setPost = useTemporaryStore(state => state.setPost);
+
   const history = useHistory();
 
   // Variables
@@ -116,7 +123,7 @@ export const Step2: React.FC = () => {
   }
 
   // More hooks
-  const {control, handleSubmit, setValue, watch} = useForm<FormSchema>({
+  const {control, handleSubmit, watch, reset} = useForm<FormSchema>({
     defaultValues: {
       anonymous: false,
       radius: defaultRadius,
@@ -128,13 +135,9 @@ export const Step2: React.FC = () => {
 
   // Effects
   useEffect(() => {
-    // Update the form
-    if (post?.anonymous !== undefined) {
-      setValue("anonymous", post.anonymous);
-    }
-
-    if (post?.radius !== undefined) {
-      setValue("radius", post.radius);
+    // Reset the form
+    if (post === undefined) {
+      reset();
     }
   }, [post]);
 
@@ -144,9 +147,7 @@ export const Step2: React.FC = () => {
    * @param form Form data
    */
   const onSubmit = async (form: FormSchema) => {
-    // eslint-disable-next-line unicorn/no-null
     let blurHash: string | null = null;
-    // eslint-disable-next-line unicorn/no-null
     let aspectRatio: number | null = null;
 
     // Process the media
@@ -172,15 +173,11 @@ export const Step2: React.FC = () => {
     const {data, error} = await client
       .from("posts")
       .insert({
-        // eslint-disable-next-line camelcase
         private_anonymous: form.anonymous,
         radius: form.radius,
         content: post!.content!,
-        // eslint-disable-next-line camelcase
         has_media: post!.media !== undefined,
-        // eslint-disable-next-line camelcase
         blur_hash: blurHash,
-        // eslint-disable-next-line camelcase
         aspect_ratio: aspectRatio,
       })
       .select("id")
@@ -204,6 +201,9 @@ export const Step2: React.FC = () => {
         return;
       }
     }
+
+    // Reset the post forms
+    setPost(undefined);
 
     // Display the message
     setMessage({

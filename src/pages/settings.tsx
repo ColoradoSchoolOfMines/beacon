@@ -40,7 +40,8 @@ import {
   checkPasskeySupport,
   endRegistration,
 } from "~/lib/api/auth";
-import {useStore} from "~/lib/state";
+import {useStore} from "~/lib/stores/global";
+import {useSettingsStore} from "~/lib/stores/settings";
 import {client} from "~/lib/supabase";
 import {MeasurementSystem, Theme} from "~/lib/types";
 import {GIT_BRANCH, GIT_COMMIT, VERSION} from "~/lib/vars";
@@ -52,15 +53,23 @@ import {GIT_BRANCH, GIT_COMMIT, VERSION} from "~/lib/vars";
 export const Settings: React.FC = () => {
   // Hooks
   const setMessage = useStore(state => state.setMessage);
-  const theme = useStore(state => state.theme);
-  const setTheme = useStore(state => state.setTheme);
-  const showFABs = useStore(state => state.showFABs);
-  const setShowFABs = useStore(state => state.setShowFABs);
-  const showAmbientEffect = useStore(state => state.showAmbientEffect);
-  const setShowAmbientEffect = useStore(state => state.setShowAmbientEffect);
-  const measurementSystem = useStore(state => state.measurementSystem);
-  const setMeasurementSystem = useStore(state => state.setMeasurementSystem);
-  const reset = useStore(state => state.reset);
+  const theme = useSettingsStore(state => state.theme);
+  const setTheme = useSettingsStore(state => state.setTheme);
+  const showFABs = useSettingsStore(state => state.showFABs);
+  const setShowFABs = useSettingsStore(state => state.setShowFABs);
+  const showAmbientEffect = useSettingsStore(state => state.showAmbientEffect);
+
+  const setShowAmbientEffect = useSettingsStore(
+    state => state.setShowAmbientEffect,
+  );
+
+  const measurementSystem = useSettingsStore(state => state.measurementSystem);
+
+  const setMeasurementSystem = useSettingsStore(
+    state => state.setMeasurementSystem,
+  );
+
+  const reset = useSettingsStore(state => state.reset);
 
   const [present] = useIonActionSheet();
 

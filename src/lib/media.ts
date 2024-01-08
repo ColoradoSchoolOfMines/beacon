@@ -179,7 +179,7 @@ export const createBlurhash = async <T extends MediaCategory = any>(
   switch (category) {
     case MediaCategory.VIDEO:
       // Advance the video to the first frame
-      await Promise.race([
+      await Promise.all([
         () => ((element as HTMLVideoElement).currentTime = 10),
         new Promise(resolve =>
           (element as HTMLVideoElement).addEventListener("", resolve, {

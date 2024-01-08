@@ -7,7 +7,7 @@ import ReactMarkdown, {Options} from "react-markdown";
 import rehypeSanitize from "rehype-sanitize";
 import remarkGfm from "remark-gfm";
 
-import styles from "~/components/Markdown.module.css";
+import styles from "~/components/markdown.module.css";
 
 /**
  * Sanitization schema

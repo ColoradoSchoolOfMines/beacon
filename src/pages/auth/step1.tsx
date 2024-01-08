@@ -1,24 +1,22 @@
+/* eslint-disable camelcase */
 /**
- * @file Auth step 1 component
+ * @file Auth step 1 page
  */
 
 import {IonButton, IonIcon, IonNote} from "@ionic/react";
 import {startAuthentication} from "@simplewebauthn/browser";
 import {AuthenticationResponseJSON} from "@simplewebauthn/typescript-types";
 import {callOutline, callSharp, keyOutline, keySharp} from "ionicons/icons";
-import {useContext} from "react";
 import {useHistory} from "react-router-dom";
 
-import {AuthContainer} from "~/components/auth/Container";
-import {Step2} from "~/components/auth/Step2";
+import {AuthContainer} from "~/components/auth-container";
 import {
   beginAuthentication,
   checkPasskeySupport,
   endAuthentication,
 } from "~/lib/api/auth";
-import {useStore} from "~/lib/state";
+import {useStore} from "~/lib/stores/global";
 import {client} from "~/lib/supabase";
-import {AuthNavContext} from "~/pages/Auth";
 
 /**
  * Auth step 1 component
@@ -26,7 +24,6 @@ import {AuthNavContext} from "~/pages/Auth";
  */
 export const Step1: React.FC = () => {
   // Hooks
-  const nav = useContext(AuthNavContext);
   const history = useHistory();
   const setMessage = useStore(state => state.setMessage);
 
@@ -72,9 +69,7 @@ export const Step1: React.FC = () => {
 
     // Update the session
     await client.auth.setSession({
-      // eslint-disable-next-line camelcase
       access_token: endRes.session!.access_token,
-      // eslint-disable-next-line camelcase
       refresh_token: endRes.session!.refresh_token,
     });
 
@@ -87,7 +82,7 @@ export const Step1: React.FC = () => {
    */
   const useEmail = () => {
     // Go to the next step
-    nav?.push(() => <Step2 />);
+    history.push("/auth/2");
   };
 
   return (

@@ -396,7 +396,7 @@ BEGIN
 END;
 $$;
 
--- Post modified trigger function
+-- Post modified (i.e.: insert, update, or delete) trigger function
 CREATE OR REPLACE FUNCTION utilities.post_modified_trigger()
 RETURNS TRIGGER
 SECURITY DEFINER
@@ -430,7 +430,7 @@ BEGIN
 END;
 $$;
 
--- Comment modified trigger function
+-- Comment modified (i.e.: insert, update, or delete) trigger function
 CREATE OR REPLACE FUNCTION utilities.comment_modified_trigger()
 RETURNS TRIGGER
 SECURITY DEFINER
@@ -454,6 +454,9 @@ BEGIN
   _id = CASE WHEN NEW IS NULL THEN OLD.id ELSE NEW.id END;
   _post_id = CASE WHEN NEW IS NULL THEN OLD.post_id ELSE NEW.post_id END;
   _ancestor_id = CASE WHEN NEW IS NULL THEN OLD.parent_id ELSE NEW.parent_id END;
+
+  -- Refresh the cached posts
+  REFRESH MATERIALIZED VIEW utilities.cached_posts;
 
   -- Refresh the cached comments
   REFRESH MATERIALIZED VIEW utilities.cached_comments;

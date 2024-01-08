@@ -24,8 +24,8 @@ import {useHistory} from "react-router-dom";
 import {useMeasure} from "react-use";
 import {VList} from "virtua";
 
-import {PostCard} from "~/components/PostCard";
-import {useStore} from "~/lib/state";
+import {PostCard} from "~/components/post-card";
+import {useSettingsStore} from "~/lib/stores/settings";
 import {client} from "~/lib/supabase";
 import {Post} from "~/lib/types";
 
@@ -36,7 +36,7 @@ import {Post} from "~/lib/types";
 export const Nearby: React.FC = () => {
   // Hooks
   const [posts, setPosts] = useState<Post[]>([]);
-  const showFABs = useStore(state => state.showFABs);
+  const showFABs = useSettingsStore(state => state.showFABs);
   const history = useHistory();
   const [measured, {height}] = useMeasure<HTMLIonContentElement>();
 
@@ -61,7 +61,7 @@ export const Nearby: React.FC = () => {
    */
   const createPost = () => {
     // Go to the create post page
-    history.push("/posts/create");
+    history.push("/posts/create/1");
   };
 
   /**

@@ -1,19 +1,18 @@
 /**
- * @file Auth step 3 component
+ * @file Auth step 3 page
  */
 
 import {zodResolver} from "@hookform/resolvers/zod";
 import {IonButton, IonIcon, IonInput} from "@ionic/react";
 import {checkmarkOutline, checkmarkSharp} from "ionicons/icons";
-import {useContext} from "react";
 import {Controller, useForm} from "react-hook-form";
 import {useHistory} from "react-router-dom";
 import {z} from "zod";
 
-import {AuthContainer} from "~/components/auth/Container";
-import {useStore} from "~/lib/state";
+import {AuthContainer} from "~/components/auth-container";
+import {useStore} from "~/lib/stores/global";
+import {useTemporaryStore} from "~/lib/stores/temporary";
 import {client} from "~/lib/supabase";
-import {AuthNavContext} from "~/pages/Auth";
 
 /**
  * Form schema
@@ -38,10 +37,9 @@ type FormSchema = z.infer<typeof formSchema>;
  */
 export const Step3: React.FC = () => {
   // Hooks
-  const email = useStore(state => state.email);
+  const email = useTemporaryStore(state => state.email);
   const setMessage = useStore(state => state.setMessage);
   const history = useHistory();
-  const nav = useContext(AuthNavContext);
 
   const {control, handleSubmit, reset} = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
@@ -72,7 +70,7 @@ export const Step3: React.FC = () => {
       });
 
       // Go back to the previous step
-      nav?.pop();
+      history.goBack();
 
       return;
     }

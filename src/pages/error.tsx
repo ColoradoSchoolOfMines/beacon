@@ -5,12 +5,12 @@
 import {IonButton, IonContent, IonIcon, IonPage} from "@ionic/react";
 import {homeOutline, homeSharp} from "ionicons/icons";
 
-import {Header} from "~/components/Header";
+import {Header} from "~/components/header";
 
 /**
  * Error page props
  */
-export interface ErrorProps {
+interface ErrorProps {
   /**
    * Error name
    */

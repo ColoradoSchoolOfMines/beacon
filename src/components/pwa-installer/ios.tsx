@@ -18,7 +18,7 @@ import SquareAndArrowUp from "~/assets/sf-symbols/square.and.arrow.up.svg?react"
 import SquareOnSquare from "~/assets/sf-symbols/square.on.square.svg?react";
 import Star from "~/assets/sf-symbols/star.svg?react";
 import TextFormatSize from "~/assets/sf-symbols/textformat.size.svg?react";
-import styles from "~/components/pwa-installer/Ios.module.css";
+import styles from "~/components/pwa-installer/ios.module.css";
 
 /**
  * iOS PWA installer component props

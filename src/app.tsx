@@ -2,32 +2,40 @@
  * @file App shell
  */
 
-import {IonAlert, IonRouterOutlet, IonSplitPane} from "@ionic/react";
+import {IonRouterOutlet, IonSplitPane} from "@ionic/react";
 import {User} from "@supabase/supabase-js";
 import {isEqual} from "lodash-es";
 import {useEffect} from "react";
 import {Route, useHistory, useLocation} from "react-router-dom";
 
-import {Menu} from "~/components/Menu";
-import {useStore} from "~/lib/state";
+import {GlobalMessage} from "~/components/global-message";
+import {Menu} from "~/components/menu";
+import {useStore} from "~/lib/stores/global";
+import {useSettingsStore} from "~/lib/stores/settings";
 import {client} from "~/lib/supabase";
 import {RequiredAuthState, Theme} from "~/lib/types";
 import {checkRequiredAuthState} from "~/lib/utils";
-import {Auth} from "~/pages/Auth";
-import {CreatePost} from "~/pages/CreatePost";
-import {Error} from "~/pages/Error";
-import {Home} from "~/pages/Home";
-import {Nearby} from "~/pages/Nearby";
-import {Settings} from "~/pages/Settings";
+import {Step1 as AuthStep1} from "~/pages/auth/step1";
+import {Step2 as AuthStep2} from "~/pages/auth/step2";
+import {Step3 as AuthStep3} from "~/pages/auth/step3";
+import {Step1 as CreatePostStep1} from "~/pages/create-post/step1";
+import {Step2 as CreatePostStep2} from "~/pages/create-post/step2";
+import {Error} from "~/pages/error";
+import {Home} from "~/pages/home";
+import {Nearby} from "~/pages/nearby";
+import {Settings} from "~/pages/settings";
 
 /**
  * Route authentication states
  */
 const routeAuthStates: Record<string, RequiredAuthState> = {
   "/": RequiredAuthState.ANY,
-  "/auth": RequiredAuthState.UNAUTHENTICATED,
+  "/auth/1": RequiredAuthState.UNAUTHENTICATED,
+  "/auth/2": RequiredAuthState.UNAUTHENTICATED,
+  "/auth/3": RequiredAuthState.UNAUTHENTICATED,
   "/nearby": RequiredAuthState.AUTHENTICATED,
-  "/posts/create": RequiredAuthState.AUTHENTICATED,
+  "/posts/create/1": RequiredAuthState.AUTHENTICATED,
+  "/posts/create/2": RequiredAuthState.AUTHENTICATED,
   "/settings": RequiredAuthState.AUTHENTICATED,
 };
 
@@ -65,11 +73,10 @@ export const App: React.FC = () => {
   const history = useHistory();
   const location = useLocation();
 
-  const message = useStore(state => state.message);
   const setMessage = useStore(state => state.setMessage);
   const user = useStore(state => state.user);
   const setUser = useStore(state => state.setUser);
-  const theme = useStore(state => state.theme);
+  const theme = useSettingsStore(state => state.theme);
 
   // Methods
   /**
@@ -93,7 +100,7 @@ export const App: React.FC = () => {
           break;
 
         case RequiredAuthState.AUTHENTICATED:
-          history.push("/auth");
+          history.push("/auth/1");
           break;
       }
     }
@@ -154,8 +161,16 @@ export const App: React.FC = () => {
           </Route>
 
           {/* Unauthenticated routes */}
-          <Route path="/auth" exact={true}>
-            <Auth />
+          <Route path="/auth/1" exact={true}>
+            <AuthStep1 />
+          </Route>
+
+          <Route path="/auth/2" exact={true}>
+            <AuthStep2 />
+          </Route>
+
+          <Route path="/auth/3" exact={true}>
+            <AuthStep3 />
           </Route>
 
           {/* Authenticated routes */}
@@ -163,8 +178,12 @@ export const App: React.FC = () => {
             <Nearby />
           </Route>
 
-          <Route path="/posts/create" exact={true}>
-            <CreatePost />
+          <Route path="/posts/create/1" exact={true}>
+            <CreatePostStep1 />
+          </Route>
+
+          <Route path="/posts/create/2" exact={true}>
+            <CreatePostStep2 />
           </Route>
 
           <Route path="/settings" exact={true}>
@@ -182,13 +201,7 @@ export const App: React.FC = () => {
         </IonRouterOutlet>
       </IonSplitPane>
 
-      <IonAlert
-        isOpen={message !== undefined}
-        header={message?.name}
-        subHeader={message?.description}
-        buttons={["OK"]}
-        onIonAlertDidDismiss={() => setMessage()}
-      />
+      <GlobalMessage />
     </>
   );
 };
