@@ -41,7 +41,7 @@ import {
   getCategory,
   getMediaDimensions,
 } from "~/lib/media";
-import {useStore} from "~/lib/stores/global";
+import {useMiscellaneousStore} from "~/lib/stores/miscellaneous";
 import {useSettingsStore} from "~/lib/stores/settings";
 import {useTemporaryStore} from "~/lib/stores/temporary";
 import {client} from "~/lib/supabase";
@@ -83,9 +83,10 @@ type FormSchema = z.infer<typeof formSchema>;
  */
 export const Step2: React.FC = () => {
   // Hooks
-  const location = useStore(state => state.location);
+  const location = useMiscellaneousStore(state => state.location);
+  const setMessage = useMiscellaneousStore(state => state.setMessage);
+  const refreshPosts = useMiscellaneousStore(state => state.refreshPosts);
   const measurementSystem = useSettingsStore(state => state.measurementSystem);
-  const setMessage = useStore(state => state.setMessage);
 
   const post = useTemporaryStore(state => state.post);
   const setPost = useTemporaryStore(state => state.setPost);
@@ -210,6 +211,9 @@ export const Step2: React.FC = () => {
       name: "Success",
       description: "Your post has been created.",
     });
+
+    // Refetch the posts
+    await refreshPosts?.();
 
     // Go to nearby
     history.push("/nearby");

@@ -36,6 +36,17 @@ interface SettingsStore {
   setShowFABs: (newShowFABs: boolean) => void;
 
   /**
+   * Whether or not sliding action should be enabled
+   */
+  useSlidingActions: boolean;
+
+  /**
+   * Set whether or not sliding action should be enabled
+   * @param newSlidingActions New value
+   */
+  setUseSlidingActions: (newSlidingActions: boolean) => void;
+
+  /**
    * Whether or not the ambient effect should be shown
    */
   showAmbientEffect: boolean;
@@ -73,6 +84,7 @@ const defaultState: DeepPartial<SettingsStore> = {
       ? Theme.DARK
       : Theme.LIGHT,
   showFABs: true,
+  useSlidingActions: true,
   showAmbientEffect: true,
   measurementSystem: MeasurementSystem.IMPERIAL,
 };
@@ -94,6 +106,11 @@ export const useSettingsStore = create<SettingsStore>()(
             set(state => ({
               ...state,
               showFABs: newShowFABs,
+            })),
+          setUseSlidingActions: (newSlidingActions: boolean) =>
+            set(state => ({
+              ...state,
+              useSlidingActions: newSlidingActions,
             })),
           setShowAmbientEffect: (newAmbientEffect: boolean) =>
             set(state => ({

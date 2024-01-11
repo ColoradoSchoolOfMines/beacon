@@ -4,11 +4,11 @@
 
 import {isEqual} from "lodash-es";
 
-import {useStore} from "~/lib/stores/global";
+import {useMiscellaneousStore} from "~/lib/stores/miscellaneous";
 import {client} from "~/lib/supabase";
 
-const setMessage = useStore.getState().setMessage;
-const setLocation = useStore.getState().setLocation;
+const setMessage = useMiscellaneousStore.getState().setMessage;
+const setLocation = useMiscellaneousStore.getState().setLocation;
 
 /**
  * Geolocation watcher ID
@@ -16,7 +16,7 @@ const setLocation = useStore.getState().setLocation;
 let geolocationWatcherId: number | undefined;
 
 // Watch the user's geolocation
-useStore.subscribe(async state => {
+useMiscellaneousStore.subscribe(async state => {
   // Check if the user is logged in
   if (state.user === undefined) {
     return;
@@ -56,7 +56,7 @@ useStore.subscribe(async state => {
   try {
     geolocationWatcherId = navigator.geolocation.watchPosition(
       async location => {
-        const oldLocation = useStore.getState().location;
+        const oldLocation = useMiscellaneousStore.getState().location;
 
         // Update the frontend
         setLocation(location);

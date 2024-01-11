@@ -6,7 +6,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet";
 
 import {Map as LeafletMap} from "leaflet";
-import {useEffect, useRef} from "react";
+import {HTMLAttributes, useEffect, useRef} from "react";
 import {
   AttributionControl,
   Circle,
@@ -24,7 +24,7 @@ import {Theme} from "~/lib/types";
 /**
  * Geography map component props
  */
-interface MapProps extends React.HTMLAttributes<HTMLDivElement> {
+interface MapProps extends HTMLAttributes<HTMLDivElement> {
   /**
    * Position (latitude, longitude)
    */

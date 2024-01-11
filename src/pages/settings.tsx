@@ -40,7 +40,7 @@ import {
   checkPasskeySupport,
   endRegistration,
 } from "~/lib/api/auth";
-import {useStore} from "~/lib/stores/global";
+import {useMiscellaneousStore} from "~/lib/stores/miscellaneous";
 import {useSettingsStore} from "~/lib/stores/settings";
 import {client} from "~/lib/supabase";
 import {MeasurementSystem, Theme} from "~/lib/types";
@@ -52,11 +52,17 @@ import {GIT_BRANCH, GIT_COMMIT, VERSION} from "~/lib/vars";
  */
 export const Settings: React.FC = () => {
   // Hooks
-  const setMessage = useStore(state => state.setMessage);
+  const setMessage = useMiscellaneousStore(state => state.setMessage);
   const theme = useSettingsStore(state => state.theme);
   const setTheme = useSettingsStore(state => state.setTheme);
   const showFABs = useSettingsStore(state => state.showFABs);
   const setShowFABs = useSettingsStore(state => state.setShowFABs);
+  const slidingActions = useSettingsStore(state => state.useSlidingActions);
+
+  const setSlidingActions = useSettingsStore(
+    state => state.setUseSlidingActions,
+  );
+
   const showAmbientEffect = useSettingsStore(state => state.showAmbientEffect);
 
   const setShowAmbientEffect = useSettingsStore(
@@ -249,12 +255,21 @@ export const Settings: React.FC = () => {
 
             <IonItem>
               <IonToggle
+                checked={slidingActions}
+                onIonChange={event => setSlidingActions(event.detail.checked)}
+              >
+                Use sliding actions on posts
+              </IonToggle>
+            </IonItem>
+
+            <IonItem>
+              <IonToggle
                 checked={showAmbientEffect}
                 onIonChange={event =>
                   setShowAmbientEffect(event.detail.checked)
                 }
               >
-                Show ambient effect
+                Show ambient effect below posts
               </IonToggle>
             </IonItem>
 

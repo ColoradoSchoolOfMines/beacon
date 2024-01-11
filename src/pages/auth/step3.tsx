@@ -10,7 +10,7 @@ import {useHistory} from "react-router-dom";
 import {z} from "zod";
 
 import {AuthContainer} from "~/components/auth-container";
-import {useStore} from "~/lib/stores/global";
+import {useMiscellaneousStore} from "~/lib/stores/miscellaneous";
 import {useTemporaryStore} from "~/lib/stores/temporary";
 import {client} from "~/lib/supabase";
 
@@ -38,7 +38,7 @@ type FormSchema = z.infer<typeof formSchema>;
 export const Step3: React.FC = () => {
   // Hooks
   const email = useTemporaryStore(state => state.email);
-  const setMessage = useStore(state => state.setMessage);
+  const setMessage = useMiscellaneousStore(state => state.setMessage);
   const history = useHistory();
 
   const {control, handleSubmit, reset} = useForm<FormSchema>({

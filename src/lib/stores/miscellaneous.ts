@@ -1,5 +1,5 @@
 /**
- * @file Global store
+ * @file Miscellaneous store
  */
 /* eslint-disable jsdoc/require-jsdoc */
 
@@ -45,12 +45,24 @@ interface Store {
    * @param newLocation New geolocation or undefined to clear the geolocation
    */
   setLocation: (newLocation?: GeolocationPosition) => void;
+
+  /**
+   * Refresh posts
+   * @returns Promise
+   */
+  refreshPosts?: () => Promise<void>;
+
+  /**
+   * Set the refresh posts callback
+   * @param newRefreshPosts New refresh posts callback or undefined to clear the callback
+   */
+  setRefreshPosts: (newRefreshPosts?: () => Promise<void>) => void;
 }
 
 /**
- * Global store
+ * Miscellaneous store
  */
-export const useStore = create<Store>()(
+export const useMiscellaneousStore = create<Store>()(
   devtools(set => ({
     message: undefined,
     setMessage: (newMessage?: GlobalMessage) =>
@@ -69,6 +81,12 @@ export const useStore = create<Store>()(
       set(state => ({
         ...state,
         location: newLocation,
+      })),
+    refreshPosts: undefined,
+    setRefreshPosts: (newRefreshPosts?: () => Promise<void>) =>
+      set(state => ({
+        ...state,
+        refreshPosts: newRefreshPosts,
       })),
   })),
 );

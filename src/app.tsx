@@ -10,7 +10,7 @@ import {Route, useHistory, useLocation} from "react-router-dom";
 
 import {GlobalMessage} from "~/components/global-message";
 import {Menu} from "~/components/menu";
-import {useStore} from "~/lib/stores/global";
+import {useMiscellaneousStore} from "~/lib/stores/miscellaneous";
 import {useSettingsStore} from "~/lib/stores/settings";
 import {client} from "~/lib/supabase";
 import {RequiredAuthState, Theme} from "~/lib/types";
@@ -41,13 +41,13 @@ const routeAuthStates: Record<string, RequiredAuthState> = {
 
 // Set the user from the session (Block because this doesn't make a request to the backend)
 const session = await client.auth.getSession();
-useStore.getState().setUser(session?.data?.session?.user);
+useMiscellaneousStore.getState().setUser(session?.data?.session?.user);
 
 // Set the user from the backend (Don't block because this makes a request to the backend)
 // eslint-disable-next-line unicorn/prefer-top-level-await
 (async () => {
   // If there is no user, return
-  if (useStore.getState().user === undefined) {
+  if (useMiscellaneousStore.getState().user === undefined) {
     return;
   }
 
@@ -61,7 +61,7 @@ useStore.getState().setUser(session?.data?.session?.user);
   }
 
   // Set the user
-  useStore.getState().setUser(data.user);
+  useMiscellaneousStore.getState().setUser(data.user);
 })();
 
 /**
@@ -73,9 +73,9 @@ export const App: React.FC = () => {
   const history = useHistory();
   const location = useLocation();
 
-  const setMessage = useStore(state => state.setMessage);
-  const user = useStore(state => state.user);
-  const setUser = useStore(state => state.setUser);
+  const setMessage = useMiscellaneousStore(state => state.setMessage);
+  const user = useMiscellaneousStore(state => state.user);
+  const setUser = useMiscellaneousStore(state => state.setUser);
   const theme = useSettingsStore(state => state.theme);
 
   // Methods

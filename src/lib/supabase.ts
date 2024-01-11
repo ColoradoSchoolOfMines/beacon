@@ -5,7 +5,7 @@
 import {SupabaseClient} from "@supabase/supabase-js";
 
 import {Database} from "~/lib/schema";
-import {useStore} from "~/lib/stores/global";
+import {useMiscellaneousStore} from "~/lib/stores/miscellaneous";
 import {FUNCTIONS_URL, SUPABASE_ANON_KEY, SUPABASE_URL} from "~/lib/vars";
 
 /**
@@ -13,7 +13,7 @@ import {FUNCTIONS_URL, SUPABASE_ANON_KEY, SUPABASE_URL} from "~/lib/vars";
  */
 const FUNCTIONS_PREFIX = "/functions/v1";
 
-const setMessage = useStore.getState().setMessage;
+const setMessage = useMiscellaneousStore.getState().setMessage;
 
 /**
  * Supabase client singleton
@@ -64,7 +64,24 @@ export const client = new SupabaseClient<Database>(
           }
         }
 
-        const res = await fetch(input as any, init);
+        let res: Response | undefined;
+
+        try {
+          res = await fetch(input as any, init);
+        } catch (error) {
+          // Log the error
+          console.error(error);
+
+          // Display the message
+          setMessage({
+            name: "Network Error",
+            description: `${(error as Error).name}: ${
+              (error as Error).message
+            }`,
+          });
+
+          throw error;
+        }
 
         if (res.status === 401) {
           // Sign out

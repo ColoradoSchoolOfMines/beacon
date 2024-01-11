@@ -15,7 +15,7 @@ import {
   checkPasskeySupport,
   endAuthentication,
 } from "~/lib/api/auth";
-import {useStore} from "~/lib/stores/global";
+import {useMiscellaneousStore} from "~/lib/stores/miscellaneous";
 import {client} from "~/lib/supabase";
 
 /**
@@ -25,7 +25,7 @@ import {client} from "~/lib/supabase";
 export const Step1: React.FC = () => {
   // Hooks
   const history = useHistory();
-  const setMessage = useStore(state => state.setMessage);
+  const setMessage = useMiscellaneousStore(state => state.setMessage);
 
   // Methods
   /**

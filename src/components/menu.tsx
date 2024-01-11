@@ -29,7 +29,7 @@ import {useRef} from "react";
 import {useLocation} from "react-router-dom";
 
 import logo from "~/assets/logo.png";
-import {useStore} from "~/lib/stores/global";
+import {useMiscellaneousStore} from "~/lib/stores/miscellaneous";
 import {RequiredAuthState} from "~/lib/types";
 import {checkRequiredAuthState} from "~/lib/utils";
 
@@ -159,7 +159,7 @@ const NavItem: React.FC<NavItem> = item => {
  */
 export const Menu: React.FC = () => {
   // Hooks
-  const user = useStore(state => state.user);
+  const user = useMiscellaneousStore(state => state.user);
   const menu = useRef<HTMLIonMenuElement>(null);
 
   return (

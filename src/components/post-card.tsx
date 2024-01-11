@@ -1,5 +1,3 @@
-/* eslint-disable unicorn/no-null */
-/* eslint-disable camelcase */
 /**
  * @file Post card component
  */
@@ -19,7 +17,7 @@ import {
 } from "ionicons/icons";
 import {clamp} from "lodash-es";
 import {Duration} from "luxon";
-import {useEffect, useState} from "react";
+import {HTMLAttributes, useEffect, useState} from "react";
 import {useMeasure} from "react-use";
 
 import {Avatar} from "~/components/avatar";
@@ -31,7 +29,6 @@ import {
   MAX_MEDIA_DIMENSION,
   MIN_MEDIA_DIMENSION,
 } from "~/lib/media";
-import {useStore} from "~/lib/stores/global";
 import {useSettingsStore} from "~/lib/stores/settings";
 import {client} from "~/lib/supabase";
 import {MediaCategory, MediaDimensions, Post} from "~/lib/types";
@@ -40,17 +37,17 @@ import {formatDistance, formatDuration, formatScalar} from "~/lib/utils";
 /**
  * Post card component props
  */
-interface PostCardProps {
+interface PostCardProps extends HTMLAttributes<HTMLIonCardElement> {
   /**
    * Post
    */
   post: Post;
 
   /**
-   * Set the post
-   * @param newPost New post
+   * Toggle a vote on the post
+   * @param upvote Whether the vote is an upvote or a downvote
    */
-  setPost: (newPost: Post) => void;
+  toggleVote: (upvote: boolean) => void;
 }
 
 /**
@@ -58,7 +55,11 @@ interface PostCardProps {
  * @param props Props
  * @returns JSX
  */
-export const PostCard: React.FC<PostCardProps> = ({post, setPost}) => {
+export const PostCard: React.FC<PostCardProps> = ({
+  post,
+  toggleVote,
+  ...props
+}) => {
   // Hooks
   const [time, setTime] = useState<string | undefined>();
 
@@ -74,8 +75,6 @@ export const PostCard: React.FC<PostCardProps> = ({post, setPost}) => {
     height: 0,
     width: 0,
   });
-
-  const user = useStore(state => state.user);
 
   const showAmbientEffect = useSettingsStore(state => state.showAmbientEffect);
   const measurementSystem = useSettingsStore(state => state.measurementSystem);
@@ -177,89 +176,13 @@ export const PostCard: React.FC<PostCardProps> = ({post, setPost}) => {
     );
   };
 
-  /**
-   * Toggle a vote on the post
-   * @param upvote Whether the vote is an upvote or a downvote
-   */
-  const toggleVote = async (upvote: boolean) => {
-    // Upvote the post
-    if (post.upvote !== true && upvote) {
-      // Optimistically update the post
-      setPost({
-        ...post,
-        upvotes: post.upvotes + 1,
-        downvotes: post.upvote === false ? post.downvotes - 1 : post.downvotes,
-        upvote: true,
-      });
-
-      // Upsert the vote
-      const {error} = await client.from("post_votes").upsert(
-        {
-          post_id: post.id,
-          upvote: true,
-        },
-        {
-          onConflict: "post_id, voter_id",
-        },
-      );
-
-      // Handle error
-      if (error !== null) {
-        return;
-      }
-    }
-    // Downvote the post
-    else if (post.upvote !== false && !upvote) {
-      // Optimistically update the post
-      setPost({
-        ...post,
-        upvotes: post.upvote === true ? post.upvotes - 1 : post.upvotes,
-        downvotes: post.downvotes + 1,
-        upvote: false,
-      });
-
-      // Upsert the vote
-      const {error} = await client.from("post_votes").upsert(
-        {
-          post_id: post.id,
-          upvote: false,
-        },
-        {
-          onConflict: "post_id, voter_id",
-        },
-      );
-
-      // Handle error
-      if (error !== null) {
-        return;
-      }
-    }
-    // Delete the vote
-    else {
-      // Optimistically update the post
-      setPost({
-        ...post,
-        upvotes: post.upvote === true ? post.upvotes - 1 : post.upvotes,
-        downvotes: post.upvote === false ? post.downvotes - 1 : post.downvotes,
-        upvote: null,
-      });
-
-      // Delete the vote
-      const {error} = await client
-        .from("post_votes")
-        .delete()
-        .eq("post_id", post.id)
-        .eq("voter_id", user!.id);
-
-      // Handle error
-      if (error !== null) {
-        return;
-      }
-    }
-  };
-
   return (
-    <IonCard className="mx-4 my-2 rounded-xl overflow-hidden text-neutral-700 dark:text-neutral-300">
+    <IonCard
+      {...props}
+      className={`dark:text-neutral-300 overflow-hidden rounded-xl text-neutral-700 ${
+        props.className ?? ""
+      }`}
+    >
       <div className="w-full" ref={measured} />
 
       {post.has_media && (
