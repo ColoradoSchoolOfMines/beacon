@@ -10,10 +10,12 @@ AS (
   SELECT
     post.id,
 
+    COUNT(post_view.id) AS views,
     SUM(CASE WHEN post_vote.upvote THEN 1 ELSE 0 END) AS upvotes,
     SUM(CASE WHEN NOT post_vote.upvote THEN 1 ELSE 0 END) AS downvotes,
     COUNT(comment.id) as comments
   FROM public.posts post
+  LEFT JOIN public.post_views post_view ON post_view.post_id = post.id
   LEFT JOIN public.post_votes post_vote ON post_vote.post_id = post.id
   LEFT JOIN public.comments comment ON comment.post_id = post.id
   GROUP BY post.id
@@ -39,6 +41,7 @@ AS (
       post.aspect_ratio,
       public.distance_to(post.private_location, post.radius) AS distance,
 
+      cached_post.views,
       cached_post.upvotes,
       cached_post.downvotes,
       cached_post.comments,
@@ -63,6 +66,7 @@ AS (
     aspect_ratio,
     distance,
 
+    views,
     upvotes,
     downvotes,
     comments,
@@ -88,9 +92,11 @@ AS (
   SELECT
     comment.id,
 
+    COUNT(comment_view.id) AS views,
     SUM(CASE WHEN comment_vote.upvote THEN 1 ELSE 0 END) AS upvotes,
     SUM(CASE WHEN NOT comment_vote.upvote THEN 1 ELSE 0 END) AS downvotes
   FROM public.comments comment
+  LEFT JOIN public.comment_views comment_view ON comment_view.comment_id = comment.id
   LEFT JOIN public.comment_votes comment_vote ON comment_vote.comment_id = comment.id
   GROUP BY comment.id
 );
@@ -112,6 +118,7 @@ AS (
       comment.created_at,
       comment.content,
 
+      cached_comment.views,
       cached_comment.upvotes,
       cached_comment.downvotes,
 
@@ -132,6 +139,7 @@ AS (
     created_at,
     content,
 
+    views,
     upvotes,
     downvotes,
 

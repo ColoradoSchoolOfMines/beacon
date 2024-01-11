@@ -2,7 +2,15 @@
  * @file Post card component
  */
 
-import {IonButton, IonCard, IonCardContent, IonIcon} from "@ionic/react";
+import {
+  IonButton,
+  IonCard,
+  IonCardContent,
+  IonIcon,
+  IonItem,
+  IonList,
+  IonPopover,
+} from "@ionic/react";
 import {
   arrowDownOutline,
   arrowDownSharp,
@@ -10,14 +18,20 @@ import {
   arrowUpSharp,
   chatbubblesOutline,
   chatbubblesSharp,
+  ellipsisVerticalOutline,
+  ellipsisVerticalSharp,
   locationOutline,
   locationSharp,
+  shareSocialOutline,
+  shareSocialSharp,
   timeOutline,
   timeSharp,
+  warningOutline,
+  warningSharp,
 } from "ionicons/icons";
 import {clamp} from "lodash-es";
 import {Duration} from "luxon";
-import {HTMLAttributes, useEffect, useState} from "react";
+import {HTMLAttributes, useEffect, useId, useState} from "react";
 import {useMeasure} from "react-use";
 
 import {Avatar} from "~/components/avatar";
@@ -29,6 +43,7 @@ import {
   MAX_MEDIA_DIMENSION,
   MIN_MEDIA_DIMENSION,
 } from "~/lib/media";
+import {useMiscellaneousStore} from "~/lib/stores/miscellaneous";
 import {useSettingsStore} from "~/lib/stores/settings";
 import {client} from "~/lib/supabase";
 import {MediaCategory, MediaDimensions, Post} from "~/lib/types";
@@ -61,6 +76,7 @@ export const PostCard: React.FC<PostCardProps> = ({
   ...props
 }) => {
   // Hooks
+  const id = useId();
   const [time, setTime] = useState<string | undefined>();
 
   const [media, setMedia] = useState<
@@ -76,6 +92,7 @@ export const PostCard: React.FC<PostCardProps> = ({
     width: 0,
   });
 
+  const setMessage = useMiscellaneousStore(state => state.setMessage);
   const showAmbientEffect = useSettingsStore(state => state.showAmbientEffect);
   const measurementSystem = useSettingsStore(state => state.measurementSystem);
   const [measured, {width}] = useMeasure<HTMLDivElement>();
@@ -176,6 +193,49 @@ export const PostCard: React.FC<PostCardProps> = ({
     );
   };
 
+  /**
+   * Share the post
+   */
+  const share = async () => {
+    // Generate the URL
+    const url = new URL(`/posts/${post.id}`, window.location.origin).toString();
+
+    // Share
+    await (navigator.share === undefined
+      ? navigator.clipboard.writeText(url)
+      : navigator.share({
+          url,
+        }));
+
+    // Display the message
+    setMessage({
+      name: "Copied link",
+      description: "The link to the post has been copied to your clipboard.",
+    });
+  };
+
+  /**
+   * Report the post
+   */
+  const report = async () => {
+    // Insert the report
+    const {error} = await client.from("post_reports").insert({
+      // eslint-disable-next-line camelcase
+      post_id: post.id,
+    });
+
+    // Handle error
+    if (error !== null) {
+      return;
+    }
+
+    // Display the message
+    setMessage({
+      name: "Reported post",
+      description: "The post has been reported. Thank you for your feedback.",
+    });
+  };
+
   return (
     <IonCard
       {...props}
@@ -261,6 +321,49 @@ export const PostCard: React.FC<PostCardProps> = ({
                 <p className="!mb-0 !ml-1.5 !mt-0.5">{time}</p>
               </>
             )}
+
+            <IonButton
+              className={`m-0 ml-1.5 ${styles.iconButton}`}
+              color="medium"
+              fill="clear"
+              id={`${id}-options`}
+            >
+              <IonIcon
+                slot="icon-only"
+                ios={ellipsisVerticalOutline}
+                md={ellipsisVerticalSharp}
+              />
+            </IonButton>
+            <IonPopover trigger={`${id}-options`} triggerAction="hover">
+              <IonList>
+                <IonItem>
+                  <IonButton className="w-full" fill="clear" onClick={share}>
+                    <IonIcon
+                      slot="start"
+                      ios={shareSocialOutline}
+                      md={shareSocialSharp}
+                    />
+                    Share
+                  </IonButton>
+                </IonItem>
+
+                <IonItem lines="none">
+                  <IonButton
+                    className="w-full"
+                    color="danger"
+                    fill="clear"
+                    onClick={report}
+                  >
+                    <IonIcon
+                      slot="start"
+                      ios={warningOutline}
+                      md={warningSharp}
+                    />
+                    Report
+                  </IonButton>
+                </IonItem>
+              </IonList>
+            </IonPopover>
           </div>
         </div>
 
@@ -279,7 +382,7 @@ export const PostCard: React.FC<PostCardProps> = ({
 
           <div className="flex flex-row items-center">
             <IonButton
-              className={`m-0 ${styles.voteButton}`}
+              className={`m-0 ${styles.iconButton}`}
               color={post.upvote === true ? "success" : "medium"}
               fill="clear"
               onClick={() => toggleVote(true)}
@@ -294,7 +397,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               {formatScalar(post.upvotes - post.downvotes)}
             </p>
             <IonButton
-              className={`m-0 ${styles.voteButton}`}
+              className={`m-0 ${styles.iconButton}`}
               color={post.upvote === false ? "danger" : "medium"}
               fill="clear"
               onClick={() => toggleVote(false)}

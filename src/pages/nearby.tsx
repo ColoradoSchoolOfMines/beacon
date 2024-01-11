@@ -64,7 +64,6 @@ export const Nearby: React.FC = () => {
   const showFABs = useSettingsStore(state => state.showFABs);
   const useSlidingActions = useSettingsStore(state => state.useSlidingActions);
   const setRefreshPosts = useMiscellaneousStore(state => state.setRefreshPosts);
-  const user = useMiscellaneousStore(state => state.user);
 
   // Effects
   useEffect(() => {
@@ -162,8 +161,7 @@ export const Nearby: React.FC = () => {
       ({error} = await client
         .from("post_votes")
         .delete()
-        .eq("post_id", post.id)
-        .eq("voter_id", user!.id));
+        .eq("post_id", post.id));
     }
 
     // Handle error
@@ -272,6 +270,7 @@ export const Nearby: React.FC = () => {
 
         <VList
           className="absolute bottom-0 ion-content-scroll-host left-0 overflow-y-auto right-0 top-0"
+          // onRangeChange={}
           style={{
             height,
           }}

@@ -25,8 +25,7 @@ GRANT SELECT, DELETE ON public.locations TO authenticated;
 GRANT INSERT (
   location
 )
-ON public.locations
-TO authenticated;
+ON public.locations TO authenticated;
 
 -- Posts
 GRANT SELECT ON public.personalized_posts TO authenticated;
@@ -40,8 +39,14 @@ GRANT INSERT (
   blur_hash,
   aspect_ratio
 )
-ON public.posts
-TO authenticated;
+ON public.posts TO authenticated;
+
+-- Post views
+GRANT SELECT, DELETE ON public.post_views TO authenticated;
+GRANT INSERT (
+  post_id
+)
+ON public.post_views TO authenticated;
 
 -- Post votes
 GRANT SELECT, DELETE ON public.post_votes TO authenticated;
@@ -70,6 +75,13 @@ GRANT INSERT (
 )
 ON public.comments TO authenticated;
 
+-- Comment views
+GRANT SELECT, DELETE ON public.comment_views TO authenticated;
+GRANT INSERT (
+  comment_id
+)
+ON public.comment_views TO authenticated;
+
 -- Comment votes
 GRANT SELECT, DELETE ON public.comment_votes TO authenticated;
 GRANT INSERT, UPDATE (
@@ -95,9 +107,11 @@ GRANT EXECUTE ON FUNCTION public.distance_to(GEOGRAPHY(POINT, 4326), DOUBLE PREC
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.locations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.posts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.post_views ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.post_votes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.post_reports ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.comments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.comment_views ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.comment_votes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.comment_reports ENABLE ROW LEVEL SECURITY;
 
@@ -151,6 +165,25 @@ ON public.posts
 FOR DELETE
 TO authenticated
 USING (private_poster_id = auth.uid());
+
+-- Post views
+CREATE POLICY select_post_views
+ON public.post_views
+FOR SELECT
+TO authenticated
+USING (viewer_id = auth.uid());
+
+CREATE POLICY insert_post_views
+ON public.post_views
+FOR INSERT
+TO authenticated
+WITH CHECK (viewer_id = auth.uid());
+
+CREATE POLICY delete_post_views
+ON public.post_views
+FOR DELETE
+TO authenticated
+USING (viewer_id = auth.uid());
 
 -- Post votes
 CREATE POLICY select_post_votes
@@ -229,6 +262,25 @@ ON public.comments
 FOR DELETE
 TO authenticated
 USING (private_commenter_id = auth.uid());
+
+-- Comment views
+CREATE POLICY select_comment_views
+ON public.comment_views
+FOR SELECT
+TO authenticated
+USING (viewer_id = auth.uid());
+
+CREATE POLICY insert_comment_views
+ON public.comment_views
+FOR INSERT
+TO authenticated
+WITH CHECK (viewer_id = auth.uid());
+
+CREATE POLICY delete_comment_views
+ON public.comment_views
+FOR DELETE
+TO authenticated
+USING (viewer_id = auth.uid());
 
 -- Comment votes
 CREATE POLICY select_comment_votes

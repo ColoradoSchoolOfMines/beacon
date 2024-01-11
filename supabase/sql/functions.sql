@@ -430,6 +430,52 @@ BEGIN
 END;
 $$;
 
+-- Post view modified (i.e.: insert, update, or delete) trigger function
+CREATE OR REPLACE FUNCTION utilities.post_view_modified_trigger()
+RETURNS TRIGGER
+SECURITY DEFINER
+VOLATILE
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  -- Refresh the cached posts
+  REFRESH MATERIALIZED VIEW utilities.cached_posts;
+
+  RETURN NULL;
+END;
+$$;
+
+-- Post vote modified (i.e.: insert, update, or delete) trigger function
+CREATE OR REPLACE FUNCTION utilities.post_vote_modified_trigger()
+RETURNS TRIGGER
+SECURITY DEFINER
+VOLATILE
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  -- Post ID
+  _post_id UUID;
+BEGIN
+  -- Get the post ID
+  _post_id = CASE WHEN NEW IS NULL THEN OLD.post_id ELSE NEW.post_id END;
+
+  -- Refresh the cached posts
+  REFRESH MATERIALIZED VIEW utilities.cached_posts;
+
+  -- Delete the post if the net votes is less than or equal to -5
+  IF (
+    SELECT upvotes - downvotes
+    FROM utilities.cached_posts
+    WHERE id = _post_id
+  ) <= -5 THEN
+    DELETE FROM public.posts
+    WHERE id = _post_id;
+  END IF;
+
+  RETURN NULL;
+END;
+$$;
+
 -- Comment modified (i.e.: insert, update, or delete) trigger function
 CREATE OR REPLACE FUNCTION utilities.comment_modified_trigger()
 RETURNS TRIGGER
@@ -499,38 +545,22 @@ BEGIN
 END;
 $$;
 
--- Post vote modified trigger function
-CREATE OR REPLACE FUNCTION utilities.post_vote_modified_trigger()
+-- Comment view modified (i.e.: insert, update, or delete) trigger function
+CREATE OR REPLACE FUNCTION utilities.comment_view_modified_trigger()
 RETURNS TRIGGER
 SECURITY DEFINER
 VOLATILE
 LANGUAGE plpgsql
 AS $$
-DECLARE
-  -- Post ID
-  _post_id UUID;
 BEGIN
-  -- Get the post ID
-  _post_id = CASE WHEN NEW IS NULL THEN OLD.post_id ELSE NEW.post_id END;
-
-  -- Refresh the cached posts
-  REFRESH MATERIALIZED VIEW utilities.cached_posts;
-
-  -- Delete the post if the net votes is less than or equal to -5
-  IF (
-    SELECT upvotes - downvotes
-    FROM utilities.cached_posts
-    WHERE id = _post_id
-  ) <= -5 THEN
-    DELETE FROM public.posts
-    WHERE id = _post_id;
-  END IF;
+  -- Refresh the cached comments
+  REFRESH MATERIALIZED VIEW utilities.cached_comments;
 
   RETURN NULL;
 END;
 $$;
 
--- Comment vote modified trigger function
+-- Comment vote modified (i.e.: insert, update, or delete) trigger function
 CREATE OR REPLACE FUNCTION utilities.comment_vote_modified_trigger()
 RETURNS TRIGGER
 SECURITY DEFINER

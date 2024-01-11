@@ -336,21 +336,21 @@ export const Settings: React.FC = () => {
 
             <IonItem>
               <IonLabel>Version</IonLabel>
-              <IonNote className="ml-0 my-4 p-0" slot="end">
+              <IonNote className="ml-0 p-0" slot="end">
                 {VERSION}
               </IonNote>
             </IonItem>
 
             <IonItem>
               <IonLabel>Branch</IonLabel>
-              <IonNote className="ml-0 my-4 p-0" slot="end">
+              <IonNote className="ml-0 p-0" slot="end">
                 {GIT_BRANCH}
               </IonNote>
             </IonItem>
 
             <IonItem>
               <IonLabel>Commit</IonLabel>
-              <IonNote className="ml-0 my-4 p-0" slot="end">
+              <IonNote className="ml-0 p-0" slot="end">
                 {GIT_COMMIT}
               </IonNote>
             </IonItem>
@@ -360,9 +360,20 @@ export const Settings: React.FC = () => {
               target="_blank"
               href="https://github.com/ColoradoSchoolOfMines/Beacon"
             >
-              <IonLabel>Source</IonLabel>
-              <IonNote className="ml-0 my-4 p-0 text-[0.9rem]" slot="end">
-                github.com
+              <IonLabel>Source code</IonLabel>
+              <IonNote className="ml-0 p-0 text-[0.9rem]" slot="end">
+                github.com/...
+              </IonNote>
+            </IonItem>
+
+            <IonItem
+              rel="noreferrer"
+              target="_blank"
+              href="https://github.com/ColoradoSchoolOfMines/beacon/issues/new/choose"
+            >
+              <IonLabel>Bug report/feature request</IonLabel>
+              <IonNote className="ml-0 p-0 text-[0.9rem]" slot="end">
+                github.com/...
               </IonNote>
             </IonItem>
           </IonItemGroup>

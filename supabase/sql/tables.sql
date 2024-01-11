@@ -1,5 +1,5 @@
 /**
- * Setup tables and indexes
+ * Setup tables
  *
  * Prerequisites: before.sql, functions.sql, types.sql
  */
@@ -46,6 +46,9 @@ CREATE TABLE auth.webauthn_credentials (
 CREATE TABLE public.profiles (
   -- Primary key (Foreign key to auth.users)
   id UUID NOT NULL PRIMARY KEY REFERENCES auth.users ON UPDATE CASCADE ON DELETE CASCADE,
+
+  -- Creation timestamp
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
   -- Random color
   color TEXT NOT NULL DEFAULT utilities.get_random_color(),
@@ -114,6 +117,24 @@ CREATE TABLE public.posts (
   )
 );
 
+-- Post views
+CREATE TABLE public.post_views (
+  -- Primary key
+  id UUID NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
+
+  -- Post ID (Foreign key to public.posts)
+  post_id UUID NOT NULL REFERENCES public.posts ON UPDATE CASCADE ON DELETE CASCADE,
+
+  -- Viewer user ID (Foreign key to auth.users)
+  viewer_id UUID NOT NULL REFERENCES auth.users ON UPDATE CASCADE ON DELETE CASCADE DEFAULT auth.uid(),
+
+  -- Creation timestamp
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+  -- Ensure the viewer can only view once per post
+  UNIQUE (viewer_id, post_id)
+);
+
 -- Post votes
 CREATE TABLE public.post_votes (
   -- Primary key
@@ -125,10 +146,13 @@ CREATE TABLE public.post_votes (
   -- Post ID (Foreign key to public.posts)
   post_id UUID NOT NULL REFERENCES public.posts ON UPDATE CASCADE ON DELETE CASCADE,
 
+  -- Creation timestamp
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
   -- Whether the vote is an upvote (true) or a downvote (false)
   upvote BOOLEAN NOT NULL,
 
-  -- Voter sure the voter can only vote once per post
+  -- Ensure the voter can only vote once per post
   UNIQUE (voter_id, post_id)
 );
 
@@ -142,6 +166,9 @@ CREATE TABLE public.post_reports (
 
   -- Post ID (Foreign key to public.posts)
   post_id UUID NOT NULL REFERENCES public.posts ON UPDATE CASCADE ON DELETE CASCADE,
+
+  -- Creation timestamp
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
   -- Ensure the reporter can only report once per post
   UNIQUE (reporter_id, post_id)
@@ -176,6 +203,24 @@ CREATE TABLE public.comments (
   content VARCHAR(1000) NOT NULL
 );
 
+-- Comment view
+CREATE TABLE public.comment_views (
+  -- Primary key
+  id UUID NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
+
+  -- Comment ID (Foreign key to public.comments)
+  comment_id UUID NOT NULL REFERENCES public.comments ON UPDATE CASCADE ON DELETE CASCADE,
+
+  -- Viewer user ID (Foreign key to auth.users)
+  viewer_id UUID NOT NULL REFERENCES auth.users ON UPDATE CASCADE ON DELETE CASCADE DEFAULT auth.uid(),
+
+  -- Creation timestamp
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+  -- Ensure the viewer can only view once per comment
+  UNIQUE (viewer_id, comment_id)
+);
+
 -- Comment votes
 CREATE TABLE public.comment_votes (
   -- Primary key
@@ -186,6 +231,9 @@ CREATE TABLE public.comment_votes (
 
   -- Comment ID (Foreign key to public.comments)
   comment_id UUID NOT NULL REFERENCES public.comments ON UPDATE CASCADE ON DELETE CASCADE,
+
+  -- Creation timestamp
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
   -- Whether the vote is an upvote (true) or a downvote (false)
   upvote BOOLEAN NOT NULL,
@@ -205,20 +253,9 @@ CREATE TABLE public.comment_reports (
   -- Comment ID (Foreign key to public.comments)
   comment_id UUID NOT NULL REFERENCES public.comments ON UPDATE CASCADE ON DELETE CASCADE,
 
+  -- Creation timestamp
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
   -- Ensure the reporter can only report once per comment
   UNIQUE (reporter_id, comment_id)
 );
-
-/* --------------------------------------- Setup indexes --------------------------------------- */
-
--- User locations location index
-CREATE INDEX locations_location ON public.locations USING GIST (location);
-
--- Posts location index
-CREATE INDEX posts_location ON public.posts USING GIST (private_location);
-
--- Posts created at index
-CREATE INDEX posts_created_at ON public.posts (created_at);
-
--- Comments created at index
-CREATE INDEX comments_created_at ON public.comments (created_at);
