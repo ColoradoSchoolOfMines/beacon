@@ -36,7 +36,7 @@ import {
   arrowUpSharp,
 } from "ionicons/icons";
 import {cloneDeep} from "lodash-es";
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {useHistory} from "react-router-dom";
 import {useMeasure} from "react-use";
 import {VList} from "virtua";
@@ -54,6 +54,7 @@ import {Post} from "~/lib/types";
 export const Nearby: React.FC = () => {
   // Hooks
   const [posts, setPosts] = useState<Post[]>([]);
+  const loadedPosts = useRef(new Set<string>());
 
   const [previousRatios, setPreviousRatios] = useState<Record<string, number>>(
     {},
@@ -80,6 +81,14 @@ export const Nearby: React.FC = () => {
   }, []);
 
   // Methods
+  /**
+   * Set the post
+   * @param newPost New post
+   * @returns Void
+   */
+  const setPost = (newPost: Post) =>
+    setPosts(posts.map(post => (post.id === newPost.id ? newPost : post)));
+
   /**
    * Refresh posts
    */
@@ -196,6 +205,31 @@ export const Nearby: React.FC = () => {
   };
 
   /**
+   * Range change event handler
+   * @param start Start index
+   * @param end End index
+   */
+  const onRangeChange = async (start: number, end: number) => {
+    for (let i = start; i < end; i++) {
+      // Skip if the post has already been loaded
+      if (!loadedPosts.current.has(posts[i]!.id)) {
+        continue;
+      }
+
+      console.log(i);
+    }
+  };
+
+  /**
+   * Post load event handler
+   * @param post Post
+   */
+  const onPostLoad = (post: Post) => {
+    // Update the loaded posts
+    loadedPosts.current.add(post.id);
+  };
+
+  /**
    * Item sliding swipe event handler
    * @param post Post
    * @param event Item sliding custom event
@@ -243,14 +277,6 @@ export const Nearby: React.FC = () => {
     });
   };
 
-  /**
-   * Set the post
-   * @param newPost New post
-   * @returns Void
-   */
-  const setPost = (newPost: Post) =>
-    setPosts(posts.map(post => (post.id === newPost.id ? newPost : post)));
-
   return (
     <IonPage>
       <IonHeader className="ion-no-border" translucent={true}>
@@ -270,7 +296,7 @@ export const Nearby: React.FC = () => {
 
         <VList
           className="absolute bottom-0 ion-content-scroll-host left-0 overflow-y-auto right-0 top-0"
-          // onRangeChange={}
+          onRangeChange={onRangeChange}
           style={{
             height,
           }}
@@ -298,6 +324,7 @@ export const Nearby: React.FC = () => {
                     index === posts.length - 1 ? "mb-4" : ""
                   }`}
                   post={post}
+                  onLoad={() => onPostLoad(post)}
                   toggleVote={upvote => toggleVote(post, upvote)}
                 />
               </IonItem>

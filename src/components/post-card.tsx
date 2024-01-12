@@ -59,6 +59,11 @@ interface PostCardProps extends HTMLAttributes<HTMLIonCardElement> {
   post: Post;
 
   /**
+   * Post load event handler
+   */
+  onLoad?: () => void;
+
+  /**
    * Toggle a vote on the post
    * @param upvote Whether the vote is an upvote or a downvote
    */
@@ -72,6 +77,7 @@ interface PostCardProps extends HTMLAttributes<HTMLIonCardElement> {
  */
 export const PostCard: React.FC<PostCardProps> = ({
   post,
+  onLoad,
   toggleVote,
   ...props
 }) => {
@@ -95,6 +101,7 @@ export const PostCard: React.FC<PostCardProps> = ({
   const setMessage = useMiscellaneousStore(state => state.setMessage);
   const showAmbientEffect = useSettingsStore(state => state.showAmbientEffect);
   const measurementSystem = useSettingsStore(state => state.measurementSystem);
+
   const [measured, {width}] = useMeasure<HTMLDivElement>();
 
   // Effects
@@ -127,6 +134,11 @@ export const PostCard: React.FC<PostCardProps> = ({
     (async () => {
       if (!post.has_media || size.height === 0 || size.width === 0) {
         setMedia(undefined);
+
+        if (!post.has_media && size.height > 0 && size.width > 0) {
+          onLoad?.();
+        }
+
         return;
       }
 
@@ -176,6 +188,9 @@ export const PostCard: React.FC<PostCardProps> = ({
         category,
         url,
       });
+
+      // Emit the load event
+      onLoad?.();
     })();
   }, [post, size]);
 

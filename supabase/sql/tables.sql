@@ -12,7 +12,7 @@ CREATE TABLE auth.webauthn_challenges (
   id UUID NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
 
   -- Creation timestamp
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW() CHECK (created_at <= NOW()),
 
   -- Challenge type
   type auth.webauthn_challenge_type NOT NULL,
@@ -30,7 +30,7 @@ CREATE TABLE auth.webauthn_credentials (
   user_id UUID NOT NULL REFERENCES auth.users ON UPDATE CASCADE ON DELETE CASCADE,
 
   -- Creation timestamp
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW() CHECK (created_at <= NOW()),
 
   -- Client-side credential ID (Up to 1000 characters)
   client_credential_id VARCHAR(1000) NOT NULL,
@@ -48,7 +48,7 @@ CREATE TABLE public.profiles (
   id UUID NOT NULL PRIMARY KEY REFERENCES auth.users ON UPDATE CASCADE ON DELETE CASCADE,
 
   -- Creation timestamp
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW() CHECK (created_at <= NOW()),
 
   -- Random color
   color TEXT NOT NULL DEFAULT utilities.get_random_color(),
@@ -129,7 +129,7 @@ CREATE TABLE public.post_views (
   viewer_id UUID NOT NULL REFERENCES auth.users ON UPDATE CASCADE ON DELETE CASCADE DEFAULT auth.uid(),
 
   -- Creation timestamp
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW() CHECK (created_at <= NOW()),
 
   -- Ensure the viewer can only view once per post
   UNIQUE (viewer_id, post_id)
@@ -147,7 +147,7 @@ CREATE TABLE public.post_votes (
   post_id UUID NOT NULL REFERENCES public.posts ON UPDATE CASCADE ON DELETE CASCADE,
 
   -- Creation timestamp
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW() CHECK (created_at <= NOW()),
 
   -- Whether the vote is an upvote (true) or a downvote (false)
   upvote BOOLEAN NOT NULL,
@@ -168,7 +168,7 @@ CREATE TABLE public.post_reports (
   post_id UUID NOT NULL REFERENCES public.posts ON UPDATE CASCADE ON DELETE CASCADE,
 
   -- Creation timestamp
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW() CHECK (created_at <= NOW()),
 
   -- Ensure the reporter can only report once per post
   UNIQUE (reporter_id, post_id)
@@ -215,7 +215,7 @@ CREATE TABLE public.comment_views (
   viewer_id UUID NOT NULL REFERENCES auth.users ON UPDATE CASCADE ON DELETE CASCADE DEFAULT auth.uid(),
 
   -- Creation timestamp
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW() CHECK (created_at <= NOW()),
 
   -- Ensure the viewer can only view once per comment
   UNIQUE (viewer_id, comment_id)
@@ -233,7 +233,7 @@ CREATE TABLE public.comment_votes (
   comment_id UUID NOT NULL REFERENCES public.comments ON UPDATE CASCADE ON DELETE CASCADE,
 
   -- Creation timestamp
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW() CHECK (created_at <= NOW()),
 
   -- Whether the vote is an upvote (true) or a downvote (false)
   upvote BOOLEAN NOT NULL,
@@ -254,7 +254,7 @@ CREATE TABLE public.comment_reports (
   comment_id UUID NOT NULL REFERENCES public.comments ON UPDATE CASCADE ON DELETE CASCADE,
 
   -- Creation timestamp
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW() CHECK (created_at <= NOW()),
 
   -- Ensure the reporter can only report once per comment
   UNIQUE (reporter_id, comment_id)

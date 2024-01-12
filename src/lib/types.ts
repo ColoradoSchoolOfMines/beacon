@@ -180,7 +180,7 @@ export type Location = Database["public"]["Tables"]["locations"]["Row"];
  * Post
  * @param T Whether or not the post has media
  */
-export type Post<T extends boolean = true | false> = {
+export type Post<T extends boolean = boolean> = {
   id: NonNullable<
     Database["public"]["Views"]["personalized_posts"]["Row"]["id"]
   >;

@@ -16,12 +16,17 @@ import {
 import {
   arrowForwardOutline,
   arrowForwardSharp,
+  closeOutline,
+  closeSharp,
   codeSlashOutline,
   codeSlashSharp,
   eyeOutline,
   eyeSharp,
+  imageOutline,
+  imageSharp,
 } from "ionicons/icons";
-import {useEffect, useState} from "react";
+import {flatten} from "lodash-es";
+import {useEffect, useRef, useState} from "react";
 import {Controller, useForm} from "react-hook-form";
 import {useHistory} from "react-router-dom";
 import {z} from "zod";
@@ -29,7 +34,16 @@ import {z} from "zod";
 import {CreatePostContainer} from "~/components/create-post-container";
 import {Markdown} from "~/components/markdown";
 import {SupplementalError} from "~/components/supplemental-error";
+import {
+  CATEGORIZED_MEDIA_MIME_TYPES,
+  createMediaElement,
+  getCategory,
+  getMediaDimensions,
+  MAX_MEDIA_DIMENSION,
+  MIN_MEDIA_DIMENSION,
+} from "~/lib/media";
 import {useTemporaryStore} from "~/lib/stores/temporary";
+import {MediaCategory} from "~/lib/types";
 import styles from "~/pages/create-post/step1.module.css";
 
 /**
@@ -58,10 +72,64 @@ const MIN_CONTENT_LENGTH = 1;
 const MAX_CONTENT_LENGTH = 300;
 
 /**
+ * Allowed media mime types
+ */
+const MEDIA_MIME_TYPES = flatten(Object.values(CATEGORIZED_MEDIA_MIME_TYPES));
+
+/**
  * Form schema
  */
 const formSchema = z.object({
   content: z.string().min(MIN_CONTENT_LENGTH).max(MAX_CONTENT_LENGTH),
+  media: z
+    .array(z.instanceof(File))
+    .min(0)
+    .max(1)
+    .optional()
+    .superRefine(async (value, ctx) => {
+      if (value?.length === 1) {
+        // Get the dimensions
+        const category = getCategory(value[0]!.type);
+
+        if (category === undefined) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Unsupported media type ${value[0]!.type}`,
+            fatal: true,
+          });
+
+          return;
+        }
+
+        const objectURL = URL.createObjectURL(value[0]!);
+        const element = await createMediaElement(category, objectURL);
+        URL.revokeObjectURL(objectURL);
+        const dimensions = getMediaDimensions(category, element);
+
+        // Check the media dimensions
+        if (
+          dimensions.height < MIN_MEDIA_DIMENSION ||
+          dimensions.width < MIN_MEDIA_DIMENSION
+        ) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Media must be at least ${MIN_MEDIA_DIMENSION} x ${MIN_MEDIA_DIMENSION}`,
+          });
+        }
+
+        if (
+          dimensions.height > MAX_MEDIA_DIMENSION ||
+          dimensions.width > MAX_MEDIA_DIMENSION
+        ) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Media must be at most ${MAX_MEDIA_DIMENSION} x ${MAX_MEDIA_DIMENSION}`,
+          });
+        }
+      }
+
+      return false;
+    }),
 });
 
 /**
@@ -80,15 +148,23 @@ export const Step1: React.FC = () => {
     useState<HTMLIonTextareaElement | null>(null);
 
   const [contentMode, setContentMode] = useState<ContentMode>(ContentMode.RAW);
+  const [previewUrl, setPreviewUrl] = useState<string | undefined>(undefined);
+  const mediaInput = useRef<HTMLInputElement | null>(null);
 
   const post = useTemporaryStore(state => state.post);
   const setPost = useTemporaryStore(state => state.setPost);
 
   const history = useHistory();
 
-  const {control, handleSubmit, reset} = useForm<FormSchema>({
+  const {control, handleSubmit, watch, reset} = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
   });
+
+  // Variables
+  const media = watch("media");
+
+  const mediaCategory =
+    media?.[0]?.type === undefined ? undefined : getCategory(media[0].type);
 
   // Effects
   useEffect(() => {
@@ -99,7 +175,7 @@ export const Step1: React.FC = () => {
     // Focus the content textarea
     if (contentMode === ContentMode.RAW) {
       // setFocus has a race condition
-      setTimeout(() => contentTextarea.setFocus(), 10);
+      setTimeout(() => contentTextarea.setFocus(), 50);
     }
   }, [contentMode, contentTextarea]);
 
@@ -107,8 +183,33 @@ export const Step1: React.FC = () => {
     // Reset the form
     if (post === undefined) {
       reset();
+
+      if (mediaInput.current !== null) {
+        mediaInput.current.value = "";
+      }
     }
   }, [post]);
+
+  useEffect(() => {
+    // Update the upload value
+    if (
+      (media === undefined || media.length === 0) &&
+      mediaInput.current !== null
+    ) {
+      mediaInput.current.value = "";
+    }
+
+    // Update the preview URL
+    (async () => {
+      let url: string | undefined;
+
+      if (media !== undefined && media.length > 0) {
+        url = URL.createObjectURL(media[0]!);
+      }
+
+      setPreviewUrl(url);
+    })();
+  }, [media]);
 
   // Methods
   /**
@@ -119,6 +220,7 @@ export const Step1: React.FC = () => {
     // Update the post
     setPost({
       content: form.content,
+      media: form.media?.[0],
     });
 
     // Go to the next step
@@ -192,6 +294,80 @@ export const Step1: React.FC = () => {
           />
 
           <IonItem className={`mt-4 ${styles.collapsedItem}`} />
+
+          <IonItem>
+            <Controller
+              control={control}
+              name="media"
+              render={({field: {onChange, onBlur}, fieldState: {error}}) => (
+                <>
+                  <label className="cursor-pointer w-full">
+                    <div className="flex flex-row items-center justify-center relative w-full my-2">
+                      <IonIcon
+                        className="text-2xl"
+                        ios={imageOutline}
+                        md={imageSharp}
+                      />
+
+                      <p className="ml-2 text-center">Add a photo or video</p>
+
+                      <input
+                        accept={MEDIA_MIME_TYPES.join(",")}
+                        className="h-0 w-0"
+                        onChange={event =>
+                          onChange(
+                            event.target.files === null
+                              ? []
+                              : Array.from(event.target.files),
+                          )
+                        }
+                        onBlur={onBlur}
+                        ref={mediaInput}
+                        type="file"
+                      />
+
+                      {media !== undefined && media.length > 0 && (
+                        <IonButton
+                          className={`absolute right-0 ${styles.clearButton}`}
+                          fill="clear"
+                          onClick={event => {
+                            event.preventDefault();
+                            onChange([]);
+                          }}
+                        >
+                          <IonIcon
+                            slot="icon-only"
+                            ios={closeOutline}
+                            md={closeSharp}
+                          />
+                        </IonButton>
+                      )}
+                    </div>
+                    {previewUrl !== undefined &&
+                      mediaCategory !== undefined && (
+                        <div className="max-h-[50vh] mb-4 object-fill overflow-hidden pointer-events-none rounded-lg w-full">
+                          {(() => {
+                            switch (mediaCategory) {
+                              case MediaCategory.IMAGE:
+                                return (
+                                  <img alt="Media preview" src={previewUrl} />
+                                );
+
+                              case MediaCategory.VIDEO:
+                                return (
+                                  <video autoPlay loop muted src={previewUrl} />
+                                );
+                            }
+                          })()}
+                        </div>
+                      )}
+                  </label>
+
+                  <SupplementalError error={error?.message} />
+                </>
+              )}
+            />
+          </IonItem>
 
           <div className="m-4">
             <IonButton

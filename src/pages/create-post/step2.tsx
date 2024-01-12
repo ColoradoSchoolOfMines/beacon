@@ -332,7 +332,7 @@ export const Step2: React.FC = () => {
               minZoom={6}
               circle={{
                 center: [location.coords.latitude, location.coords.longitude],
-                radius: radius * conversionFactor,
+                radius: radius,
               }}
             />
           </div>
