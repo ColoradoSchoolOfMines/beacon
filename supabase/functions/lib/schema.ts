@@ -710,16 +710,19 @@ export interface Database {
       comment_reports: {
         Row: {
           comment_id: string
+          created_at: string
           id: string
           reporter_id: string
         }
         Insert: {
           comment_id: string
+          created_at?: string
           id?: string
           reporter_id?: string
         }
         Update: {
           comment_id?: string
+          created_at?: string
           id?: string
           reporter_id?: string
         }
@@ -754,21 +757,74 @@ export interface Database {
           }
         ]
       }
+      comment_views: {
+        Row: {
+          comment_id: string
+          created_at: string
+          id: string
+          viewer_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          id?: string
+          viewer_id?: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          id?: string
+          viewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comment_views_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "cached_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comment_views_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comment_views_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "personalized_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comment_views_viewer_id_fkey"
+            columns: ["viewer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       comment_votes: {
         Row: {
           comment_id: string
+          created_at: string
           id: string
           upvote: boolean
           voter_id: string
         }
         Insert: {
           comment_id: string
+          created_at?: string
           id?: string
           upvote: boolean
           voter_id?: string
         }
         Update: {
           comment_id?: string
+          created_at?: string
           id?: string
           upvote?: boolean
           voter_id?: string
@@ -918,16 +974,19 @@ export interface Database {
       }
       post_reports: {
         Row: {
+          created_at: string
           id: string
           post_id: string
           reporter_id: string
         }
         Insert: {
+          created_at?: string
           id?: string
           post_id: string
           reporter_id?: string
         }
         Update: {
+          created_at?: string
           id?: string
           post_id?: string
           reporter_id?: string
@@ -963,20 +1022,73 @@ export interface Database {
           }
         ]
       }
+      post_views: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          viewer_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          viewer_id?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          viewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_views_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "cached_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_views_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "personalized_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_views_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_views_viewer_id_fkey"
+            columns: ["viewer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       post_votes: {
         Row: {
+          created_at: string
           id: string
           post_id: string
           upvote: boolean
           voter_id: string
         }
         Insert: {
+          created_at?: string
           id?: string
           post_id: string
           upvote: boolean
           voter_id?: string
         }
         Update: {
+          created_at?: string
           id?: string
           post_id?: string
           upvote?: boolean
@@ -1066,16 +1178,19 @@ export interface Database {
       profiles: {
         Row: {
           color: string
+          created_at: string
           emoji: string
           id: string
         }
         Insert: {
           color?: string
+          created_at?: string
           emoji?: string
           id: string
         }
         Update: {
           color?: string
+          created_at?: string
           emoji?: string
           id?: string
         }
@@ -1104,6 +1219,7 @@ export interface Database {
           post_id: string | null
           upvote: boolean | null
           upvotes: number | null
+          views: number | null
         }
         Relationships: [
           {
@@ -1167,6 +1283,7 @@ export interface Database {
           radius: number | null
           upvote: boolean | null
           upvotes: number | null
+          views: number | null
         }
         Relationships: []
       }
@@ -1201,6 +1318,7 @@ export interface Database {
           downvotes: number | null
           id: string | null
           upvotes: number | null
+          views: number | null
         }
         Relationships: []
       }
@@ -1210,6 +1328,7 @@ export interface Database {
           downvotes: number | null
           id: string | null
           upvotes: number | null
+          views: number | null
         }
         Relationships: []
       }

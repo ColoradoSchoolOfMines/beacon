@@ -43,7 +43,7 @@ ON public.posts TO authenticated;
 
 -- Post views
 GRANT SELECT, DELETE ON public.post_views TO authenticated;
-GRANT INSERT (
+GRANT INSERT, UPDATE (
   post_id
 )
 ON public.post_views TO authenticated;
@@ -77,7 +77,7 @@ ON public.comments TO authenticated;
 
 -- Comment views
 GRANT SELECT, DELETE ON public.comment_views TO authenticated;
-GRANT INSERT (
+GRANT INSERT, UPDATE (
   comment_id
 )
 ON public.comment_views TO authenticated;
@@ -179,6 +179,12 @@ FOR INSERT
 TO authenticated
 WITH CHECK (viewer_id = auth.uid());
 
+CREATE POLICY update_post_views
+ON public.post_views
+FOR UPDATE
+TO authenticated
+USING (viewer_id = auth.uid());
+
 CREATE POLICY delete_post_views
 ON public.post_views
 FOR DELETE
@@ -275,6 +281,12 @@ ON public.comment_views
 FOR INSERT
 TO authenticated
 WITH CHECK (viewer_id = auth.uid());
+
+CREATE POLICY update_comment_views
+ON public.comment_views
+FOR UPDATE
+TO authenticated
+USING (viewer_id = auth.uid());
 
 CREATE POLICY delete_comment_views
 ON public.comment_views

@@ -56,6 +56,13 @@ useMiscellaneousStore.subscribe(async state => {
   try {
     geolocationWatcherId = navigator.geolocation.watchPosition(
       async location => {
+        // Ensure the user still exists
+        if (geolocationWatcherId !== undefined && state.user === undefined) {
+          navigator.geolocation.clearWatch(geolocationWatcherId);
+          return;
+        }
+
+        // Get the old location
         const oldLocation = useMiscellaneousStore.getState().location;
 
         // Update the frontend

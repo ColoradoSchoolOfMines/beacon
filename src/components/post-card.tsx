@@ -135,7 +135,7 @@ export const PostCard: React.FC<PostCardProps> = ({
       if (!post.has_media || size.height === 0 || size.width === 0) {
         setMedia(undefined);
 
-        if (!post.has_media && size.height > 0 && size.width > 0) {
+        if (!post.has_media) {
           onLoad?.();
         }
 
@@ -241,6 +241,14 @@ export const PostCard: React.FC<PostCardProps> = ({
 
     // Handle error
     if (error !== null) {
+      if (error.code === "23505") {
+        // Display the message
+        setMessage({
+          name: "Reported post",
+          description: "The post has already been reported.",
+        });
+      }
+
       return;
     }
 
@@ -258,7 +266,7 @@ export const PostCard: React.FC<PostCardProps> = ({
         props.className ?? ""
       }`}
     >
-      <div className="w-full" ref={measured} />
+      <div className="h-full w-full" ref={measured} />
 
       {post.has_media && (
         <div

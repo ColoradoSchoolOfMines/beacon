@@ -55,6 +55,7 @@ export const Nearby: React.FC = () => {
   // Hooks
   const [posts, setPosts] = useState<Post[]>([]);
   const loadedPosts = useRef(new Set<string>());
+  const viewedPosts = useRef(new Set<string>());
 
   const [previousRatios, setPreviousRatios] = useState<Record<string, number>>(
     {},
@@ -94,7 +95,11 @@ export const Nearby: React.FC = () => {
    */
   const refreshPosts = async () => {
     // Get posts
-    const {data, error} = await client.from("personalized_posts").select(`*`);
+    const {data, error} = await client
+      .from("personalized_posts")
+      .select(
+        "id, poster_id, created_at, content, has_media, blur_hash, aspect_ratio, distance, upvotes, downvotes, comments, poster_color, poster_emoji, upvote",
+      );
 
     // Handle error
     if (data === null || error !== null) {
@@ -210,14 +215,49 @@ export const Nearby: React.FC = () => {
    * @param end End index
    */
   const onRangeChange = async (start: number, end: number) => {
+    // Ensure all posts in range have been loaded
     for (let i = start; i < end; i++) {
       // Skip if the post has already been loaded
       if (!loadedPosts.current.has(posts[i]!.id)) {
+        return;
+      }
+    }
+
+    // Mark all posts in range as viewed
+    const results = [];
+
+    for (let i = start; i < end; i++) {
+      const post = posts[i]!;
+
+      // Skip if the post has already been viewed
+      if (viewedPosts.current.has(post.id)) {
         continue;
       }
 
-      console.log(i);
+      results.push(
+        (async () => {
+          // Insert the view
+          const {error} = await client.from("post_views").upsert(
+            {
+              post_id: post.id,
+            },
+            {
+              onConflict: "post_id, viewer_id",
+            },
+          );
+
+          // Handle error
+          if (error !== null) {
+            return;
+          }
+
+          // Update the viewed posts
+          viewedPosts.current.add(post.id);
+        })(),
+      );
     }
+
+    await Promise.all(results);
   };
 
   /**

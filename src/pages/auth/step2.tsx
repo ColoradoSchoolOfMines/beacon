@@ -133,7 +133,7 @@ export const Step2: React.FC = () => {
           type="submit"
         >
           <IonIcon slot="start" ios={paperPlaneOutline} md={paperPlaneSharp} />
-          Send Login Link
+          Send Login Code
         </IonButton>
       </form>
     </AuthContainer>
