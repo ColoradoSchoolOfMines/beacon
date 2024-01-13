@@ -36,7 +36,7 @@ CREATE TABLE auth.webauthn_credentials (
   client_credential_id VARCHAR(1000) NOT NULL,
 
   -- Crdential use counter (To prevent replay attacks)
-  counter INTEGER NOT NULL DEFAULT 0,
+  counter BIGINT NOT NULL DEFAULT 0,
 
   -- Public key (Up to 1000 characters)
   public_key VARCHAR(1000) NOT NULL
@@ -110,6 +110,18 @@ CREATE TABLE public.posts (
 
   -- Media aspect ratio (Used to prevent layout shifts)
   aspect_ratio DOUBLE PRECISION NULL CHECK (aspect_ratio IS NULL OR (aspect_ratio > 0 AND aspect_ratio < 10)),
+
+  -- View count
+  views BIGINT NOT NULL DEFAULT 0 CHECK (views >= 0),
+
+  -- Comment count
+  comments BIGINT NOT NULL DEFAULT 0 CHECK (views >= 0),
+
+  -- Upvote count
+  upvotes BIGINT NOT NULL DEFAULT 0 CHECK (views >= 0),
+
+  -- Downvote count
+  downvotes BIGINT NOT NULL DEFAULT 0 CHECK (views >= 0),
 
   CHECK (
     (has_media AND blur_hash IS NOT NULL AND aspect_ratio IS NOT NULL) OR
@@ -200,7 +212,16 @@ CREATE TABLE public.comments (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW() CHECK (created_at <= NOW()),
 
   -- Comment content (Up to 1000 characters)
-  content VARCHAR(1000) NOT NULL
+  content VARCHAR(1000) NOT NULL,
+
+  -- View count
+  views BIGINT NOT NULL DEFAULT 0 CHECK (views >= 0),
+
+  -- Upvote count
+  upvotes BIGINT NOT NULL DEFAULT 0 CHECK (views >= 0),
+
+  -- Downvote count
+  downvotes BIGINT NOT NULL DEFAULT 0 CHECK (views >= 0)
 );
 
 -- Comment view

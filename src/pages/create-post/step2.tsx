@@ -156,13 +156,12 @@ export const Step2: React.FC = () => {
       const category = getCategory(post.media.type)!;
       const objectURL = URL.createObjectURL(post.media!);
       const element = await createMediaElement(category, objectURL);
-      URL.revokeObjectURL(objectURL);
       const dimensions = getMediaDimensions(category, element);
+      URL.revokeObjectURL(objectURL);
 
       aspectRatio = dimensions.width / dimensions.height;
 
       blurHash = await createBlurhash(
-        category,
         element,
         dimensions,
         BLURHASH_COMPONENT_X,

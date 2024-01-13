@@ -103,8 +103,8 @@ const formSchema = z.object({
 
         const objectURL = URL.createObjectURL(value[0]!);
         const element = await createMediaElement(category, objectURL);
-        URL.revokeObjectURL(objectURL);
         const dimensions = getMediaDimensions(category, element);
+        URL.revokeObjectURL(objectURL);
 
         // Check the media dimensions
         if (

@@ -28,22 +28,7 @@ BEFORE INSERT ON public.posts
 FOR EACH ROW
 EXECUTE FUNCTION utilities.anonymize_location_trigger();
 
--- Post modified
-CREATE TRIGGER post_modified_after_insert
-AFTER INSERT ON public.posts
-FOR EACH ROW
-EXECUTE FUNCTION utilities.post_modified_trigger();
-
-CREATE TRIGGER post_modified_after_update
-AFTER UPDATE ON public.posts
-FOR EACH ROW
-EXECUTE FUNCTION utilities.post_modified_trigger();
-
-CREATE TRIGGER post_modified_after_delete
-AFTER DELETE ON public.posts
-FOR EACH ROW
-EXECUTE FUNCTION utilities.post_modified_trigger();
-
+-- Post deleted
 CREATE TRIGGER post_deleted_after_delete
 AFTER DELETE ON public.posts
 FOR EACH ROW

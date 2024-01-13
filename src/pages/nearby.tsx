@@ -98,7 +98,7 @@ export const Nearby: React.FC = () => {
     const {data, error} = await client
       .from("personalized_posts")
       .select(
-        "id, poster_id, created_at, content, has_media, blur_hash, aspect_ratio, distance, upvotes, downvotes, comments, poster_color, poster_emoji, upvote",
+        "id, poster_id, created_at, content, has_media, blur_hash, aspect_ratio, views, distance, upvotes, downvotes, comments, poster_color, poster_emoji, upvote, rank",
       );
 
     // Handle error

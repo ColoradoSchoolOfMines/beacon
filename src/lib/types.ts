@@ -199,6 +199,9 @@ export type Post<T extends boolean = boolean> = {
     Database["public"]["Views"]["personalized_posts"]["Row"]["distance"]
   >;
 
+  views: NonNullable<
+    Database["public"]["Views"]["personalized_posts"]["Row"]["views"]
+  >;
   upvotes: NonNullable<
     Database["public"]["Views"]["personalized_posts"]["Row"]["upvotes"]
   >;

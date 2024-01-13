@@ -99,7 +99,7 @@ ON public.comment_reports TO authenticated;
 
 -- Public functions
 GRANT EXECUTE ON FUNCTION public.delete_webauthn_credentials() TO authenticated;
-GRANT EXECUTE ON FUNCTION public.distance_to(GEOGRAPHY(POINT, 4326), DOUBLE PRECISION) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.distance_to(GEOGRAPHY(POINT, 4326)) TO authenticated;
 
 /* ----------------------------- Row-level security (RLS) policies ----------------------------- */
 
@@ -151,7 +151,7 @@ USING (
   private_poster_id = auth.uid()
 
   -- Or only get posts for which the user is within the post's radius
-  OR public.distance_to(private_location, radius) <= radius
+  OR public.distance_to(private_location) <= radius
 );
 
 CREATE POLICY insert_posts
@@ -253,7 +253,7 @@ USING (
       post.private_poster_id = auth.uid()
 
       -- Or only get posts for which the user is within the post's radius
-      OR public.distance_to(post.private_location, post.radius) <= post.radius
+      OR public.distance_to(post.private_location) <= post.radius
   )
 );
 

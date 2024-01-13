@@ -97,7 +97,7 @@ AS $$
 DECLARE
   -- Possible emojis (Similar, hard-to-identify, or any other emojis that would otherwise be strange to use for an avatar have been removed)
   _emojis CONSTANT TEXT[] := ARRAY[
-    '⌚️', '⏰', '⏳', '☀️', '☁️', '☢️', '☣️', '♻️', '⚓️', '⚛️', '⚠️', '⚡️', '⚽️', '⚾️', '⛄️', '⛏', '⛔️', '⛩', '⛰', '⛱', '⛳️', '⛵️', '⛸', '✂️', '✅', '✈️', '❄️', '❌', '❎', '❓', '❗️', '❤️', '⭐️', '⭕️', '🌈', '🌊', '🌋', '🌎', '🌐', '🌑', '🌕', '🌗', '🌡', '🌪', '🌱', '🌲', '🌳', '🌴', '🌵', '🌶', '🌷', '🌻', '🌽', '🍀', '🍁', '🍂', '🍄', '🍅', '🍆', '🍇', '🍉', '🍊', '🍋', '🍌', '🍍', '🍎', '🍐', '🍑', '🍒', '🍓', '��', '🍥', '🍦', '🍩', '🍪', '🍫', '🍬', '🍭', '🍰', '🍷', '🍸', '🍺', '🍿', '🎀', '🎁', '🎃', '🎈', '🎉', '🎗', '🎟', '🎡', '🎢', '🎤', '🎥', '🎧', '🎨', '🎩', '🎪', '🎬', '🎭', '🎮', '🎯', '🎰', '🎱', '🎲', '🎳', '🎵', '🎷', '🎸', '🎹', '🎺', '🎻', '🏀', '🏅', '🏆', '🏈', '🏉', '🏍', '🏐', '🏓', '��', '🏕', '🏗', '🏝', '🏟', '🏠', '🏢', '🏭', '🏮', '🏯', '🏰', '🏹', '🐁', '🐅', '🐇', '🐊', '🐌', '🐍', '🐏', '🐐', '🐑', '🐓', '🐔', '🐗', '🐘', '🐙', '🐚', '🐛', '🐜', '🐝', '🐞', '🐟', '🐡', '🐢', '🐤', '🐦', '🐦‍⬛', '🐧', '🐨', '🐫', '🐬', '🐭', '🐮', '🐯', '🐰', '🐱', '🐳', '🐴', '🐵', '🐶', '🐷', '🐸', '🐹', '🐺', '🐻', '🐻‍❄️', '🐼', '🐿', '👑', '👽', '💀', '💈', '💎', '💙', '💚', '��', '💜', '💡', '💢', '💣', '💥', '💧', '💯', '💰', '💵', '💸', '📈', '📉', '📌', '📎', '📜', '📡', '📣', '📦', '📫', '📸', '🔆', '🔊', '🔍', '🔑', '🔒', '🔔', '🔗', '🔥', '🔦', '🔩', '🔪', '🔫', '🔬', '🔭', '🔮', '🔱', '🕷', '🕹', '🖊', '🖌', '🖍', '🖤', '🗡', '🗺', '🗻', '🗼', '🗽', '🗿', '🚀', '��', '🚂', '🚌', '🚑', '🚒', '🚓', '🚕', '🚗', '🚜', '🚦', '🚧', '🚨', '🚫', '🚲', '🛍️', '🛑', '🛟', '🛠', '🛡', '🛥', '🛰', '🛳', '🛴', '🛶', '🛷', '🛸', '🛹', '🛻', '🛼', '🤖', '🤿', '🥁', '🥊', '��', '🥏', '🥐', '🥑', '🥕', '🥚', '🥝', '🥥', '🥧', '🥨', '🥭', '🥯', '🦀', '🦁', '🦂', '🦄', '🦅', '🦆', '🦇', '🦈', '🦉', '🦊', '🦋', '🦌', '🦍', '🦎', '🦏', '🦒', '🦓', '🦔', '🦕', '🦘', '🦙', '🦚', '🦛', '🦜', '🦝', '🦠', '🦣', '🦥', '🦦', '🦨', '🦩', '🦫', '🦬', '🧀', '🧁', '🧡', '🧨', '🧩', '��', '🧬', '🧭', '🧯', '🧲', '🧸', '🩵', '🩷', '🪀', '🪁', '🪂', '🪄', '🪅', '🪇', '🪈', '🪐', '🪓', '🪗', '🪘', '🪚', '🪦', '🪩', '🪱', '🪴', '🪵', '🪸', '🪼', '🪽', '🪿', '🫏', '🫐', '🫑'
+    '⌚️', '⏰', '⏳', '☀️', '☁️', '☢️', '☣️', '♻️', '⚓️', '⚛️', '⚠️', '⚡️', '⚽️', '⚾️', '⛄️', '⛏', '⛔️', '⛩', '⛰', '⛱', '⛳️', '⛵️', '⛸', '✂️', '✅', '✈️', '❄️', '❌', '❎', '❓', '❗️', '❤️', '⭐️', '⭕️', '🌈', '🌊', '🌋', '🌎', '🌐', '🌑', '🌕', '🌗', '🌡', '🌪', '🌱', '🌲', '🌳', '🌴', '🌵', '🌶', '🌷', '🌻', '🌽', '🍀', '🍁', '🍂', '🍄', '🍅', '🍆', '🍇', '🍉', '🍊', '🍋', '🍌', '🍍', '🍎', '🍐', '🍑', '🍒', '🍓', '🍥', '🍦', '🍩', '🍪', '🍫', '🍬', '🍭', '🍰', '🍷', '🍸', '🍺', '🍿', '🎀', '🎁', '🎃', '🎈', '🎉', '🎗', '🎟', '🎡', '🎢', '🎤', '🎥', '🎧', '🎨', '🎩', '🎪', '🎬', '🎭', '🎮', '🎯', '🎰', '🎱', '🎲', '🎳', '🎵', '🎷', '🎸', '🎹', '🎺', '🎻', '🏀', '🏅', '🏆', '🏈', '🏉', '🏍', '🏐', '🏓', '🏕', '🏗', '🏝', '🏟', '🏠', '🏢', '🏭', '🏮', '🏯', '🏰', '🏹', '🐁', '🐅', '🐇', '🐊', '🐌', '🐍', '🐏', '🐐', '🐑', '🐓', '🐔', '🐗', '🐘', '🐙', '🐚', '🐛', '🐜', '🐝', '🐞', '🐟', '🐡', '🐢', '🐤', '🐦', '🐦‍⬛', '🐧', '🐨', '🐫', '🐬', '🐭', '🐮', '🐯', '🐰', '🐱', '🐳', '🐴', '🐵', '🐶', '🐷', '🐸', '🐹', '🐺', '🐻', '🐻‍❄️', '🐼', '🐿', '👑', '👽', '💀', '💈', '💎', '💙', '💚', '💜', '💡', '💢', '💣', '💥', '💧', '💯', '💰', '💵', '💸', '📈', '📉', '📌', '📎', '📜', '📡', '📣', '📦', '📫', '📸', '🔆', '🔊', '🔍', '🔑', '🔒', '🔔', '🔗', '🔥', '🔦', '🔩', '🔪', '🔫', '🔬', '🔭', '🔮', '🔱', '🕷', '🕹', '🖊', '🖌', '🖍', '🖤', '🗡', '🗺', '🗻', '🗼', '🗽', '🗿', '🚀', '🚂', '🚌', '🚑', '🚒', '🚓', '🚕', '🚗', '🚜', '🚦', '🚧', '🚨', '🚫', '🚲', '🛍️', '🛑', '🛟', '🛠', '🛡', '🛥', '🛰', '🛳', '🛴', '🛶', '🛷', '🛸', '🛹', '🛻', '🛼', '🤖', '🤿', '🥁', '🥊', '🥏', '🥐', '🥑', '🥕', '🥚', '🥝', '🥥', '🥧', '🥨', '🥭', '🥯', '🦀', '🦁', '🦂', '🦄', '🦅', '🦆', '🦇', '🦈', '🦉', '🦊', '🦋', '🦌', '🦍', '🦎', '🦏', '🦒', '🦓', '🦔', '🦕', '🦘', '🦙', '🦚', '🦛', '🦜', '🦝', '🦠', '🦣', '🦥', '🦦', '🦨', '🦩', '🦫', '🦬', '🧀', '🧁', '🧡', '🧨', '🧩', '🧬', '🧭', '🧯', '🧲', '🧸', '🩵', '🩷', '🪀', '🪁', '🪂', '🪄', '🪅', '🪇', '🪈', '🪐', '🪓', '🪗', '🪘', '🪚', '🪦', '🪩', '🪱', '🪴', '🪵', '🪸', '🪼', '🪽', '🪿', '🫏', '🫐', '🫑'
   ];
 
   -- Emoji length
@@ -119,7 +119,7 @@ CREATE OR REPLACE FUNCTION utilities.register_webauthn_credential(
   _client_credential_id TEXT,
 
   -- Credential counter
-  _counter INTEGER,
+  _counter BIGINT,
 
   -- Credential public key
   _public_key VARCHAR(1000)
@@ -161,7 +161,7 @@ CREATE OR REPLACE FUNCTION utilities.authenticate_webauthn_credential(
   _credential_id UUID,
 
   -- New credential counter
-  _new_counter INTEGER
+  _new_counter BIGINT
 )
 RETURNS VOID
 SECURITY DEFINER
@@ -377,7 +377,7 @@ VOLATILE
 LANGUAGE plpgsql
 AS $$
 DECLARE
-  _uncertainty DOUBLE PRECISION := 0.05;
+  _uncertainty DOUBLE PRECISION := 0.10;
 
   -- Old location as a geometry point
   _old_location GEOMETRY;
@@ -395,22 +395,6 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
--- Post modified (i.e.: insert, update, or delete) trigger function
-CREATE OR REPLACE FUNCTION utilities.post_modified_trigger()
-RETURNS TRIGGER
-SECURITY DEFINER
-VOLATILE
-LANGUAGE plpgsql
-AS $$
-BEGIN
-  -- Refresh the cached posts
-  REFRESH MATERIALIZED VIEW utilities.cached_posts;
-
-  RETURN NULL;
-END;
-$$;
-
 -- Post deleted trigger function
 CREATE OR REPLACE FUNCTION utilities.post_deleted_trigger()
 RETURNS TRIGGER
@@ -437,9 +421,18 @@ SECURITY DEFINER
 VOLATILE
 LANGUAGE plpgsql
 AS $$
+DECLARE
+  -- Post ID
+  _post_id UUID := CASE WHEN NEW IS NULL THEN OLD.post_id ELSE NEW.post_id END;
 BEGIN
-  -- Refresh the cached posts
-  REFRESH MATERIALIZED VIEW utilities.cached_posts;
+  -- Recalculate post views
+  UPDATE public.posts
+  SET views = (
+    SELECT COUNT(*)
+    FROM public.post_views
+    WHERE post_id = _post_id
+  )
+  WHERE id = _post_id;
 
   RETURN NULL;
 END;
@@ -454,20 +447,31 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
   -- Post ID
-  _post_id UUID;
-BEGIN
-  -- Get the post ID
-  _post_id = CASE WHEN NEW IS NULL THEN OLD.post_id ELSE NEW.post_id END;
+  _post_id UUID := CASE WHEN NEW IS NULL THEN OLD.post_id ELSE NEW.post_id END;
 
-  -- Refresh the cached posts
-  REFRESH MATERIALIZED VIEW utilities.cached_posts;
+  -- Post upvotes
+  _upvotes BIGINT;
+
+  -- Post downvotes
+  _downvotes BIGINT;
+BEGIN
+  -- Recalculate post votes
+  SELECT
+    COALESCE(SUM(CASE WHEN upvote THEN 1 ELSE 0 END), 0),
+    COALESCE(SUM(CASE WHEN NOT upvote THEN 1 ELSE 0 END), 0)
+    INTO _upvotes, _downvotes
+  FROM public.post_votes
+  WHERE post_id = _post_id;
+
+  -- Update the post
+  UPDATE public.posts
+  SET
+    upvotes = _upvotes,
+    downvotes = _downvotes
+  WHERE id = _post_id;
 
   -- Delete the post if the net votes is less than or equal to -5
-  IF (
-    SELECT upvotes - downvotes
-    FROM utilities.cached_posts
-    WHERE id = _post_id
-  ) <= -5 THEN
+  IF (_upvotes - _downvotes) <= -5 THEN
     DELETE FROM public.posts
     WHERE id = _post_id;
   END IF;
@@ -485,27 +489,25 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
   -- Comment ID
-  _id UUID;
+  _id UUID := CASE WHEN NEW IS NULL THEN OLD.id ELSE NEW.id END;
 
   -- Comment post ID
-  _post_id UUID;
+  _post_id UUID := CASE WHEN NEW IS NULL THEN OLD.post_id ELSE NEW.post_id END;
 
   -- Current ancestor comment ID
-  _ancestor_id UUID;
+  _ancestor_id UUID := CASE WHEN NEW IS NULL THEN OLD.parent_id ELSE NEW.parent_id END;
 
   -- Ancestor comment IDs
   _ancestor_ids UUID[];
 BEGIN
-  -- Get information
-  _id = CASE WHEN NEW IS NULL THEN OLD.id ELSE NEW.id END;
-  _post_id = CASE WHEN NEW IS NULL THEN OLD.post_id ELSE NEW.post_id END;
-  _ancestor_id = CASE WHEN NEW IS NULL THEN OLD.parent_id ELSE NEW.parent_id END;
-
-  -- Refresh the cached posts
-  REFRESH MATERIALIZED VIEW utilities.cached_posts;
-
-  -- Refresh the cached comments
-  REFRESH MATERIALIZED VIEW utilities.cached_comments;
+  -- Recalculate post comments
+  UPDATE public.posts
+  SET comments = (
+    SELECT COUNT(*)
+    FROM public.comments
+    WHERE post_id = _post_id
+  )
+  WHERE id = _post_id;
 
   -- Add the comment ID to the ancestor IDs
   _ancestor_ids = array_append(_ancestor_ids, _id);
@@ -552,9 +554,18 @@ SECURITY DEFINER
 VOLATILE
 LANGUAGE plpgsql
 AS $$
+DECLARE
+  -- Comment ID
+  _comment_id UUID := CASE WHEN NEW IS NULL THEN OLD.comment_id ELSE NEW.comment_id END;
 BEGIN
-  -- Refresh the cached comments
-  REFRESH MATERIALIZED VIEW utilities.cached_comments;
+  -- Recalculate comment views
+  UPDATE public.comments
+  SET views = (
+    SELECT COUNT(*)
+    FROM public.comment_views
+    WHERE comment_id = _comment_id
+  )
+  WHERE id = _comment_id;
 
   RETURN NULL;
 END;
@@ -569,20 +580,31 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
   -- Comment ID
-  _comment_id UUID;
-BEGIN
-  -- Get the comment ID
-  _comment_id = CASE WHEN NEW IS NULL THEN OLD.comment_id ELSE NEW.comment_id END;
+  _comment_id UUID := CASE WHEN NEW IS NULL THEN OLD.comment_id ELSE NEW.comment_id END;
 
-  -- Refresh the cached comments
-  REFRESH MATERIALIZED VIEW utilities.cached_comments;
+  -- Comment upvotes
+  _upvotes BIGINT;
+
+  -- Comment downvotes
+  _downvotes BIGINT;
+BEGIN
+  -- Recalculate comment votes
+  SELECT
+    COALESCE(SUM(CASE WHEN upvote THEN 1 ELSE 0 END), 0),
+    COALESCE(SUM(CASE WHEN NOT upvote THEN 1 ELSE 0 END), 0)
+    INTO _upvotes, _downvotes
+  FROM public.comment_votes
+  WHERE comment_id = _comment_id;
+
+  -- Update the comment
+  UPDATE public.comments
+  SET
+    upvotes = _upvotes,
+    downvotes = _downvotes
+  WHERE id = _comment_id;
 
   -- Delete the comment if the net votes is less than or equal to -5
-  IF (
-    SELECT upvotes - downvotes
-    FROM utilities.cached_comments
-    WHERE id = _comment_id
-  ) <= -5 THEN
+  IF (_upvotes - _downvotes) <= -5 THEN
     DELETE FROM public.comments
     WHERE id = _comment_id;
   END IF;
@@ -610,10 +632,7 @@ $$;
 -- Calculate the distance from the current user's location to a specified location
 CREATE OR REPLACE FUNCTION public.distance_to(
   -- Other location to calculate the distance to
-  _other_location GEOGRAPHY(POINT, 4326),
-
-  -- Scale for the uncertainty
-  _uncertainty_scale DOUBLE PRECISION
+  _other_location GEOGRAPHY(POINT, 4326)
 )
 RETURNS DOUBLE PRECISION
 SECURITY DEFINER
@@ -621,13 +640,49 @@ VOLATILE
 LANGUAGE plpgsql
 AS $$
 DECLARE
-  -- Relative uncertainty
-  _uncertainty DOUBLE PRECISION := 0.05;
-
   -- Current user's location
   _user_location GEOGRAPHY(POINT, 4326) := utilities.get_latest_location(auth.uid());
 BEGIN
-  -- Add some uncertainty relative to the total distance (To increase resistance against dynamic trilateration attacks)
-  RETURN extensions.ST_Distance(_user_location, _other_location) + (_uncertainty * _uncertainty_scale * utilities.safe_random());
+  RETURN extensions.ST_Distance(_user_location, _other_location);
+END;
+$$;
+
+-- Calculate the rank of a post
+CREATE OR REPLACE FUNCTION public.calculate_rank(
+  -- Distance to the post (In meters)
+  _distance DOUBLE PRECISION,
+
+  -- Post score (Upvotes - downvotes)
+  _score BIGINT,
+
+  -- Post created at
+  _created_at TIMESTAMPTZ
+)
+RETURNS BIGINT
+IMMUTABLE
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  -- Ranking scale factor
+  _scale DOUBLE PRECISION := 10000;
+
+  -- Distance weight factor
+  _distance_weight DOUBLE PRECISION := 5;
+
+  -- Maximum distance to be considered (In meters)
+  _distance_range DOUBLE PRECISION := 5000;
+
+  -- Minimum score threshold
+  _score_threshold BIGINT := -5;
+
+  -- Age weight factor
+  _age_weight DOUBLE PRECISION := 1.075;
+BEGIN
+  RETURN FLOOR(
+    _scale *
+    ((_distance_weight - 1) * POWER(LEAST(1, _distance / _distance_range) - 1, 2) + 1) *
+    LOG(GREATEST(1, _score - _score_threshold + 1)) *
+    POWER(_age_weight, -EXTRACT(EPOCH FROM (NOW() - _created_at)) / 3600)
+  )::BIGINT;
 END;
 $$;

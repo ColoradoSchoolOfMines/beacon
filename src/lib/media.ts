@@ -170,27 +170,11 @@ export const getMediaDimensions = <T extends MediaCategory = any>(
  * @returns Blurhash
  */
 export const createBlurhash = async <T extends MediaCategory = any>(
-  category: T,
   element: MediaCategoryElement<T>,
   dimensions: MediaDimensions,
   componentX: number,
   componentY: number,
 ) => {
-  switch (category) {
-    case MediaCategory.VIDEO:
-      // Advance the video to the first frame
-      await Promise.all([
-        () => ((element as HTMLVideoElement).currentTime = 10),
-        new Promise(resolve =>
-          (element as HTMLVideoElement).addEventListener("", resolve, {
-            once: true,
-          }),
-        ),
-      ]);
-
-      break;
-  }
-
   // Create the canvas
   const canvas = document.createElement("canvas");
   canvas.height = dimensions.height;

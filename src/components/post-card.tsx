@@ -20,6 +20,8 @@ import {
   chatbubblesSharp,
   ellipsisVerticalOutline,
   ellipsisVerticalSharp,
+  eyeOutline,
+  eyeSharp,
   locationOutline,
   locationSharp,
   shareSocialOutline,
@@ -325,13 +327,18 @@ export const PostCard: React.FC<PostCardProps> = ({
           />
 
           <div className="flex flex-row items-center justify-center h-full">
+            <IonIcon className="text-[1.4rem]" ios={eyeOutline} md={eyeSharp} />
+            <p className="!mb-0 !ml-1.5 !mr-4 !mt-0.5">
+              {formatScalar(post.views)}
+            </p>
+
             <IonIcon
               className="text-[1.4rem]"
               ios={locationOutline}
               md={locationSharp}
             />
             <p className="!mb-0 !ml-1.5 !mr-4 !mt-0.5">
-              {formatDistance(post.distance, measurementSystem)} away
+              {formatDistance(post.distance, measurementSystem)}
             </p>
 
             {time !== undefined && (
@@ -344,6 +351,53 @@ export const PostCard: React.FC<PostCardProps> = ({
                 <p className="!mb-0 !ml-1.5 !mt-0.5">{time}</p>
               </>
             )}
+          </div>
+        </div>
+
+        <Markdown className="mt-4 mb-1" raw={post.content} />
+
+        <div className="flex flex-row items-center justify-between">
+          <div className="flex flex-row items-center justify-center px-1">
+            <IonIcon
+              className="text-[1.4rem]"
+              color="medium"
+              slot="start"
+              ios={chatbubblesOutline}
+              md={chatbubblesSharp}
+            />
+            <p className="!mb-0 !ml-1.5">{formatScalar(post.comments)}</p>
+          </div>
+
+          <div className="flex flex-row items-center">
+            <IonButton
+              className={`m-0 ${styles.iconButton}`}
+              color={post.upvote === true ? "success" : "medium"}
+              fill="clear"
+              onClick={() => toggleVote(true)}
+            >
+              <IonIcon
+                slot="icon-only"
+                ios={arrowUpOutline}
+                md={arrowUpSharp}
+              />
+            </IonButton>
+
+            <p className="!mb-0 !mx-1.5">
+              {formatScalar(post.upvotes - post.downvotes)}
+            </p>
+
+            <IonButton
+              className={`m-0 ${styles.iconButton}`}
+              color={post.upvote === false ? "danger" : "medium"}
+              fill="clear"
+              onClick={() => toggleVote(false)}
+            >
+              <IonIcon
+                slot="icon-only"
+                ios={arrowDownOutline}
+                md={arrowDownSharp}
+              />
+            </IonButton>
 
             <IonButton
               className={`m-0 ml-1.5 ${styles.iconButton}`}
@@ -352,6 +406,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               id={`${id}-options`}
             >
               <IonIcon
+                className="text-[1.4rem]"
                 slot="icon-only"
                 ios={ellipsisVerticalOutline}
                 md={ellipsisVerticalSharp}
@@ -387,50 +442,6 @@ export const PostCard: React.FC<PostCardProps> = ({
                 </IonItem>
               </IonList>
             </IonPopover>
-          </div>
-        </div>
-
-        <Markdown className="mt-4 mb-1" raw={post.content} />
-
-        <div className="flex flex-row items-center justify-between">
-          <div className="flex flex-row items-center justify-center px-1">
-            <IonIcon
-              className="text-[1.8rem]"
-              slot="start"
-              ios={chatbubblesOutline}
-              md={chatbubblesSharp}
-            />
-            <p className="!mb-0 !ml-1.5">{formatScalar(post.comments)}</p>
-          </div>
-
-          <div className="flex flex-row items-center">
-            <IonButton
-              className={`m-0 ${styles.iconButton}`}
-              color={post.upvote === true ? "success" : "medium"}
-              fill="clear"
-              onClick={() => toggleVote(true)}
-            >
-              <IonIcon
-                slot="icon-only"
-                ios={arrowUpOutline}
-                md={arrowUpSharp}
-              />
-            </IonButton>
-            <p className="!mb-0 !mx-1.5">
-              {formatScalar(post.upvotes - post.downvotes)}
-            </p>
-            <IonButton
-              className={`m-0 ${styles.iconButton}`}
-              color={post.upvote === false ? "danger" : "medium"}
-              fill="clear"
-              onClick={() => toggleVote(false)}
-            >
-              <IonIcon
-                slot="icon-only"
-                ios={arrowDownOutline}
-                md={arrowDownSharp}
-              />
-            </IonButton>
           </div>
         </div>
       </IonCardContent>

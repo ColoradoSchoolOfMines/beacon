@@ -101,3 +101,46 @@ npm run supabase:reset
   - Component library: [Ionic React](https://ionicframework.com/docs/react)
   - Styling: [UnoCSS (Wind preset)](https://unocss.dev/presets/wind#wind-preset) (Tailwind/WindiCSS compatible)
 - Backend: [Supabase](https://supabase.com)
+
+### Algorithm
+
+Beacon's ranking algorithm is somewhat inspired by the [Lemmy algorithm](https://join-lemmy.org/docs/contributors/07-ranking-algo.html), but has the following properties:
+
+| Description                         | Reasoning                                                                                                                                      |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Quadratic distance **contribution** | Posts that are closer to the user should have a higher rank. This helps users see posts that are more geographically relevant to them.         |
+| Logarithmic score **contribution**  | The first $10$, next $100$, next $1000$, etc. votes should have the same contribution to the rank. This helps counteract the bandwagon effect. |
+| Exponential age **reduction**       | The older a post is, the less relevant it likely is. This helps newer posts rank higher.                                                       |
+
+The algorithm is as follows:
+
+$$
+\text{Distance component} = (\text{Distance weight} - 1) \cdot (\min\bigg(1, \frac{\text{Distance}}{\text{Distance range}}\bigg) - 1)^{2} + 1
+$$
+
+$$
+\text{Score component} = \log_{10}(\max(1, (\text{Upvotes} - \text{Downvotes}) - \text{Score threshold} + 1))
+$$
+
+$$
+\text{Age component} = \text{Age weight}^{- \text{Age}}
+$$
+
+$$
+\text{Rank} = \lfloor(\text{Scale} \cdot \text{Distance component} \cdot \text{Score component} \cdot \text{Age component}\rfloor
+$$
+
+with the following variables:
+
+| Name                     | Definition                                                    | Min value                    | Default value | Max value |
+| ------------------------ | ------------------------------------------------------------- | ---------------------------- | ------------- | --------- |
+| $\text{Rank}$            | Integer post sorting order (Higher will be sorted first)      | -                            | -             | -         |
+| $\text{Scale}$           | Ranking scale factor (To allow the rank to be rounded)        | $1$ (Don't rank)             | $10000$       | -         |
+| $\text{Distance}$        | Distance between the post and the user's location (In meters) | -                            | -             | -         |
+| $\text{Distance weight}$ | Distance weight factor                                        | $1$ (Don't rank by distance) | $5$           | -         |
+| $\text{Distance range}$  | Maximum distance to be considered (In meters)                 | $1$                          | $5000$        | $50000$   |
+| $\text{Upvotes}$         | Post upvotes                                                  | -                            | -             | -         |
+| $\text{Downvotes}$       | Post downvotes                                                | -                            | -             | -         |
+| $\text{Score threshold}$ | Minimum score threshold considered                            | $-5$                         | $-5$          | -         |
+| $\text{Age}$             | Post age (In hours)                                           | -                            | -             | -         |
+| $\text{Age weight}$      | Age weight factor                                             | $1$ (Don't weight by age)    | $1.075$       | -         |
