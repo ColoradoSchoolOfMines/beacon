@@ -4,6 +4,7 @@
 
 import {IonButton, IonContent, IonIcon, IonPage} from "@ionic/react";
 import {navigateCircleOutline, navigateCircleSharp} from "ionicons/icons";
+import {FC} from "react";
 import {useMeasure} from "react-use";
 
 import {Header} from "~/components/header";
@@ -20,7 +21,7 @@ const FRAME_COUNT = 5;
  * Home page
  * @returns JSX
  */
-export const Home: React.FC = () => {
+export const Home: FC = () => {
   // Hooks
   const theme = useSettingsStore(state => state.theme);
   const [measured, {height, width}] = useMeasure();

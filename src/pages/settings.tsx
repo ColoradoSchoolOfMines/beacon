@@ -34,6 +34,7 @@ import {
   trashBinOutline,
   trashBinSharp,
 } from "ionicons/icons";
+import {FC} from "react";
 
 import {
   beginRegistration,
@@ -50,7 +51,7 @@ import {GIT_BRANCH, GIT_COMMIT, VERSION} from "~/lib/vars";
  * Settings page
  * @returns JSX
  */
-export const Settings: React.FC = () => {
+export const Settings: FC = () => {
   // Hooks
   const setMessage = useMiscellaneousStore(state => state.setMessage);
   const theme = useSettingsStore(state => state.theme);

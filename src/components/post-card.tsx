@@ -31,24 +31,18 @@ import {
   warningOutline,
   warningSharp,
 } from "ionicons/icons";
-import {clamp} from "lodash-es";
 import {Duration} from "luxon";
-import {HTMLAttributes, useEffect, useId, useState} from "react";
-import {useMeasure} from "react-use";
+import {FC, HTMLAttributes, useEffect, useId, useState} from "react";
 
 import {Avatar} from "~/components/avatar";
 import {Blurhash} from "~/components/blurhash";
 import {Markdown} from "~/components/markdown";
 import styles from "~/components/post-card.module.css";
-import {
-  getCategory,
-  MAX_MEDIA_DIMENSION,
-  MIN_MEDIA_DIMENSION,
-} from "~/lib/media";
+import {getCategory} from "~/lib/media";
 import {useMiscellaneousStore} from "~/lib/stores/miscellaneous";
 import {useSettingsStore} from "~/lib/stores/settings";
 import {client} from "~/lib/supabase";
-import {MediaCategory, MediaDimensions, Post} from "~/lib/types";
+import {MediaCategory, Post} from "~/lib/types";
 import {formatDistance, formatDuration, formatScalar} from "~/lib/utils";
 
 /**
@@ -59,6 +53,11 @@ interface PostCardProps extends HTMLAttributes<HTMLIonCardElement> {
    * Post
    */
   post: Post;
+
+  /**
+   * Post card width
+   */
+  width: number;
 
   /**
    * Post load event handler
@@ -77,12 +76,18 @@ interface PostCardProps extends HTMLAttributes<HTMLIonCardElement> {
  * @param props Props
  * @returns JSX
  */
-export const PostCard: React.FC<PostCardProps> = ({
+export const PostCard: FC<PostCardProps> = ({
   post,
+  width,
   onLoad,
   toggleVote,
   ...props
 }) => {
+  // Variables
+  const height = post.has_media
+    ? Math.round(width / (post as Post<true>).aspect_ratio)
+    : 0;
+
   // Hooks
   const id = useId();
   const [time, setTime] = useState<string | undefined>();
@@ -95,16 +100,9 @@ export const PostCard: React.FC<PostCardProps> = ({
     | undefined
   >();
 
-  const [size, setSize] = useState<MediaDimensions>({
-    height: 0,
-    width: 0,
-  });
-
   const setMessage = useMiscellaneousStore(state => state.setMessage);
   const showAmbientEffect = useSettingsStore(state => state.showAmbientEffect);
   const measurementSystem = useSettingsStore(state => state.measurementSystem);
-
-  const [measured, {width}] = useMeasure<HTMLDivElement>();
 
   // Effects
   useEffect(() => {
@@ -114,27 +112,8 @@ export const PostCard: React.FC<PostCardProps> = ({
   }, []);
 
   useEffect(() => {
-    // Clamp the width
-    const clampedWidth = clamp(width, MIN_MEDIA_DIMENSION, MAX_MEDIA_DIMENSION);
-
-    setSize(
-      post.has_media
-        ? {
-            height: Math.round(
-              clampedWidth / (post as Post<true>).aspect_ratio,
-            ),
-            width: clampedWidth,
-          }
-        : {
-            height: 0,
-            width: 0,
-          },
-    );
-  }, [post, width]);
-
-  useEffect(() => {
     (async () => {
-      if (!post.has_media || size.height === 0 || size.width === 0) {
+      if (!post.has_media) {
         setMedia(undefined);
 
         if (!post.has_media) {
@@ -149,8 +128,8 @@ export const PostCard: React.FC<PostCardProps> = ({
         client.storage.from("media").getPublicUrl(`posts/${post.id}`, {
           transform: {
             quality: 90,
-            height: size.height,
-            width: size.width,
+            height: height,
+            width: width,
           },
         }).data.publicUrl,
         client.storage.from("media").getPublicUrl(`posts/${post.id}`).data
@@ -194,7 +173,7 @@ export const PostCard: React.FC<PostCardProps> = ({
       // Emit the load event
       onLoad?.();
     })();
-  }, [post, size]);
+  }, [post]);
 
   // Methods
   /**
@@ -268,22 +247,20 @@ export const PostCard: React.FC<PostCardProps> = ({
         props.className ?? ""
       }`}
     >
-      <div className="h-full w-full" ref={measured} />
-
       {post.has_media && (
         <div
           className="relative"
           style={{
-            height: size.height,
-            width: size.width,
+            height,
+            width,
           }}
         >
           <Blurhash
             className="absolute"
             ambient={showAmbientEffect}
             hash={(post as Post<true>).blur_hash}
-            height={size.height}
-            width={size.width}
+            height={height}
+            width={width}
           />
           {media !== undefined && (
             <div className="absolute animate-fade-in animate-duration-500">
@@ -293,9 +270,9 @@ export const PostCard: React.FC<PostCardProps> = ({
                     return (
                       <img
                         alt="Post media"
-                        height={size.height}
+                        height={height}
                         src={media.url}
-                        width={size.width}
+                        width={width}
                       />
                     );
 
@@ -303,11 +280,11 @@ export const PostCard: React.FC<PostCardProps> = ({
                     return (
                       <video
                         autoPlay
-                        height={size.height}
+                        height={height}
                         loop
                         muted
                         src={media.url}
-                        width={size.width}
+                        width={width}
                       />
                     );
                 }

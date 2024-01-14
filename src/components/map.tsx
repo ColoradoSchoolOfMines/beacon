@@ -6,7 +6,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet";
 
 import {Map as LeafletMap} from "leaflet";
-import {HTMLAttributes, useEffect, useRef} from "react";
+import {FC, HTMLAttributes, useEffect, useRef} from "react";
 import {
   AttributionControl,
   Circle,
@@ -80,7 +80,7 @@ interface MapProps extends HTMLAttributes<HTMLDivElement> {
  * Geography map component
  * @returns JSX
  */
-export const Map: React.FC<MapProps> = ({
+export const Map: FC<MapProps> = ({
   position,
   lockPosition = false,
   bounds,

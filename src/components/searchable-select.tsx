@@ -21,7 +21,7 @@ import {
   SearchbarCustomEvent,
 } from "@ionic/react";
 import Fuse, {IFuseOptions} from "fuse.js";
-import {useEffect, useRef, useState} from "react";
+import {ReactNode, useEffect, useRef, useState} from "react";
 
 import {KeysOfType} from "~/lib/types";
 
@@ -34,7 +34,7 @@ export interface SearchableSelectProps<T extends object> {
    * @param open Open the selector
    * @returns JSX
    */
-  children: (open: () => void) => React.ReactNode;
+  children: (open: () => void) => ReactNode;
 
   /**
    * Select label
@@ -54,7 +54,7 @@ export interface SearchableSelectProps<T extends object> {
   /**
    * Item renderer
    */
-  itemRenderer: (item: T) => JSX.Element;
+  itemRenderer: (item: T) => ReactNode;
 
   /**
    * Selected item(s) (If multiple is false, then this will be a single item)

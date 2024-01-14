@@ -7,6 +7,7 @@ import {IonButton, IonIcon, IonNote} from "@ionic/react";
 import {startAuthentication} from "@simplewebauthn/browser";
 import {AuthenticationResponseJSON} from "@simplewebauthn/typescript-types";
 import {callOutline, callSharp, keyOutline, keySharp} from "ionicons/icons";
+import {FC} from "react";
 import {useHistory} from "react-router-dom";
 
 import {AuthContainer} from "~/components/auth-container";
@@ -22,7 +23,7 @@ import {client} from "~/lib/supabase";
  * Auth step 1 component
  * @returns JSX
  */
-export const Step1: React.FC = () => {
+export const Step1: FC = () => {
   // Hooks
   const history = useHistory();
   const setMessage = useMiscellaneousStore(state => state.setMessage);

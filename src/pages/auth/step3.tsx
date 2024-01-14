@@ -5,6 +5,7 @@
 import {zodResolver} from "@hookform/resolvers/zod";
 import {IonButton, IonIcon, IonInput} from "@ionic/react";
 import {checkmarkOutline, checkmarkSharp} from "ionicons/icons";
+import {FC} from "react";
 import {Controller, useForm} from "react-hook-form";
 import {useHistory} from "react-router-dom";
 import {z} from "zod";
@@ -35,7 +36,7 @@ type FormSchema = z.infer<typeof formSchema>;
  * Auth step 3 component
  * @returns JSX
  */
-export const Step3: React.FC = () => {
+export const Step3: FC = () => {
   // Hooks
   const email = useTemporaryStore(state => state.email);
   const setMessage = useMiscellaneousStore(state => state.setMessage);

@@ -25,7 +25,7 @@ import {
   settingsOutline,
   settingsSharp,
 } from "ionicons/icons";
-import {useRef} from "react";
+import {FC, useRef} from "react";
 import {useLocation} from "react-router-dom";
 
 import logo from "~/assets/logo.png";
@@ -127,7 +127,7 @@ const navItems: NavItem[] = [
  * @param item Navigation item
  * @returns JSX
  */
-const NavItem: React.FC<NavItem> = item => {
+const NavItem: FC<NavItem> = item => {
   // Hooks
   const location = useLocation();
 
@@ -157,7 +157,7 @@ const NavItem: React.FC<NavItem> = item => {
  * Menu component
  * @returns JSX
  */
-export const Menu: React.FC = () => {
+export const Menu: FC = () => {
   // Hooks
   const user = useMiscellaneousStore(state => state.user);
   const menu = useRef<HTMLIonMenuElement>(null);

@@ -5,7 +5,7 @@
 import {IonRouterOutlet, IonSplitPane} from "@ionic/react";
 import {User} from "@supabase/supabase-js";
 import {isEqual} from "lodash-es";
-import {useEffect} from "react";
+import {FC, useEffect} from "react";
 import {Route, useHistory, useLocation} from "react-router-dom";
 
 import {GlobalMessage} from "~/components/global-message";
@@ -68,7 +68,7 @@ useMiscellaneousStore.getState().setUser(session?.data?.session?.user);
  * App shell
  * @returns JSX
  */
-export const App: React.FC = () => {
+export const App: FC = () => {
   // Hooks
   const history = useHistory();
   const location = useLocation();

@@ -2,7 +2,7 @@
  * @file iOS PWA installer component
  */
 
-import * as React from "react";
+import {FC} from "react";
 
 import ArrowClockwise from "~/assets/sf-symbols/arrow.clockwise.svg?react";
 import Book from "~/assets/sf-symbols/book.svg?react";
@@ -39,7 +39,7 @@ interface IosProps {
  * iOS PWA installer component
  * @returns JSX
  */
-export const Ios: React.FC<IosProps> = ({address}) => (
+export const Ios: FC<IosProps> = ({address}) => (
   <div className="flex flex-col items-stretch m-4">
     <p className="text-3xl mb-2">1. Click the share button:</p>
 

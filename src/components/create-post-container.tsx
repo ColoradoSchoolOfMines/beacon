@@ -13,6 +13,7 @@ import {
   IonTitle,
   IonToolbar,
 } from "@ionic/react";
+import {FC, ReactNode} from "react";
 
 import styles from "~/components/create-post-container.module.css";
 
@@ -28,7 +29,7 @@ interface CreatePostContainerProps {
   /**
    * Children
    */
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 /**
@@ -36,7 +37,7 @@ interface CreatePostContainerProps {
  * @param props Props
  * @returns JSX
  */
-export const CreatePostContainer: React.FC<CreatePostContainerProps> = ({
+export const CreatePostContainer: FC<CreatePostContainerProps> = ({
   back,
   children,
 }) => (

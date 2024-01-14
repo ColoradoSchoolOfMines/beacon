@@ -21,7 +21,7 @@ import "~/lib/geolocation";
 
 import {IonApp, isPlatform, setupIonicReact} from "@ionic/react";
 import {IonReactRouter} from "@ionic/react-router";
-import React from "react";
+import {StrictMode} from "react";
 import {createRoot} from "react-dom/client";
 
 import {App} from "~/app";
@@ -37,11 +37,11 @@ setupIonicReact({
 });
 
 root.render(
-  <React.StrictMode>
+  <StrictMode>
     <IonApp>
       <IonReactRouter>
         <App />
       </IonReactRouter>
     </IonApp>
-  </React.StrictMode>,
+  </StrictMode>,
 );

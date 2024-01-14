@@ -25,7 +25,7 @@ import {
   locationSharp,
 } from "ionicons/icons";
 import {round} from "lodash-es";
-import {useEffect} from "react";
+import {FC, useEffect} from "react";
 import {Controller, useForm} from "react-hook-form";
 import {useHistory} from "react-router-dom";
 import {z} from "zod";
@@ -81,7 +81,7 @@ type FormSchema = z.infer<typeof formSchema>;
  * Create post step 2 page
  * @returns JSX
  */
-export const Step2: React.FC = () => {
+export const Step2: FC = () => {
   // Hooks
   const location = useMiscellaneousStore(state => state.location);
   const setMessage = useMiscellaneousStore(state => state.setMessage);

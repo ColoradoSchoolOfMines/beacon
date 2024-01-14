@@ -16,6 +16,7 @@ import {
   IonTitle,
   IonToolbar,
 } from "@ionic/react";
+import {FC, ReactNode} from "react";
 
 /**
  * Auth page container component props
@@ -29,7 +30,7 @@ interface AuthContainerProps {
   /**
    * Children
    */
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 /**
@@ -37,10 +38,7 @@ interface AuthContainerProps {
  * @param props Props
  * @returns JSX
  */
-export const AuthContainer: React.FC<AuthContainerProps> = ({
-  back,
-  children,
-}) => (
+export const AuthContainer: FC<AuthContainerProps> = ({back, children}) => (
   <IonPage>
     <IonHeader className="ion-no-border">
       <IonToolbar>

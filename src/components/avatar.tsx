@@ -4,6 +4,7 @@
 
 import {IonIcon} from "@ionic/react";
 import {helpOutline, helpSharp} from "ionicons/icons";
+import {FC} from "react";
 
 import {useSettingsStore} from "~/lib/stores/settings";
 import {Profile, Theme} from "~/lib/types";
@@ -23,7 +24,7 @@ interface AvatarProps {
  * @param props Props
  * @returns JSX
  */
-export const Avatar: React.FC<AvatarProps> = ({profile}) => {
+export const Avatar: FC<AvatarProps> = ({profile}) => {
   // Hooks
   const theme = useSettingsStore(state => state.theme);
 

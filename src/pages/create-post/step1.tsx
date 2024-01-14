@@ -26,7 +26,7 @@ import {
   imageSharp,
 } from "ionicons/icons";
 import {flatten} from "lodash-es";
-import {useEffect, useRef, useState} from "react";
+import {FC, useEffect, useRef, useState} from "react";
 import {Controller, useForm} from "react-hook-form";
 import {useHistory} from "react-router-dom";
 import {z} from "zod";
@@ -141,7 +141,7 @@ type FormSchema = z.infer<typeof formSchema>;
  * Create post step 1 page
  * @returns JSX
  */
-export const Step1: React.FC = () => {
+export const Step1: FC = () => {
   // Hooks
   const [contentTextarea, setContentTextarea] =
     // eslint-disable-next-line unicorn/no-null

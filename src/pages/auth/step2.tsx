@@ -6,7 +6,7 @@ import HCaptcha from "@hcaptcha/react-hcaptcha";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {IonButton, IonIcon, IonInput} from "@ionic/react";
 import {paperPlaneOutline, paperPlaneSharp} from "ionicons/icons";
-import {useRef} from "react";
+import {FC, useRef} from "react";
 import {Controller, useForm} from "react-hook-form";
 import {useHistory} from "react-router-dom";
 import {z} from "zod";
@@ -41,7 +41,7 @@ type FormSchema = z.infer<typeof formSchema>;
  * Auth step 2 component
  * @returns JSX
  */
-export const Step2: React.FC = () => {
+export const Step2: FC = () => {
   // Hooks
   const captcha = useRef<HCaptcha>(null);
   const setEmail = useTemporaryStore(state => state.setEmail);

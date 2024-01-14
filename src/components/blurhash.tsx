@@ -3,7 +3,7 @@
  */
 
 import {decode} from "blurhash";
-import {useEffect, useRef, useState} from "react";
+import {FC, HTMLProps, useEffect, useRef, useState} from "react";
 
 import {
   BLURHASH_COMPONENT_X,
@@ -16,7 +16,7 @@ import {MediaDimensions, Theme} from "~/lib/types";
 /**
  * Blurhash component props
  */
-export interface BlurhashProps extends React.HTMLProps<HTMLCanvasElement> {
+export interface BlurhashProps extends HTMLProps<HTMLCanvasElement> {
   /**
    * Ambient effect
    */
@@ -43,7 +43,7 @@ export interface BlurhashProps extends React.HTMLProps<HTMLCanvasElement> {
  * @param props Props
  * @returns JSX
  */
-export const Blurhash: React.FC<BlurhashProps> = ({
+export const Blurhash: FC<BlurhashProps> = ({
   hash,
   height,
   width,

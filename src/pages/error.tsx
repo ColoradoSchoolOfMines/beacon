@@ -4,6 +4,7 @@
 
 import {IonButton, IonContent, IonIcon, IonPage} from "@ionic/react";
 import {homeOutline, homeSharp} from "ionicons/icons";
+import {FC} from "react";
 
 import {Header} from "~/components/header";
 
@@ -31,11 +32,7 @@ interface ErrorProps {
  * Error page
  * @returns JSX
  */
-export const Error: React.FC<ErrorProps> = ({
-  name,
-  description,
-  homeButton,
-}) => {
+export const Error: FC<ErrorProps> = ({name, description, homeButton}) => {
   return (
     <IonPage>
       <Header />

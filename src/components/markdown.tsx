@@ -3,6 +3,7 @@
  */
 
 import {Schema} from "hast-util-sanitize";
+import {FC} from "react";
 import ReactMarkdown, {Options} from "react-markdown";
 import rehypeSanitize from "rehype-sanitize";
 import remarkGfm from "remark-gfm";
@@ -65,7 +66,7 @@ interface MarkdownProps extends Options {
  * Markdown renderer component
  * @returns JSX
  */
-export const Markdown: React.FC<MarkdownProps> = ({raw, ...props}) => (
+export const Markdown: FC<MarkdownProps> = ({raw, ...props}) => (
   <ReactMarkdown
     {...props}
     className={`${styles.markdown} ${props.className ?? ""}`}

@@ -3,6 +3,7 @@
  */
 
 import {IonAlert} from "@ionic/react";
+import {FC} from "react";
 
 import {useMiscellaneousStore} from "~/lib/stores/miscellaneous";
 
@@ -10,7 +11,7 @@ import {useMiscellaneousStore} from "~/lib/stores/miscellaneous";
  * Global message component
  * @returns JSX
  */
-export const GlobalMessage: React.FC = () => {
+export const GlobalMessage: FC = () => {
   // Hooks
   const message = useMiscellaneousStore(state => state.message);
   const setMessage = useMiscellaneousStore(state => state.setMessage);
