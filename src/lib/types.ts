@@ -212,12 +212,8 @@ export type Post<T extends boolean = boolean> = {
     Database["public"]["Views"]["personalized_posts"]["Row"]["comments"]
   >;
 
-  poster_color: NonNullable<
-    Database["public"]["Views"]["personalized_posts"]["Row"]["poster_color"]
-  >;
-  poster_emoji: NonNullable<
-    Database["public"]["Views"]["personalized_posts"]["Row"]["poster_emoji"]
-  >;
+  poster_color: Database["public"]["Views"]["personalized_posts"]["Row"]["poster_color"];
+  poster_emoji: Database["public"]["Views"]["personalized_posts"]["Row"]["poster_emoji"];
 
   upvote: Database["public"]["Views"]["personalized_posts"]["Row"]["upvote"];
 } & (T extends true

@@ -53,10 +53,16 @@ interface Store {
   refreshPosts?: () => void | Promise<void>;
 
   /**
-   * Set the refresh posts callback
-   * @param newRefreshPosts New refresh posts callback or undefined to clear the callback
+   * Register the refresh posts callback
+   * @param newRefreshPosts New refresh posts callback
    */
-  setRefreshPosts: (newRefreshPosts?: () => void | Promise<void>) => void;
+  registerRefreshPosts: (newRefreshPosts: () => void | Promise<void>) => void;
+
+  /**
+   * Unregister the refresh posts callback
+   * @param oldRefreshPosts Old refresh posts callback
+   */
+  unregisterRefreshPosts: (oldRefreshPosts: () => void | Promise<void>) => void;
 }
 
 /**
@@ -83,10 +89,18 @@ export const useMiscellaneousStore = create<Store>()(
         location: newLocation,
       })),
     refreshPosts: undefined,
-    setRefreshPosts: (newRefreshPosts?: () => void | Promise<void>) =>
+    registerRefreshPosts: (newRefreshPosts: () => void | Promise<void>) =>
       set(state => ({
         ...state,
         refreshPosts: newRefreshPosts,
+      })),
+    unregisterRefreshPosts: (oldRefreshPosts: () => void | Promise<void>) =>
+      set(state => ({
+        ...state,
+        refreshPosts:
+          state.refreshPosts === oldRefreshPosts
+            ? undefined
+            : state.refreshPosts,
       })),
   })),
 );

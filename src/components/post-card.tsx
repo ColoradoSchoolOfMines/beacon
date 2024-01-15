@@ -10,6 +10,7 @@ import {
   IonItem,
   IonList,
   IonPopover,
+  IonRouterLink,
 } from "@ionic/react";
 import {
   arrowDownOutline,
@@ -32,7 +33,15 @@ import {
   warningSharp,
 } from "ionicons/icons";
 import {Duration} from "luxon";
-import {FC, HTMLAttributes, useEffect, useId, useState} from "react";
+import {
+  FC,
+  HTMLAttributes,
+  MouseEvent,
+  useEffect,
+  useId,
+  useState,
+} from "react";
+import {useHistory} from "react-router-dom";
 
 import {Avatar} from "~/components/avatar";
 import {Blurhash} from "~/components/blurhash";
@@ -53,6 +62,11 @@ interface PostCardProps extends HTMLAttributes<HTMLIonCardElement> {
    * Post
    */
   post: Post;
+
+  /**
+   * Whether or not the post will link to the post detail page
+   */
+  postLinkDetail: boolean;
 
   /**
    * Post card width
@@ -78,6 +92,7 @@ interface PostCardProps extends HTMLAttributes<HTMLIonCardElement> {
  */
 export const PostCard: FC<PostCardProps> = ({
   post,
+  postLinkDetail,
   width,
   onLoad,
   toggleVote,
@@ -87,6 +102,8 @@ export const PostCard: FC<PostCardProps> = ({
   const height = post.has_media
     ? Math.round(width / (post as Post<true>).aspect_ratio)
     : 0;
+
+  const AvatarContainer = post.poster_id === null ? "div" : IonRouterLink;
 
   // Hooks
   const id = useId();
@@ -99,6 +116,8 @@ export const PostCard: FC<PostCardProps> = ({
       }
     | undefined
   >();
+
+  const history = useHistory();
 
   const setMessage = useMiscellaneousStore(state => state.setMessage);
   const showAmbientEffect = useSettingsStore(state => state.showAmbientEffect);
@@ -240,10 +259,24 @@ export const PostCard: FC<PostCardProps> = ({
     });
   };
 
+  /**
+   * Card click event handler
+   * @param event Event
+   */
+  const onCardClick = (event: MouseEvent<HTMLIonCardElement>) => {
+    if (event.defaultPrevented || !postLinkDetail) {
+      return;
+    }
+
+    // Go to the post detail page
+    history.push(`/posts/${post.id}`);
+  };
+
   return (
     <IonCard
       {...props}
-      className={`dark:text-neutral-300 overflow-hidden rounded-xl text-neutral-700 ${
+      onClick={onCardClick}
+      className={`cursor-pointer dark:text-neutral-300 overflow-hidden rounded-xl text-neutral-700 ${
         props.className ?? ""
       }`}
     >
@@ -296,12 +329,21 @@ export const PostCard: FC<PostCardProps> = ({
 
       <IonCardContent className="p-4">
         <div className="flex flex-row items-center justify-between w-full">
-          <Avatar
-            profile={{
-              emoji: post.poster_emoji,
-              color: post.poster_color,
-            }}
-          />
+          <AvatarContainer
+            className="h-10 w-10"
+            {...(post.poster_id === null
+              ? {}
+              : {
+                  routerLink: `/users/${post.poster_id}`,
+                })}
+          >
+            <Avatar
+              profile={{
+                emoji: post.poster_emoji ?? undefined,
+                color: post.poster_color ?? undefined,
+              }}
+            />
+          </AvatarContainer>
 
           <div className="flex flex-row items-center justify-center h-full">
             <IonIcon className="text-[1.4rem]" ios={eyeOutline} md={eyeSharp} />
@@ -350,7 +392,10 @@ export const PostCard: FC<PostCardProps> = ({
               className={`m-0 ${styles.iconButton}`}
               color={post.upvote === true ? "success" : "medium"}
               fill="clear"
-              onClick={() => toggleVote(true)}
+              onClick={event => {
+                event.preventDefault();
+                toggleVote(true);
+              }}
             >
               <IonIcon
                 slot="icon-only"
@@ -367,7 +412,10 @@ export const PostCard: FC<PostCardProps> = ({
               className={`m-0 ${styles.iconButton}`}
               color={post.upvote === false ? "danger" : "medium"}
               fill="clear"
-              onClick={() => toggleVote(false)}
+              onClick={event => {
+                event.preventDefault();
+                toggleVote(false);
+              }}
             >
               <IonIcon
                 slot="icon-only"
@@ -380,6 +428,7 @@ export const PostCard: FC<PostCardProps> = ({
               className={`m-0 ml-1.5 ${styles.iconButton}`}
               color="medium"
               fill="clear"
+              onClick={event => event.preventDefault()}
               id={`${id}-options`}
             >
               <IonIcon
@@ -389,10 +438,17 @@ export const PostCard: FC<PostCardProps> = ({
                 md={ellipsisVerticalSharp}
               />
             </IonButton>
-            <IonPopover trigger={`${id}-options`} triggerAction="hover">
+            <IonPopover trigger={`${id}-options`} triggerAction="click">
               <IonList>
                 <IonItem>
-                  <IonButton className="w-full" fill="clear" onClick={share}>
+                  <IonButton
+                    className="w-full"
+                    fill="clear"
+                    onClick={event => {
+                      event.preventDefault();
+                      share();
+                    }}
+                  >
                     <IonIcon
                       slot="start"
                       ios={shareSocialOutline}
@@ -407,7 +463,10 @@ export const PostCard: FC<PostCardProps> = ({
                     className="w-full"
                     color="danger"
                     fill="clear"
-                    onClick={report}
+                    onClick={event => {
+                      event.preventDefault();
+                      report();
+                    }}
                   >
                     <IonIcon
                       slot="start"

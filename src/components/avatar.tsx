@@ -6,6 +6,7 @@ import {IonIcon} from "@ionic/react";
 import {helpOutline, helpSharp} from "ionicons/icons";
 import {FC} from "react";
 
+import {TextFill} from "~/components/text-fill";
 import {useSettingsStore} from "~/lib/stores/settings";
 import {Profile, Theme} from "~/lib/types";
 
@@ -32,21 +33,25 @@ export const Avatar: FC<AvatarProps> = ({profile}) => {
   let color = profile.color;
 
   if (color === undefined) {
-    color = theme === Theme.DARK ? "#404040" : "#e5e5e5";
+    color = theme === Theme.DARK ? "#e5e5e5" : "#404040";
   }
 
   return (
     <div
-      className="flex flex-row h-9 items-center justify-center rounded-full w-9"
+      className="flex flex-row h-full items-center justify-center rounded-full w-full p-1"
       style={{
         backgroundColor: color,
         boxShadow: `0 0 20px -2px ${color}`,
       }}
     >
       {profile.emoji === undefined ? (
-        <IonIcon className="!text-lg" ios={helpOutline} md={helpSharp} />
+        <IonIcon
+          className="dark:text-black h-full text-white w-full"
+          ios={helpOutline}
+          md={helpSharp}
+        />
       ) : (
-        <p className="!text-lg">{profile.emoji}</p>
+        <TextFill>{profile.emoji}</TextFill>
       )}
     </div>
   );

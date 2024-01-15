@@ -105,7 +105,14 @@ export const Nearby: FC = () => {
   const viewedPosts = useRef(new Set<string>());
 
   const showFABs = useSettingsStore(state => state.showFABs);
-  const setRefreshPosts = useMiscellaneousStore(state => state.setRefreshPosts);
+
+  const registerRefreshPosts = useMiscellaneousStore(
+    state => state.registerRefreshPosts,
+  );
+
+  const unregisterRefreshPosts = useMiscellaneousStore(
+    state => state.unregisterRefreshPosts,
+  );
 
   const history = useHistory();
   const [contentRef, {height}] = useMeasure<HTMLIonContentElement>();
@@ -117,11 +124,11 @@ export const Nearby: FC = () => {
     fetchPosts(...postRange.current, postCutoffTimestamp.current, true);
 
     // Register the refresh posts function
-    setRefreshPosts(refreshPosts);
+    registerRefreshPosts(refreshPosts);
 
     return () => {
       // Unregister the refresh posts function
-      setRefreshPosts(undefined);
+      unregisterRefreshPosts(refreshPosts);
     };
   }, []);
 
@@ -478,6 +485,7 @@ export const Nearby: FC = () => {
                     index === 0 ? "mt-4" : "mt-2"
                   }`}
                   post={post}
+                  postLinkDetail={true}
                   width={width}
                   onLoad={() => onPostLoad(post)}
                   toggleVote={upvote => toggleVote(post, upvote)}
