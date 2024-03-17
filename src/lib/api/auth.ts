@@ -7,7 +7,7 @@ import {
   PublicKeyCredentialCreationOptionsJSON,
   PublicKeyCredentialRequestOptionsJSON,
   RegistrationResponseJSON,
-} from "@simplewebauthn/typescript-types";
+} from "@simplewebauthn/types";
 import {Session} from "@supabase/supabase-js";
 
 import {client} from "~/lib/supabase";

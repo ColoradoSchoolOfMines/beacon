@@ -23,7 +23,7 @@ import {
   useIonActionSheet,
 } from "@ionic/react";
 import {startRegistration} from "@simplewebauthn/browser";
-import {RegistrationResponseJSON} from "@simplewebauthn/typescript-types";
+import {RegistrationResponseJSON} from "@simplewebauthn/types";
 import {
   keyOutline,
   keySharp,

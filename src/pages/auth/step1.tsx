@@ -5,7 +5,7 @@
 
 import {IonButton, IonIcon, IonNote} from "@ionic/react";
 import {startAuthentication} from "@simplewebauthn/browser";
-import {AuthenticationResponseJSON} from "@simplewebauthn/typescript-types";
+import {AuthenticationResponseJSON} from "@simplewebauthn/types";
 import {callOutline, callSharp, keyOutline, keySharp} from "ionicons/icons";
 import {FC} from "react";
 import {useHistory} from "react-router-dom";
