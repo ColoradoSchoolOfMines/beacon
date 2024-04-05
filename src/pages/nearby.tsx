@@ -40,8 +40,8 @@ import {VList, VListHandle} from "virtua";
 
 import {PostCard} from "~/components/post-card";
 import {SwipeableItem} from "~/components/swipeable-item";
-import {useMiscellaneousStore} from "~/lib/stores/miscellaneous";
-import {useSettingsStore} from "~/lib/stores/settings";
+import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
+import {usePersistentStore} from "~/lib/stores/persistent";
 import {client} from "~/lib/supabase";
 import {Post} from "~/lib/types";
 
@@ -104,13 +104,13 @@ export const Nearby: FC = () => {
   const loadedPosts = useRef(new Set<string>());
   const viewedPosts = useRef(new Set<string>());
 
-  const showFABs = useSettingsStore(state => state.showFABs);
+  const showFABs = usePersistentStore(state => state.showFABs);
 
-  const registerRefreshPosts = useMiscellaneousStore(
+  const registerRefreshPosts = useEphemeralUIStore(
     state => state.registerRefreshPosts,
   );
 
-  const unregisterRefreshPosts = useMiscellaneousStore(
+  const unregisterRefreshPosts = useEphemeralUIStore(
     state => state.unregisterRefreshPosts,
   );
 

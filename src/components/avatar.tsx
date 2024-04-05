@@ -7,7 +7,7 @@ import {helpOutline, helpSharp} from "ionicons/icons";
 import {FC} from "react";
 
 import {TextFill} from "~/components/text-fill";
-import {useSettingsStore} from "~/lib/stores/settings";
+import {usePersistentStore} from "~/lib/stores/persistent";
 import {Profile, Theme} from "~/lib/types";
 
 /**
@@ -27,7 +27,7 @@ interface AvatarProps {
  */
 export const Avatar: FC<AvatarProps> = ({profile}) => {
   // Hooks
-  const theme = useSettingsStore(state => state.theme);
+  const theme = usePersistentStore(state => state.theme);
 
   // Variables
   let color = profile.color;

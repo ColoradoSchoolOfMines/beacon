@@ -1,50 +1,37 @@
 /**
- * @file Miscellaneous store
+ * @file Ephemeral UI store
  */
 /* eslint-disable jsdoc/require-jsdoc */
-
-import {User} from "@supabase/supabase-js";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
 
-import {GlobalMessage} from "~/lib/types";
+import {GlobalMessageMetadata, PostCreate} from "~/lib/types";
 
 /**
- * Store store state and actions
+ * Ephemeral UI store state and actions
  */
-interface Store {
+interface EphemeralUIStore {
   /**
    * Global message
    */
-  message?: GlobalMessage;
+  message?: GlobalMessageMetadata;
 
   /**
    * Set the global message
    * @param newMessage Global message or undefined to clear the message
    */
-  setMessage: (newMessage?: GlobalMessage) => void;
+  setMessage: (newMessage?: GlobalMessageMetadata) => void;
 
   /**
-   * Current user
+   * Email address being verified
    */
-  user?: User;
+  email?: string;
 
   /**
-   * Set the current user
-   * @param newUser New user or undefined to clear the user
+   * Set the email address being verified
+   * @param newEmail New email address or undefined to clear the email address
    */
-  setUser: (newUser?: User) => void;
-
-  /**
-   * Current geolocation
-   */
-  location?: GeolocationPosition;
-
-  /**
-   * Set the current geolocation
-   * @param newLocation New geolocation or undefined to clear the geolocation
-   */
-  setLocation: (newLocation?: GeolocationPosition) => void;
+  setEmail: (newEmail?: string) => void;
 
   /**
    * Refresh posts
@@ -63,30 +50,44 @@ interface Store {
    * @param oldRefreshPosts Old refresh posts callback
    */
   unregisterRefreshPosts: (oldRefreshPosts: () => void | Promise<void>) => void;
+
+  /**
+   * Post being created
+   */
+  post?: Partial<PostCreate>;
+
+  /**
+   * Set the post being created
+   * @param newPost New post or undefined to clear the post
+   */
+  setPost: (newPost?: Partial<PostCreate>) => void;
 }
 
 /**
- * Miscellaneous store
+ * Ephemeral UI store
  */
-export const useMiscellaneousStore = create<Store>()(
-  devtools(set => ({
+export const useEphemeralUIStore = create<EphemeralUIStore>()(
+  devtools((set, get) => ({
     message: undefined,
-    setMessage: (newMessage?: GlobalMessage) =>
+    setMessage: (newMessage?: GlobalMessageMetadata) => {
+      // Don't update the message if the symbol is the same
+      if (
+        newMessage !== undefined &&
+        get().message?.symbol === newMessage.symbol
+      ) {
+        return;
+      }
+
       set(state => ({
         ...state,
         message: newMessage,
-      })),
-    user: undefined,
-    setUser: (newUser?: User) =>
+      }));
+    },
+    email: undefined,
+    setEmail: (newEmail?: string) =>
       set(state => ({
         ...state,
-        user: newUser,
-      })),
-    location: undefined,
-    setLocation: (newLocation?: GeolocationPosition) =>
-      set(state => ({
-        ...state,
-        location: newLocation,
+        email: newEmail,
       })),
     refreshPosts: undefined,
     registerRefreshPosts: (newRefreshPosts: () => void | Promise<void>) =>
@@ -101,6 +102,12 @@ export const useMiscellaneousStore = create<Store>()(
           state.refreshPosts === oldRefreshPosts
             ? undefined
             : state.refreshPosts,
+      })),
+    post: undefined,
+    setPost: (newPost?: Partial<PostCreate>) =>
+      set(state => ({
+        ...state,
+        post: newPost,
       })),
   })),
 );

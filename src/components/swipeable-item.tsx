@@ -9,7 +9,7 @@ import {
 } from "@ionic/react";
 import {FC, ReactNode, useRef} from "react";
 
-import {useSettingsStore} from "~/lib/stores/settings";
+import {usePersistentStore} from "~/lib/stores/persistent";
 
 /**
  * Swipeable item component props
@@ -56,7 +56,9 @@ export const SwipeableItem: FC<SwipeableItemProps> = ({
   // Hooks
   const previousRatio = useRef<number>();
 
-  const useSlidingActions = useSettingsStore(state => state.useSlidingActions);
+  const useSlidingActions = usePersistentStore(
+    state => state.useSlidingActions,
+  );
 
   // Methods
   /**

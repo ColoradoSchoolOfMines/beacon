@@ -1,5 +1,5 @@
 /**
- * @file Settings store
+ * @file Persistent store
  */
 /* eslint-disable jsdoc/require-jsdoc */
 import {merge} from "lodash-es";
@@ -10,9 +10,9 @@ import {stateStorage} from "~/lib/storage";
 import {DeepPartial, MeasurementSystem, Theme} from "~/lib/types";
 
 /**
- * Settings store state and actions
+ * Persistent store state and actions
  */
-interface SettingsStore {
+interface PersistentStore {
   /**
    * Theme
    */
@@ -69,15 +69,15 @@ interface SettingsStore {
   setMeasurementSystem: (newMeasurementSystem: MeasurementSystem) => void;
 
   /**
-   * Reset all settings to their default values
+   * Reset the store to its default state
    */
   reset: () => void;
 }
 
 /**
- * Default settings
+ * Default state
  */
-const defaultState: DeepPartial<SettingsStore> = {
+const defaultState: DeepPartial<PersistentStore> = {
   theme:
     window.matchMedia &&
     window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -90,11 +90,11 @@ const defaultState: DeepPartial<SettingsStore> = {
 };
 
 /**
- * Settings store
+ * Persistent store
  */
-export const useSettingsStore = create<SettingsStore>()(
+export const usePersistentStore = create<PersistentStore>()(
   devtools(
-    persist<SettingsStore, [], [], DeepPartial<SettingsStore>>(
+    persist<PersistentStore, [], [], DeepPartial<PersistentStore>>(
       set =>
         merge({}, defaultState, {
           setTheme: (newTheme: Theme) =>
@@ -123,9 +123,9 @@ export const useSettingsStore = create<SettingsStore>()(
               measurementSystem: newMeasurementSystem,
             })),
           reset: () => set(state => merge({}, state, defaultState)),
-        } as DeepPartial<SettingsStore>) as SettingsStore,
+        } as DeepPartial<PersistentStore>) as PersistentStore,
       {
-        name: "settings",
+        name: "persistent",
         storage: createJSONStorage(() => stateStorage),
         partialize: state => ({
           showFABs: state.showFABs,

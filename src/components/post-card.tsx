@@ -48,11 +48,38 @@ import {Blurhash} from "~/components/blurhash";
 import {Markdown} from "~/components/markdown";
 import styles from "~/components/post-card.module.css";
 import {getCategory} from "~/lib/media";
-import {useMiscellaneousStore} from "~/lib/stores/miscellaneous";
-import {useSettingsStore} from "~/lib/stores/settings";
+import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
+import {usePersistentStore} from "~/lib/stores/persistent";
 import {client} from "~/lib/supabase";
-import {MediaCategory, Post} from "~/lib/types";
+import {GlobalMessageMetadata, MediaCategory, Post} from "~/lib/types";
 import {formatDistance, formatDuration, formatScalar} from "~/lib/utils";
+
+/**
+ * Copied link message metadata
+ */
+const COPIED_LINK_MESSAGE_METADATA: GlobalMessageMetadata = {
+  symbol: Symbol("post-card.copied-link"),
+  name: "Copied link",
+  description: "The link to the post has been copied to your clipboard.",
+};
+
+/**
+ * Already reported message metadata
+ */
+const ALREADY_REPORTED_MESSAGE_METADATA: GlobalMessageMetadata = {
+  symbol: Symbol("post-card.already-reported"),
+  name: "Already reported",
+  description: "The post has already been reported.",
+};
+
+/**
+ * New report message metadata
+ */
+const NEW_REPORT_MESSAGE_METADATA: GlobalMessageMetadata = {
+  symbol: Symbol("post-card.new-report"),
+  name: "New report",
+  description: "The post has been reported. Thank you for your feedback.",
+};
 
 /**
  * Post card component props
@@ -119,9 +146,15 @@ export const PostCard: FC<PostCardProps> = ({
 
   const history = useHistory();
 
-  const setMessage = useMiscellaneousStore(state => state.setMessage);
-  const showAmbientEffect = useSettingsStore(state => state.showAmbientEffect);
-  const measurementSystem = useSettingsStore(state => state.measurementSystem);
+  const setMessage = useEphemeralUIStore(state => state.setMessage);
+
+  const showAmbientEffect = usePersistentStore(
+    state => state.showAmbientEffect,
+  );
+
+  const measurementSystem = usePersistentStore(
+    state => state.measurementSystem,
+  );
 
   // Effects
   useEffect(() => {
@@ -223,10 +256,7 @@ export const PostCard: FC<PostCardProps> = ({
         }));
 
     // Display the message
-    setMessage({
-      name: "Copied link",
-      description: "The link to the post has been copied to your clipboard.",
-    });
+    setMessage(COPIED_LINK_MESSAGE_METADATA);
   };
 
   /**
@@ -243,20 +273,14 @@ export const PostCard: FC<PostCardProps> = ({
     if (error !== null) {
       if (error.code === "23505") {
         // Display the message
-        setMessage({
-          name: "Reported post",
-          description: "The post has already been reported.",
-        });
+        setMessage(ALREADY_REPORTED_MESSAGE_METADATA);
       }
 
       return;
     }
 
     // Display the message
-    setMessage({
-      name: "Reported post",
-      description: "The post has been reported. Thank you for your feedback.",
-    });
+    setMessage(NEW_REPORT_MESSAGE_METADATA);
   };
 
   /**

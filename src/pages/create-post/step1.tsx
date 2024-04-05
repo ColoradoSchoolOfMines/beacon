@@ -42,7 +42,7 @@ import {
   MAX_MEDIA_DIMENSION,
   MIN_MEDIA_DIMENSION,
 } from "~/lib/media";
-import {useTemporaryStore} from "~/lib/stores/temporary";
+import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
 import {MediaCategory} from "~/lib/types";
 import styles from "~/pages/create-post/step1.module.css";
 
@@ -151,8 +151,8 @@ export const Step1: FC = () => {
   const [previewUrl, setPreviewUrl] = useState<string | undefined>(undefined);
   const mediaInput = useRef<HTMLInputElement | null>(null);
 
-  const post = useTemporaryStore(state => state.post);
-  const setPost = useTemporaryStore(state => state.setPost);
+  const post = useEphemeralUIStore(state => state.post);
+  const setPost = useEphemeralUIStore(state => state.setPost);
 
   const history = useHistory();
 

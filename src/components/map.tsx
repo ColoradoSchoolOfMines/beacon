@@ -18,7 +18,7 @@ import {
 import {useMeasure} from "react-use";
 
 import styles from "~/components/map.module.css";
-import {useSettingsStore} from "~/lib/stores/settings";
+import {usePersistentStore} from "~/lib/stores/persistent";
 import {Theme} from "~/lib/types";
 
 /**
@@ -93,7 +93,7 @@ export const Map: FC<MapProps> = ({
 }) => {
   // Hooks
   const mapRef = useRef<MapContainerProps & LeafletMap>(null);
-  const theme = useSettingsStore(state => state.theme);
+  const theme = usePersistentStore(state => state.theme);
   const [containerRef, {height, width}] = useMeasure<HTMLDivElement>();
 
   // Effects

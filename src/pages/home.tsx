@@ -8,7 +8,7 @@ import {FC} from "react";
 import {useMeasure} from "react-use";
 
 import {Header} from "~/components/header";
-import {useSettingsStore} from "~/lib/stores/settings";
+import {usePersistentStore} from "~/lib/stores/persistent";
 import {Theme} from "~/lib/types";
 import styles from "~/pages/home.module.css";
 
@@ -23,7 +23,7 @@ const FRAME_COUNT = 5;
  */
 export const Home: FC = () => {
   // Hooks
-  const theme = useSettingsStore(state => state.theme);
+  const theme = usePersistentStore(state => state.theme);
   const [containerRef, {height, width}] = useMeasure();
 
   return (

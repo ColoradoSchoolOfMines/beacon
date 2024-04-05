@@ -10,10 +10,11 @@ import {Route, useHistory, useLocation} from "react-router-dom";
 
 import {GlobalMessage} from "~/components/global-message";
 import {Menu} from "~/components/menu";
-import {useMiscellaneousStore} from "~/lib/stores/miscellaneous";
-import {useSettingsStore} from "~/lib/stores/settings";
+import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
+import {useEphemeralUserStore} from "~/lib/stores/ephemeral-user";
+import {usePersistentStore} from "~/lib/stores/persistent";
 import {client} from "~/lib/supabase";
-import {RequiredAuthState, Theme} from "~/lib/types";
+import {GlobalMessageMetadata, RequiredAuthState, Theme} from "~/lib/types";
 import {checkRequiredAuthState} from "~/lib/utils";
 import {Step1 as AuthStep1} from "~/pages/auth/step1";
 import {Step2 as AuthStep2} from "~/pages/auth/step2";
@@ -24,6 +25,15 @@ import {Error} from "~/pages/error";
 import {Home} from "~/pages/home";
 import {Nearby} from "~/pages/nearby";
 import {Settings} from "~/pages/settings";
+
+/**
+ * Signed out message metadata
+ */
+const SIGNED_OUT_MESSAGE_METADATA: GlobalMessageMetadata = {
+  symbol: Symbol("app.signed-out"),
+  name: "Signed out",
+  description: "You have been signed out.",
+};
 
 /**
  * Route authentication states
@@ -41,13 +51,13 @@ const routeAuthStates: Record<string, RequiredAuthState> = {
 
 // Set the user from the session (Block because this doesn't make a request to the backend)
 const session = await client.auth.getSession();
-useMiscellaneousStore.getState().setUser(session?.data?.session?.user);
+useEphemeralUserStore.getState().setUser(session?.data?.session?.user);
 
 // Set the user from the backend (Don't block because this makes a request to the backend)
 // eslint-disable-next-line unicorn/prefer-top-level-await
 (async () => {
   // If there is no user, return
-  if (useMiscellaneousStore.getState().user === undefined) {
+  if (useEphemeralUserStore.getState().user === undefined) {
     return;
   }
 
@@ -61,7 +71,7 @@ useMiscellaneousStore.getState().setUser(session?.data?.session?.user);
   }
 
   // Set the user
-  useMiscellaneousStore.getState().setUser(data.user);
+  useEphemeralUserStore.getState().setUser(data.user);
 })();
 
 /**
@@ -73,10 +83,10 @@ export const App: FC = () => {
   const history = useHistory();
   const location = useLocation();
 
-  const setMessage = useMiscellaneousStore(state => state.setMessage);
-  const user = useMiscellaneousStore(state => state.user);
-  const setUser = useMiscellaneousStore(state => state.setUser);
-  const theme = useSettingsStore(state => state.theme);
+  const setMessage = useEphemeralUIStore(state => state.setMessage);
+  const user = useEphemeralUserStore(state => state.user);
+  const setUser = useEphemeralUserStore(state => state.setUser);
+  const theme = usePersistentStore(state => state.theme);
 
   // Methods
   /**
@@ -129,10 +139,7 @@ export const App: FC = () => {
 
         case "SIGNED_OUT": {
           // Display the message
-          setMessage({
-            name: "Signed out",
-            description: "You have been signed out.",
-          });
+          setMessage(SIGNED_OUT_MESSAGE_METADATA);
 
           // Clear the user
           newUser = undefined;

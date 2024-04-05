@@ -41,14 +41,23 @@ import {
   getCategory,
   getMediaDimensions,
 } from "~/lib/media";
-import {useMiscellaneousStore} from "~/lib/stores/miscellaneous";
-import {useSettingsStore} from "~/lib/stores/settings";
-import {useTemporaryStore} from "~/lib/stores/temporary";
+import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
+import {useEphemeralUserStore} from "~/lib/stores/ephemeral-user";
+import {usePersistentStore} from "~/lib/stores/persistent";
 import {client} from "~/lib/supabase";
 import {MeasurementSystem} from "~/lib/types";
 import {METERS_TO_KILOMETERS, METERS_TO_MILES} from "~/lib/utils";
 import styles from "~/pages/create-post/step2.module.css";
 import {Error} from "~/pages/error";
+
+/**
+ * Post created message metadata
+ */
+const POST_CREATED_MESSAGE_METADATA = {
+  symbol: Symbol("post.created"),
+  name: "Success",
+  description: "Your post has been created.",
+};
 
 /**
  * Minimum radius (In meters)
@@ -83,13 +92,16 @@ type FormSchema = z.infer<typeof formSchema>;
  */
 export const Step2: FC = () => {
   // Hooks
-  const location = useMiscellaneousStore(state => state.location);
-  const setMessage = useMiscellaneousStore(state => state.setMessage);
-  const refreshPosts = useMiscellaneousStore(state => state.refreshPosts);
-  const measurementSystem = useSettingsStore(state => state.measurementSystem);
+  const location = useEphemeralUserStore(state => state.location);
+  const setMessage = useEphemeralUIStore(state => state.setMessage);
+  const refreshPosts = useEphemeralUIStore(state => state.refreshPosts);
 
-  const post = useTemporaryStore(state => state.post);
-  const setPost = useTemporaryStore(state => state.setPost);
+  const measurementSystem = usePersistentStore(
+    state => state.measurementSystem,
+  );
+
+  const post = useEphemeralUIStore(state => state.post);
+  const setPost = useEphemeralUIStore(state => state.setPost);
 
   const history = useHistory();
 
@@ -206,10 +218,7 @@ export const Step2: FC = () => {
     setPost(undefined);
 
     // Display the message
-    setMessage({
-      name: "Success",
-      description: "Your post has been created.",
-    });
+    setMessage(POST_CREATED_MESSAGE_METADATA);
 
     // Refetch the posts
     await refreshPosts?.();

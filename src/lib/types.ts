@@ -53,9 +53,14 @@ export type PrefixKeys<T, P extends string> = {
 };
 
 /**
- * Global information message modal
+ * Global information message metadata
  */
-export interface GlobalMessage {
+export interface GlobalMessageMetadata {
+  /**
+   * Unique message identifier
+   */
+  symbol: symbol;
+
   /**
    * Message name
    */

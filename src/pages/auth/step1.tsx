@@ -16,8 +16,15 @@ import {
   checkPasskeySupport,
   endAuthentication,
 } from "~/lib/api/auth";
-import {useMiscellaneousStore} from "~/lib/stores/miscellaneous";
+import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
 import {client} from "~/lib/supabase";
+
+/**
+ * Passkey failed use credential message metadata symbol
+ */
+const PASSKEY_FAILED_USE_CREDENTIAL_MESSAGE_METADATA_SYMBOL = Symbol(
+  "auth.passkey.failed-use-credential",
+);
 
 /**
  * Auth step 1 component
@@ -26,7 +33,7 @@ import {client} from "~/lib/supabase";
 export const Step1: FC = () => {
   // Hooks
   const history = useHistory();
-  const setMessage = useMiscellaneousStore(state => state.setMessage);
+  const setMessage = useEphemeralUIStore(state => state.setMessage);
 
   // Methods
   /**
@@ -49,6 +56,7 @@ export const Step1: FC = () => {
     } catch (error) {
       // Display the message
       setMessage({
+        symbol: PASSKEY_FAILED_USE_CREDENTIAL_MESSAGE_METADATA_SYMBOL,
         name: "Passkey Error",
         description: `Failed to use credential: ${error}`,
       });

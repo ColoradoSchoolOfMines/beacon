@@ -13,8 +13,8 @@ import {z} from "zod";
 
 import {AuthContainer} from "~/components/auth-container";
 import {SupplementalError} from "~/components/supplemental-error";
-import {useSettingsStore} from "~/lib/stores/settings";
-import {useTemporaryStore} from "~/lib/stores/temporary";
+import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
+import {usePersistentStore} from "~/lib/stores/persistent";
 import {client} from "~/lib/supabase";
 import {Theme} from "~/lib/types";
 import {HCAPTCHA_SITE_KEY} from "~/lib/vars";
@@ -44,8 +44,8 @@ type FormSchema = z.infer<typeof formSchema>;
 export const Step2: FC = () => {
   // Hooks
   const captcha = useRef<HCaptcha>(null);
-  const setEmail = useTemporaryStore(state => state.setEmail);
-  const theme = useSettingsStore(state => state.theme);
+  const setEmail = useEphemeralUIStore(state => state.setEmail);
+  const theme = usePersistentStore(state => state.theme);
   const history = useHistory();
 
   const {control, handleSubmit, reset} = useForm<FormSchema>({

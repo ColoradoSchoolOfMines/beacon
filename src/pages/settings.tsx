@@ -41,11 +41,36 @@ import {
   checkPasskeySupport,
   endRegistration,
 } from "~/lib/api/auth";
-import {useMiscellaneousStore} from "~/lib/stores/miscellaneous";
-import {useSettingsStore} from "~/lib/stores/settings";
+import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
+import {usePersistentStore} from "~/lib/stores/persistent";
 import {client} from "~/lib/supabase";
-import {MeasurementSystem, Theme} from "~/lib/types";
+import {GlobalMessageMetadata, MeasurementSystem, Theme} from "~/lib/types";
 import {GIT_BRANCH, GIT_COMMIT, VERSION} from "~/lib/vars";
+
+/**
+ * Passkey failed to create credential message metadata symbol
+ */
+const PASSKEY_FAILED_TO_CREATE_CREDENTIAL_MESSAGE_METADATA_SYMBOL = Symbol(
+  "settings.passkey-failed-to-create-credential",
+);
+
+/**
+ * Passkey registered message metadata
+ */
+const PASSKEY_REGISTERED_MESSAGE_METADATA: GlobalMessageMetadata = {
+  symbol: Symbol("settings.passkey-registered"),
+  name: "Passkey Registered",
+  description: "The passkey has been successfully registered",
+};
+
+/**
+ * Passkeys deleted message metadata
+ */
+const PASSKEYS_DELETED_MESSAGE_METADATA: GlobalMessageMetadata = {
+  symbol: Symbol("settings.passkeys-deleted"),
+  name: "Passkeys Deleted",
+  description: "All passkeys associated with your account have been deleted",
+};
 
 /**
  * Settings page
@@ -53,30 +78,34 @@ import {GIT_BRANCH, GIT_COMMIT, VERSION} from "~/lib/vars";
  */
 export const Settings: FC = () => {
   // Hooks
-  const setMessage = useMiscellaneousStore(state => state.setMessage);
-  const theme = useSettingsStore(state => state.theme);
-  const setTheme = useSettingsStore(state => state.setTheme);
-  const showFABs = useSettingsStore(state => state.showFABs);
-  const setShowFABs = useSettingsStore(state => state.setShowFABs);
-  const slidingActions = useSettingsStore(state => state.useSlidingActions);
+  const setMessage = useEphemeralUIStore(state => state.setMessage);
+  const theme = usePersistentStore(state => state.theme);
+  const setTheme = usePersistentStore(state => state.setTheme);
+  const showFABs = usePersistentStore(state => state.showFABs);
+  const setShowFABs = usePersistentStore(state => state.setShowFABs);
+  const slidingActions = usePersistentStore(state => state.useSlidingActions);
 
-  const setSlidingActions = useSettingsStore(
+  const setSlidingActions = usePersistentStore(
     state => state.setUseSlidingActions,
   );
 
-  const showAmbientEffect = useSettingsStore(state => state.showAmbientEffect);
+  const showAmbientEffect = usePersistentStore(
+    state => state.showAmbientEffect,
+  );
 
-  const setShowAmbientEffect = useSettingsStore(
+  const setShowAmbientEffect = usePersistentStore(
     state => state.setShowAmbientEffect,
   );
 
-  const measurementSystem = useSettingsStore(state => state.measurementSystem);
+  const measurementSystem = usePersistentStore(
+    state => state.measurementSystem,
+  );
 
-  const setMeasurementSystem = useSettingsStore(
+  const setMeasurementSystem = usePersistentStore(
     state => state.setMeasurementSystem,
   );
 
-  const reset = useSettingsStore(state => state.reset);
+  const reset = usePersistentStore(state => state.reset);
 
   const [present] = useIonActionSheet();
 
@@ -123,6 +152,7 @@ export const Settings: FC = () => {
     } catch (error) {
       // Display the message
       setMessage({
+        symbol: PASSKEY_FAILED_TO_CREATE_CREDENTIAL_MESSAGE_METADATA_SYMBOL,
         name: "Passkey Error",
         description: `Failed to create credential: ${error}`,
       });
@@ -139,10 +169,7 @@ export const Settings: FC = () => {
     }
 
     // Display the message
-    setMessage({
-      name: "Passkey Registered",
-      description: "The passkey has been successfully registered",
-    });
+    setMessage(PASSKEY_REGISTERED_MESSAGE_METADATA);
   };
 
   /**
@@ -173,11 +200,7 @@ export const Settings: FC = () => {
             }
 
             // Display the message
-            setMessage({
-              name: "Passkeys Deleted",
-              description:
-                "All passkeys associated with your account have been deleted",
-            });
+            setMessage(PASSKEYS_DELETED_MESSAGE_METADATA);
           },
         },
       ],

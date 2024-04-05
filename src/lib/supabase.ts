@@ -5,7 +5,8 @@
 import {SupabaseClient} from "@supabase/supabase-js";
 
 import {Database} from "~/lib/schema";
-import {useMiscellaneousStore} from "~/lib/stores/miscellaneous";
+import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
+import {GlobalMessageMetadata} from "~/lib/types";
 import {FUNCTIONS_URL, SUPABASE_ANON_KEY, SUPABASE_URL} from "~/lib/vars";
 
 /**
@@ -13,7 +14,21 @@ import {FUNCTIONS_URL, SUPABASE_ANON_KEY, SUPABASE_URL} from "~/lib/vars";
  */
 const FUNCTIONS_PREFIX = "/functions/v1";
 
-const setMessage = useMiscellaneousStore.getState().setMessage;
+/**
+ * Generic network error message metadata symbol
+ */
+const GENERIC_NETWORK_ERROR_MESSAGE_METADATA_SYMBOL = Symbol(
+  "supabase.network-error",
+);
+
+/**
+ * Generic server error message metadata symbol
+ */
+const GENERIC_SERVER_ERROR_MESSAGE_METADATA_SYMBOL = Symbol(
+  "supabase.server-error",
+);
+
+const setMessage = useEphemeralUIStore.getState().setMessage;
 
 /**
  * Supabase client singleton
@@ -74,6 +89,7 @@ export const client = new SupabaseClient<Database>(
 
           // Display the message
           setMessage({
+            symbol: GENERIC_NETWORK_ERROR_MESSAGE_METADATA_SYMBOL,
             name: "Network Error",
             description: `${(error as Error).name}: ${
               (error as Error).message
@@ -107,7 +123,8 @@ export const client = new SupabaseClient<Database>(
             description += ` (${json.hint})`;
           }
 
-          const err = {
+          const err: GlobalMessageMetadata = {
+            symbol: GENERIC_SERVER_ERROR_MESSAGE_METADATA_SYMBOL,
             name: "Server Error",
             description,
           };

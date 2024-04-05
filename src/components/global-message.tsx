@@ -5,7 +5,7 @@
 import {IonAlert} from "@ionic/react";
 import {FC} from "react";
 
-import {useMiscellaneousStore} from "~/lib/stores/miscellaneous";
+import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
 
 /**
  * Global message component
@@ -13,8 +13,8 @@ import {useMiscellaneousStore} from "~/lib/stores/miscellaneous";
  */
 export const GlobalMessage: FC = () => {
   // Hooks
-  const message = useMiscellaneousStore(state => state.message);
-  const setMessage = useMiscellaneousStore(state => state.setMessage);
+  const message = useEphemeralUIStore(state => state.message);
+  const setMessage = useEphemeralUIStore(state => state.setMessage);
 
   // JSX
   return (

@@ -11,9 +11,13 @@ import {useHistory} from "react-router-dom";
 import {z} from "zod";
 
 import {AuthContainer} from "~/components/auth-container";
-import {useMiscellaneousStore} from "~/lib/stores/miscellaneous";
-import {useTemporaryStore} from "~/lib/stores/temporary";
+import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
 import {client} from "~/lib/supabase";
+
+/**
+ * Failed to login message metadata symbol
+ */
+const FAILED_TO_LOGIN_MESSAGE_METADATA_SYMBOL = Symbol("auth.failed-to-login");
 
 /**
  * Form schema
@@ -38,8 +42,8 @@ type FormSchema = z.infer<typeof formSchema>;
  */
 export const Step3: FC = () => {
   // Hooks
-  const email = useTemporaryStore(state => state.email);
-  const setMessage = useMiscellaneousStore(state => state.setMessage);
+  const email = useEphemeralUIStore(state => state.email);
+  const setMessage = useEphemeralUIStore(state => state.setMessage);
   const history = useHistory();
 
   const {control, handleSubmit, reset} = useForm<FormSchema>({
@@ -66,6 +70,7 @@ export const Step3: FC = () => {
 
       // Display the message
       setMessage({
+        symbol: FAILED_TO_LOGIN_MESSAGE_METADATA_SYMBOL,
         name: "Failed to log in",
         description: error.message,
       });
