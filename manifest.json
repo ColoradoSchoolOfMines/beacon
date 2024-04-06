@@ -1,0 +1,25 @@
+{
+    "name": "Beacon",
+    "short_name": "Beacon",
+    "theme_color": "#141414",
+    "background_color": "#141414",
+    "display": "standalone",
+    "scope": "/",
+    "start_url": "http://localhost:3000",
+    "description": "A location-based social network",
+    "orientation": "any",
+    "icons": [
+        {
+            "src": "/src/assets/logo.png",
+            "sizes": "2048x2048"
+        },
+        {
+            "src": "/public/logo-192x192.png",
+            "sizes": "192x192"
+        },
+        {
+            "src": "/public/logo-512x512.png",
+            "sizes": "512x512"
+        }
+    ]
+}
