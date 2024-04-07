@@ -5,7 +5,7 @@
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
 
-import {GlobalMessageMetadata, PostCreate} from "~/lib/types";
+import {GlobalMessageMetadata, Post, PostCreate} from "~/lib/types";
 
 /**
  * Ephemeral UI store state and actions
@@ -34,33 +34,37 @@ interface EphemeralUIStore {
   setEmail: (newEmail?: string) => void;
 
   /**
-   * Refresh posts
+   * Refresh content
    * @returns Promise
    */
-  refreshPosts?: () => void | Promise<void>;
+  refreshContent?: () => void | Promise<void>;
 
   /**
-   * Register the refresh posts callback
-   * @param newRefreshPosts New refresh posts callback
+   * Register the refresh content callback
+   * @param newRefreshContent New refresh content callback
    */
-  registerRefreshPosts: (newRefreshPosts: () => void | Promise<void>) => void;
+  registerRefreshContent: (
+    newRefreshContent: () => void | Promise<void>,
+  ) => void;
 
   /**
-   * Unregister the refresh posts callback
-   * @param oldRefreshPosts Old refresh posts callback
+   * Unregister the refresh content callback
+   * @param oldRefreshContent Old refresh content callback
    */
-  unregisterRefreshPosts: (oldRefreshPosts: () => void | Promise<void>) => void;
+  unregisterRefreshContent: (
+    oldRefreshContent: () => void | Promise<void>,
+  ) => void;
 
   /**
    * Post being created
    */
-  post?: Partial<PostCreate>;
+  postBeingCreated?: Partial<PostCreate>;
 
   /**
    * Set the post being created
    * @param newPost New post or undefined to clear the post
    */
-  setPost: (newPost?: Partial<PostCreate>) => void;
+  setPostBeingCreated: (newPost?: Partial<PostCreate>) => void;
 }
 
 /**
@@ -89,25 +93,31 @@ export const useEphemeralUIStore = create<EphemeralUIStore>()(
         ...state,
         email: newEmail,
       })),
-    refreshPosts: undefined,
-    registerRefreshPosts: (newRefreshPosts: () => void | Promise<void>) =>
+    refreshContent: undefined,
+    registerRefreshContent: (newRefreshContent: () => void | Promise<void>) =>
       set(state => ({
         ...state,
-        refreshPosts: newRefreshPosts,
+        refreshContent: newRefreshContent,
       })),
-    unregisterRefreshPosts: (oldRefreshPosts: () => void | Promise<void>) =>
+    unregisterRefreshContent: (oldRefreshContent: () => void | Promise<void>) =>
       set(state => ({
         ...state,
-        refreshPosts:
-          state.refreshPosts === oldRefreshPosts
+        refreshContent:
+          state.refreshContent === oldRefreshContent
             ? undefined
-            : state.refreshPosts,
+            : state.refreshContent,
       })),
-    post: undefined,
-    setPost: (newPost?: Partial<PostCreate>) =>
+    postBeingCreated: undefined,
+    setPostBeingCreated: (newPost?: Partial<PostCreate>) =>
       set(state => ({
         ...state,
-        post: newPost,
+        postBeingCreated: newPost,
+      })),
+    postBeingCommentedOn: undefined,
+    setPostBeingCommentedOn: (newPost?: Post) =>
+      set(state => ({
+        ...state,
+        postBeingCommentedOn: newPost,
       })),
   })),
 );

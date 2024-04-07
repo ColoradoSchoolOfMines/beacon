@@ -47,8 +47,8 @@ import {usePersistentStore} from "~/lib/stores/persistent";
 import {client} from "~/lib/supabase";
 import {MeasurementSystem} from "~/lib/types";
 import {METERS_TO_KILOMETERS, METERS_TO_MILES} from "~/lib/utils";
-import styles from "~/pages/create-post/step2.module.css";
 import {Error} from "~/pages/error";
+import styles from "~/pages/posts/create/step2.module.css";
 
 /**
  * Post created message metadata
@@ -94,14 +94,14 @@ export const Step2: FC = () => {
   // Hooks
   const location = useEphemeralUserStore(state => state.location);
   const setMessage = useEphemeralUIStore(state => state.setMessage);
-  const refreshPosts = useEphemeralUIStore(state => state.refreshPosts);
+  const refreshContent = useEphemeralUIStore(state => state.refreshContent);
 
   const measurementSystem = usePersistentStore(
     state => state.measurementSystem,
   );
 
-  const post = useEphemeralUIStore(state => state.post);
-  const setPost = useEphemeralUIStore(state => state.setPost);
+  const post = useEphemeralUIStore(state => state.postBeingCreated);
+  const setPost = useEphemeralUIStore(state => state.setPostBeingCreated);
 
   const history = useHistory();
 
@@ -160,11 +160,15 @@ export const Step2: FC = () => {
    * @param form Form data
    */
   const onSubmit = async (form: FormSchema) => {
+    if (post === undefined) {
+      throw new TypeError("Post is undefined");
+    }
+
     let blurHash: string | null = null;
     let aspectRatio: number | null = null;
 
     // Process the media
-    if (post?.media !== undefined) {
+    if (post.media !== undefined) {
       const category = getCategory(post.media.type)!;
       const objectURL = URL.createObjectURL(post.media!);
       const element = await createMediaElement(category, objectURL);
@@ -187,8 +191,8 @@ export const Step2: FC = () => {
       .insert({
         private_anonymous: form.anonymous,
         radius: form.radius,
-        content: post!.content!,
-        has_media: post!.media !== undefined,
+        content: post.content!,
+        has_media: post.media !== undefined,
         blur_hash: blurHash,
         aspect_ratio: aspectRatio,
       })
@@ -203,10 +207,10 @@ export const Step2: FC = () => {
     }
 
     // Upload the media
-    if (post!.media !== undefined) {
+    if (post.media !== undefined) {
       const {error} = await client.storage
         .from("media")
-        .upload(`posts/${data.id}`, post!.media);
+        .upload(`posts/${data.id}`, post.media);
 
       // Handle error
       if (error !== null) {
@@ -220,11 +224,11 @@ export const Step2: FC = () => {
     // Display the message
     setMessage(POST_CREATED_MESSAGE_METADATA);
 
-    // Refetch the posts
-    await refreshPosts?.();
+    // Refetch the content
+    await refreshContent?.();
 
-    // Go to nearby
-    history.push("/nearby");
+    // Go back twice
+    history.go(-2);
   };
 
   return location === undefined ? (

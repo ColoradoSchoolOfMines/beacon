@@ -195,6 +195,35 @@ BEGIN
 END;
 $$;
 
+-- Validate access to a post
+CREATE OR REPLACE FUNCTION utilities.validate_post_access(
+  _post_id UUID,
+  _user_id UUID
+)
+RETURNS BOOLEAN
+SECURITY DEFINER
+STABLE
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1
+    FROM public.posts post
+    WHERE
+      -- Only get the specified post
+      post.id = _post_id
+
+      AND (
+        -- Only get posts for which the user is the poster
+        post.private_poster_id = _user_id
+
+        -- Or only get posts for which the user is within the post's radius
+        OR public.distance_to(post.private_location) <= post.radius
+      )
+  );
+END;
+$$;
+
 -- Validate a media object name
 CREATE OR REPLACE FUNCTION utilities.validate_media_object_name(
   _object_name TEXT,

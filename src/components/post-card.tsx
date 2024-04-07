@@ -246,13 +246,14 @@ export const PostCard: FC<PostCardProps> = ({
    */
   const share = async () => {
     // Generate the URL
-    const url = new URL(`/posts/${post.id}`, window.location.origin).toString();
+    const url = new URL(`/posts/${post.id}`, window.location.origin);
+    const strUrl = url.toString();
 
     // Share
     await (navigator.share === undefined
-      ? navigator.clipboard.writeText(url)
+      ? navigator.clipboard.writeText(strUrl)
       : navigator.share({
-          url,
+          url: strUrl,
         }));
 
     // Display the message

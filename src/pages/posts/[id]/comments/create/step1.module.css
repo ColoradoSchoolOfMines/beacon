@@ -1,0 +1,11 @@
+.textarea :global(.textarea-wrapper-inner) {
+  @apply h-full;
+}
+
+.textarea :global(.native-textarea) {
+  @apply !pt-0;
+}
+
+.collapsedItem:global(::part(native)) {
+  @apply min-h-unset;
+}

@@ -302,9 +302,7 @@ export interface Comment {
     Database["public"]["Views"]["personalized_comments"]["Row"]["commenter_emoji"]
   >;
 
-  upvote: NonNullable<
-    Database["public"]["Views"]["personalized_comments"]["Row"]["upvote"]
-  >;
+  upvote: Database["public"]["Views"]["personalized_comments"]["Row"]["upvote"];
 }
 
 /**

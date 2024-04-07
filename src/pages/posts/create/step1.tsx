@@ -44,7 +44,7 @@ import {
 } from "~/lib/media";
 import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
 import {MediaCategory} from "~/lib/types";
-import styles from "~/pages/create-post/step1.module.css";
+import styles from "~/pages/posts/create/step1.module.css";
 
 /**
  * Content mode
@@ -151,8 +151,8 @@ export const Step1: FC = () => {
   const [previewUrl, setPreviewUrl] = useState<string | undefined>(undefined);
   const mediaInput = useRef<HTMLInputElement | null>(null);
 
-  const post = useEphemeralUIStore(state => state.post);
-  const setPost = useEphemeralUIStore(state => state.setPost);
+  const post = useEphemeralUIStore(state => state.postBeingCreated);
+  const setPost = useEphemeralUIStore(state => state.setPostBeingCreated);
 
   const history = useHistory();
 

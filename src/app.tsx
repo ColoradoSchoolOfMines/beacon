@@ -19,11 +19,13 @@ import {checkRequiredAuthState} from "~/lib/utils";
 import {Step1 as AuthStep1} from "~/pages/auth/step1";
 import {Step2 as AuthStep2} from "~/pages/auth/step2";
 import {Step3 as AuthStep3} from "~/pages/auth/step3";
-import {Step1 as CreatePostStep1} from "~/pages/create-post/step1";
-import {Step2 as CreatePostStep2} from "~/pages/create-post/step2";
 import {Error} from "~/pages/error";
 import {Home} from "~/pages/home";
 import {Nearby} from "~/pages/nearby";
+import {Step1 as CreateCommentStep1} from "~/pages/posts/[id]/comments/create/step1";
+import {Post} from "~/pages/posts/[id]/post";
+import {Step1 as CreatePostStep1} from "~/pages/posts/create/step1";
+import {Step2 as CreatePostStep2} from "~/pages/posts/create/step2";
 import {Settings} from "~/pages/settings";
 
 /**
@@ -38,16 +40,47 @@ const SIGNED_OUT_MESSAGE_METADATA: GlobalMessageMetadata = {
 /**
  * Route authentication states
  */
-const routeAuthStates: Record<string, RequiredAuthState> = {
-  "/": RequiredAuthState.ANY,
-  "/auth/1": RequiredAuthState.UNAUTHENTICATED,
-  "/auth/2": RequiredAuthState.UNAUTHENTICATED,
-  "/auth/3": RequiredAuthState.UNAUTHENTICATED,
-  "/nearby": RequiredAuthState.AUTHENTICATED,
-  "/posts/create/1": RequiredAuthState.AUTHENTICATED,
-  "/posts/create/2": RequiredAuthState.AUTHENTICATED,
-  "/settings": RequiredAuthState.AUTHENTICATED,
-};
+const routeAuthStates = [
+  {
+    pathname: /^\/$/,
+    requiredState: RequiredAuthState.ANY,
+  },
+  {
+    pathname: /^\/auth\/1$/,
+    requiredState: RequiredAuthState.UNAUTHENTICATED,
+  },
+  {
+    pathname: /^\/auth\/2$/,
+    requiredState: RequiredAuthState.UNAUTHENTICATED,
+  },
+  {
+    pathname: /^\/auth\/3$/,
+    requiredState: RequiredAuthState.UNAUTHENTICATED,
+  },
+  {
+    pathname: /^\/nearby$/,
+    requiredState: RequiredAuthState.AUTHENTICATED,
+  },
+  {
+    pathname: /^\/posts\/create\/1$/,
+    requiredState: RequiredAuthState.AUTHENTICATED,
+  },
+  {
+    pathname: /^\/posts\/create\/2$/,
+    requiredState: RequiredAuthState.AUTHENTICATED,
+  },
+  {
+    pathname: /^\/posts\/[\dA-Fa-f]{8}(?:-[\dA-Fa-f]{4}){3}-[\dA-Fa-f]{12}$/,
+    requiredState: RequiredAuthState.AUTHENTICATED,
+  },
+  {
+    pathname: /^\/settings$/,
+    requiredState: RequiredAuthState.AUTHENTICATED,
+  },
+] as {
+  pathname: RegExp;
+  requiredState: RequiredAuthState;
+}[];
 
 // Set the user from the session (Block because this doesn't make a request to the backend)
 const session = await client.auth.getSession();
@@ -96,7 +129,9 @@ export const App: FC = () => {
    */
   const guardRoute = (pathname: string, user: User | undefined) => {
     // Get the required authentication state
-    const requiredState = routeAuthStates[pathname];
+    const requiredState = routeAuthStates.find(({pathname: regex}) =>
+      regex.test(pathname),
+    )?.requiredState;
 
     // Check the required authentication state
     if (
@@ -191,6 +226,14 @@ export const App: FC = () => {
 
           <Route path="/posts/create/2" exact={true}>
             <CreatePostStep2 />
+          </Route>
+
+          <Route path="/posts/:id/comments/create/1" exact={true}>
+            <CreateCommentStep1 />
+          </Route>
+
+          <Route path="/posts/:id" exact={true}>
+            <Post />
           </Route>
 
           <Route path="/settings" exact={true}>

@@ -117,16 +117,7 @@ AS (
     -- Only get comments for which the user is the commenter
     personalized_comment.private_commenter_id = auth.uid()
 
-    -- Or only show comments for posts the user is the poster of or can see
-    OR post_id IN (
-      SELECT id
-      FROM public.posts post
-      WHERE
-        -- Only get posts for which the user is the poster
-        post.private_poster_id = auth.uid()
-
-        -- Or only get posts for which the user is within the post's radius
-        OR public.distance_to(post.private_location) <= post.radius
-    )
+    -- Or only show comments for posts the user has access to
+    OR utilities.validate_post_access(post_id, auth.uid())
   )
 );
