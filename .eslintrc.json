@@ -232,6 +232,16 @@
       }
     ],
     "unicorn/filename-case": "off",
+    "unicorn/import-style": [
+      "error",
+      {
+        "styles": {
+          "node:path": {
+            "named": true
+          }
+        }
+      }
+    ],
     "unicorn/no-object-as-default-parameter": "off",
     "unicorn/no-useless-undefined": "off",
     "unicorn/numeric-separators-style": "off",

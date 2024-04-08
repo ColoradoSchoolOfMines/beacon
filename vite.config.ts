@@ -14,6 +14,7 @@ import UnoCSS from "unocss/vite";
 import {defineConfig} from "vite";
 import {VitePWA} from "vite-plugin-pwa";
 import Svgr from "vite-plugin-svgr";
+import TopLevelAwait from "vite-plugin-top-level-await";
 import Paths from "vite-tsconfig-paths";
 
 import {version} from "./package.json";
@@ -42,6 +43,7 @@ export default defineConfig(async () => {
       "import.meta.env.GIT_COMMIT": JSON.stringify(commit),
     },
     plugins: [
+      TopLevelAwait(),
       Svgr(),
       React(),
       Legacy(),
