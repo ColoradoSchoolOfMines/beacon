@@ -15,15 +15,28 @@ extend([mixPlugin]);
 /**
  * Primary color
  */
-const primary = new Colord("#206eeb");
+const primary = new Colord("#51c5db");
 
-// Generate primary tints and shades
-const primaryTones = Object.fromEntries(
-  [...primary.tints(22).reverse(), ...primary.shades(22).slice(1)]
-    .map((color, index) => [25 * index, color.toHex()])
-    .filter((_, index) => index === 1 || index % 2 === 0)
-    .slice(1, -1),
-);
+/**
+ * Secondary color
+ */
+const secondary = new Colord("#f69876");
+
+/**
+ * Generate tones of a color
+ * @param color Color to generate tones for
+ * @returns Tones
+ */
+const generateTones = (color: Colord) =>
+  Object.fromEntries(
+    [
+      ...color.tints(22).reverse(),
+      ...color.shades(22).slice(1),
+    ]
+      .map((tone, index) => [25 * index, tone.toHex()])
+      .filter((_, index) => index === 1 || index % 2 === 0)
+      .slice(1, -1),
+  );
 
 export default defineConfig({
   presets: [
@@ -34,7 +47,8 @@ export default defineConfig({
   transformers: [transformDirectives()],
   theme: {
     colors: {
-      primary: primaryTones,
+      primary: generateTones(primary),
+      secondary: generateTones(secondary),
     },
   },
 });

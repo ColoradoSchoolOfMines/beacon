@@ -56,8 +56,8 @@ export default defineConfig(async () => {
         manifest: {
           name: "Beacon",
           short_name: "Location-based social media",
-          theme_color: "#206eeb",
-          background_color: "#2dc4ff",
+          theme_color: "#51c5db",
+          background_color: "#0c1922",
           icons: [
             {
               src: "/logo-192x192.png",

@@ -4,7 +4,8 @@
 
 import {IonButton, IonContent, IonIcon, IonPage} from "@ionic/react";
 import {navigateCircleOutline, navigateCircleSharp} from "ionicons/icons";
-import {FC} from "react";
+import {FC, useEffect, useRef} from "react";
+import {useLocation} from "react-router-dom";
 import {useMeasure} from "react-use";
 
 import {Header} from "~/components/header";
@@ -25,6 +26,20 @@ export const Home: FC = () => {
   // Hooks
   const theme = usePersistentStore(state => state.theme);
   const [containerRef, {height, width}] = useMeasure();
+  const contentRef = useRef<HTMLIonContentElement>(null);
+  const location = useLocation();
+
+  // Effects
+  useEffect(() => {
+    (async () => {
+      if (contentRef.current === null) {
+        return;
+      }
+
+      // Scroll back to the top
+      await contentRef.current.scrollToTop(0);
+    })();
+  }, [location.pathname]);
 
   return (
     <IonPage ref={containerRef}>
@@ -35,6 +50,7 @@ export const Home: FC = () => {
         style={{
           "--window-height": `${height}px`,
         }}
+        ref={contentRef}
       >
         {/* Background */}
         <div
@@ -46,8 +62,8 @@ export const Home: FC = () => {
           <div
             className={`absolute bg-gradient-to-b w-full h-full ${
               theme === Theme.DARK
-                ? "from-black to-primary-650"
-                : "from-white to-primary-450"
+                ? "from-black to-primary-500"
+                : "from-white to-primary-600"
             }`}
           />
 
@@ -59,14 +75,14 @@ export const Home: FC = () => {
             <filter id="noiseFilter">
               <feTurbulence
                 type="fractalNoise"
-                baseFrequency="1"
-                numOctaves="3"
+                baseFrequency="10"
+                numOctaves="1"
                 stitchTiles="stitch"
               />
             </filter>
 
             <rect
-              opacity="0.08"
+              opacity={theme === Theme.DARK ? "0.1" : "0.4"}
               width="100%"
               height="100%"
               filter="url(#noiseFilter)"
@@ -77,7 +93,7 @@ export const Home: FC = () => {
         {/* First frame */}
         <div className="animate-fade-in animate-ease-in-out flex flex-col h-[var(--window-height)] items-center justify-center px-6 text-center w-full snap-center">
           <div className="my-2">
-            <h1 className="mb-1 text-8xl">Beacon</h1>
+            <h1 className="mb-1 text-7xl font-bold tracking-widest">BEACON</h1>
             <h2 className="mt-1 text-xl">A location-based social network.</h2>
           </div>
 

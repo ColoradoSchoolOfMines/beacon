@@ -194,7 +194,7 @@ export const App: FC = () => {
   return (
     <>
       <IonSplitPane contentId="main">
-        <Menu />
+        {location.pathname !== "/" && <Menu />}
 
         <IonRouterOutlet id="main">
           {/* Routes that are always available */}

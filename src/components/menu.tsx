@@ -91,7 +91,7 @@ const navItems: NavItem[] = [
   {
     title: "Authentication",
     requiredState: RequiredAuthState.UNAUTHENTICATED,
-    url: "/auth",
+    url: "/auth/1",
     position: NavItemPosition.TOP,
     iosIcon: lockClosedOutline,
     mdIcon: lockClosedSharp,
