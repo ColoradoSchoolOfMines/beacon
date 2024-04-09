@@ -28,8 +28,8 @@
      inkscape:deskcolor="#505050"
      inkscape:document-units="mm"
      inkscape:zoom="0.21251184"
-     inkscape:cx="990.53305"
-     inkscape:cy="799.95543"
+     inkscape:cx="665.84525"
+     inkscape:cy="941.12403"
      inkscape:window-width="1920"
      inkscape:window-height="1014"
      inkscape:window-x="0"
@@ -309,9 +309,9 @@
        x="0"
        y="0"
        inkscape:label="Background"
-       sodipodi:insensitive="true"
        rx="64"
-       ry="80" />
+       ry="64"
+       sodipodi:insensitive="true" />
     <ellipse
        style="display:inline;fill:none;fill-opacity:1;stroke:url(#linearGradient12);stroke-width:16;stroke-dasharray:none;stroke-opacity:1"
        id="path11"
@@ -384,8 +384,8 @@
        style="font-weight:bold;font-size:266.667px;font-family:Lato;-inkscape-font-specification:'Lato Bold';text-align:center;letter-spacing:60px;word-spacing:0px;white-space:pre;shape-inside:url(#rect3);display:inline;fill:none;stroke:#ffffff;stroke-width:64"><tspan
          x="685.99138"
          y="2506.6976"
-         id="tspan2"><tspan
+         id="tspan4"><tspan
            style="fill:#ffffff;stroke:none"
-           id="tspan1">BEACON</tspan></tspan></text>
+           id="tspan3">BEACON</tspan></tspan></text>
   </g>
 </svg>
