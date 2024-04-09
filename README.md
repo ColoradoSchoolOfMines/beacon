@@ -1,7 +1,7 @@
 # Beacon
 
 <p align="center">
-  <img alt="Beacon logo" height="256" width="256" src="src/assets/logo.png">
+  <img alt="Beacon card" height="640" width="512" src="src/assets/card.png">
 </p>
 
 A location-based social network.
@@ -68,29 +68,29 @@ npm run supabase:reset
 
 ### Frontend Environment Variables
 
-| Name                          | Description                                     | Default/Required                                                                                                        |
-| ----------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `VITE_HCAPTCHA_SITE_KEY`      | The hCaptcha site key                           | Required (:warning: **Must be manually set** :warning:; see [hCaptcha dashboard](https://dashboard.hcaptcha.com/sites)) |
-| `VITE_SUPABASE_FUNCTIONS_URL` | The absolute base URL of the Supabase functions | Defaults to the Supabase API URL                                                                                        |
-| `VITE_SUPABASE_URL`           | The Supabase API URL                            | Required (Automatically set by the setup script)                                                                        |
-| `VITE_SUPABASE_ANON_KEY`      | The Supabase API anonymous key                  | Required (Automatically set by the setup script)                                                                        |
+| Name                          | Description                                     | Default/Required                                                                                                         |
+| ----------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `VITE_HCAPTCHA_SITE_KEY`      | The hCaptcha site key                           | Required ( :warning: **Must be manually set** :warning:; see [hCaptcha dashboard](https://dashboard.hcaptcha.com/sites)) |
+| `VITE_SUPABASE_FUNCTIONS_URL` | The absolute base URL of the Supabase functions | Defaults to the Supabase API URL                                                                                         |
+| `VITE_SUPABASE_URL`           | The Supabase API URL                            | Required (Automatically set by the setup script)                                                                         |
+| `VITE_SUPABASE_ANON_KEY`      | The Supabase API anonymous key                  | Required (Automatically set by the setup script)                                                                         |
 
 ### Function Environment Variables
 
-| Name                          | Description                           | Default/Required                                        |
-| ----------------------------- | ------------------------------------- | ------------------------------------------------------- |
-| `WEBAUTHN_RP_ID`              | The WebAuthn Relying Party ID         | Defaults `beacon.localhost`                             |
-| `WEBAUTHN_RP_ORIGIN`          | The WebAuthn Relying Party origin     | Defaults to `https://WEBAUTHN_RP_ID`                    |
-| `WEBAUTHN_RP_NAME`            | The WebAuthn Relying Party name       | Defaults to `Beacon Social Network`                     |
-| `HCAPTCHA_SITE_KEY`           | The hCaptcha site key                 | Required (:warning: **Must be manually set** :warning:) |
-| `HCAPTCHA_SECRET_KEY`         | The hCaptcha secret key               | Required (:warning: **Must be manually set** :warning:) |
-| `X_SUPABASE_DB_URL`           | The Supabase database URL             | Required (Automatically set by the runtime)             |
-| `X_SUPABASE_URL`              | The Supabase API URL                  | Required (Automatically set by the runtime)             |
-| `X_SUPABASE_ANON_KEY`         | The Supabase API anonymous key        | Required (Automatically set by the runtime)             |
-| `X_SUPABASE_SERVICE_ROLE_KEY` | The Supabase API service role key     | Required (Automatically set by the runtime)             |
-| `X_SUPABASE_JWT_SECRET`       | The Supabase JWT secret               | Required (Automatically set by the setup script)        |
-| `X_SUPABASE_JWT_ISSUER`       | The Supabase JWT issuer               | Required (Automatically set by the setup script)        |
-| `X_SUPABASE_JWT_EXP`          | The Supabase JWT expiration (Seconds) | Defaults to `3600` seconds (`1` hour)                   |
+| Name                          | Description                           | Default/Required                                         |
+| ----------------------------- | ------------------------------------- | -------------------------------------------------------- |
+| `WEBAUTHN_RP_ID`              | The WebAuthn Relying Party ID         | Defaults `beacon.localhost`                              |
+| `WEBAUTHN_RP_ORIGIN`          | The WebAuthn Relying Party origin     | Defaults to `https://WEBAUTHN_RP_ID`                     |
+| `WEBAUTHN_RP_NAME`            | The WebAuthn Relying Party name       | Defaults to `Beacon Social Network`                      |
+| `HCAPTCHA_SITE_KEY`           | The hCaptcha site key                 | Required ( :warning: **Must be manually set** :warning:) |
+| `HCAPTCHA_SECRET_KEY`         | The hCaptcha secret key               | Required ( :warning: **Must be manually set** :warning:) |
+| `X_SUPABASE_DB_URL`           | The Supabase database URL             | Required (Automatically set by the runtime)              |
+| `X_SUPABASE_URL`              | The Supabase API URL                  | Required (Automatically set by the runtime)              |
+| `X_SUPABASE_ANON_KEY`         | The Supabase API anonymous key        | Required (Automatically set by the runtime)              |
+| `X_SUPABASE_SERVICE_ROLE_KEY` | The Supabase API service role key     | Required (Automatically set by the runtime)              |
+| `X_SUPABASE_JWT_SECRET`       | The Supabase JWT secret               | Required (Automatically set by the setup script)         |
+| `X_SUPABASE_JWT_ISSUER`       | The Supabase JWT issuer               | Required (Automatically set by the setup script)         |
+| `X_SUPABASE_JWT_EXP`          | The Supabase JWT expiration (Seconds) | Defaults to `3600` seconds (`1` hour)                    |
 
 ### Technologies
 
