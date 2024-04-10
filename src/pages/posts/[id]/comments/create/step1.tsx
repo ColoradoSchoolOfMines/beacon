@@ -34,13 +34,13 @@ import {Markdown} from "~/components/markdown";
 import {SupplementalError} from "~/components/supplemental-error";
 import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
 import {client} from "~/lib/supabase";
-import {Post} from "~/lib/types";
+import {GlobalMessageMetadata, Post} from "~/lib/types";
 import styles from "~/pages/posts/[id]/comments/create/step1.module.css";
 
 /**
  * Comment created message metadata
  */
-const COMMENT_CREATED_MESSAGE_METADATA = {
+const COMMENT_CREATED_MESSAGE_METADATA: GlobalMessageMetadata = {
   symbol: Symbol("comment.created"),
   name: "Success",
   description: "Your comment has been created.",
@@ -263,7 +263,7 @@ export const Step1: FC = () => {
                   onIonChange={event => onChange(event.detail.checked)}
                 >
                   <IonLabel>Make this post anonymous</IonLabel>
-                  <IonNote>
+                  <IonNote className="whitespace-break-spaces">
                     Your username will be hidden from other users.
                   </IonNote>
                 </IonToggle>

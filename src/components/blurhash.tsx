@@ -16,7 +16,7 @@ import {MediaDimensions, Theme} from "~/lib/types";
 /**
  * Blurhash component props
  */
-export interface BlurhashProps extends HTMLProps<HTMLCanvasElement> {
+interface BlurhashProps extends HTMLProps<HTMLCanvasElement> {
   /**
    * Ambient effect
    */

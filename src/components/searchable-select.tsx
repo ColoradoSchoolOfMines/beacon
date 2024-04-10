@@ -27,8 +27,9 @@ import {KeysOfType} from "~/lib/types";
 
 /**
  * Searchable select component props
+ * @param T Item type
  */
-export interface SearchableSelectProps<T extends object> {
+interface SearchableSelectProps<T extends object> {
   /**
    * Component children
    * @param open Open the selector
@@ -53,6 +54,8 @@ export interface SearchableSelectProps<T extends object> {
 
   /**
    * Item renderer
+   * @param item Item to render
+   * @returns JSX
    */
   itemRenderer: (item: T) => ReactNode;
 

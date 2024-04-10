@@ -119,13 +119,13 @@ useEphemeralUserStore.subscribe(async state => {
         setMessage({
           symbol: GENERIC_GEOLOCATION_ERROR_METADATA_SYMBOL,
           name: "Geolocation error",
-          description: error.message,
+          description: `Failed to get geolocation (${error.code}): ${error.message}`,
         });
       },
       {
         enableHighAccuracy: true,
         maximumAge: 1000 * 60 * 5,
-        timeout: 1000 * 10,
+        timeout: 1000 * 60,
       },
     );
   } catch (error) {

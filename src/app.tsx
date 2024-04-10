@@ -23,7 +23,7 @@ import {Error} from "~/pages/error";
 import {Home} from "~/pages/home";
 import {Nearby} from "~/pages/nearby";
 import {Step1 as CreateCommentStep1} from "~/pages/posts/[id]/comments/create/step1";
-import {Post} from "~/pages/posts/[id]/post";
+import {PostHome} from "~/pages/posts/[id]/index";
 import {Step1 as CreatePostStep1} from "~/pages/posts/create/step1";
 import {Step2 as CreatePostStep2} from "~/pages/posts/create/step2";
 import {Settings} from "~/pages/settings";
@@ -233,7 +233,7 @@ export const App: FC = () => {
           </Route>
 
           <Route path="/posts/:id" exact={true}>
-            <Post />
+            <PostHome />
           </Route>
 
           <Route path="/settings" exact={true}>

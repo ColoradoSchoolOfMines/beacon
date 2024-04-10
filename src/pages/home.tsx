@@ -31,14 +31,14 @@ export const Home: FC = () => {
 
   // Effects
   useEffect(() => {
-    (async () => {
+    setTimeout(async () => {
       if (contentRef.current === null) {
         return;
       }
 
       // Scroll back to the top
       await contentRef.current.scrollToTop(0);
-    })();
+    }, 50);
   }, [location.pathname]);
 
   return (

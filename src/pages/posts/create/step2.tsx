@@ -45,15 +45,23 @@ import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
 import {useEphemeralUserStore} from "~/lib/stores/ephemeral-user";
 import {usePersistentStore} from "~/lib/stores/persistent";
 import {client} from "~/lib/supabase";
-import {MeasurementSystem} from "~/lib/types";
+import {GlobalMessageMetadata, MeasurementSystem} from "~/lib/types";
 import {METERS_TO_KILOMETERS, METERS_TO_MILES} from "~/lib/utils";
-import {Error} from "~/pages/error";
 import styles from "~/pages/posts/create/step2.module.css";
+
+/**
+ * Geolocation not supported message metadata
+ */
+const GEOLOCATION_NOT_SUPPORTED_MESSAGE_METADATA: GlobalMessageMetadata = {
+  symbol: Symbol("geolocation.not-supported"),
+  name: "Geolocation not supported",
+  description: "Geolocation is not supported on this device.",
+};
 
 /**
  * Post created message metadata
  */
-const POST_CREATED_MESSAGE_METADATA = {
+const POST_CREATED_MESSAGE_METADATA: GlobalMessageMetadata = {
   symbol: Symbol("post.created"),
   name: "Success",
   description: "Your post has been created.",
@@ -164,6 +172,10 @@ export const Step2: FC = () => {
       throw new TypeError("Post is undefined");
     }
 
+    if (location === undefined) {
+      setMessage(GEOLOCATION_NOT_SUPPORTED_MESSAGE_METADATA);
+    }
+
     let blurHash: string | null = null;
     let aspectRatio: number | null = null;
 
@@ -228,16 +240,11 @@ export const Step2: FC = () => {
     await refreshContent?.();
 
     // Go back twice
-    history.go(-2);
+    history.goBack();
+    history.goBack();
   };
 
-  return location === undefined ? (
-    <Error
-      name="Geolocation error"
-      description="Geolocation not supported or permission denied."
-      homeButton={true}
-    />
-  ) : (
+  return (
     <CreatePostContainer back={true}>
       <form className="h-full" onSubmit={handleSubmit(onSubmit)}>
         <IonList className="flex flex-col h-full py-0">
@@ -252,7 +259,7 @@ export const Step2: FC = () => {
                   onIonChange={event => onChange(event.detail.checked)}
                 >
                   <IonLabel>Make this post anonymous</IonLabel>
-                  <IonNote>
+                  <IonNote className="whitespace-break-spaces">
                     Your username will be hidden from other users.
                   </IonNote>
                 </IonToggle>
@@ -262,7 +269,7 @@ export const Step2: FC = () => {
 
           <div className="flex flex-1 flex-col mt-4 mx-4">
             <IonLabel>Radius</IonLabel>
-            <IonNote>
+            <IonNote className="whitespace-break-spaces">
               Only people in the blue region will be able to see and comment on
               this post.
             </IonNote>
@@ -327,26 +334,28 @@ export const Step2: FC = () => {
               )}
             />
 
-            <Map
-              className="flex-1 mt-4 overflow-hidden rounded-lg w-full"
-              position={[location.coords.latitude, location.coords.longitude]}
-              bounds={[
-                [
-                  location.coords.latitude + 0.75,
-                  location.coords.longitude + 0.75,
-                ],
-                [
-                  location.coords.latitude - 0.75,
-                  location.coords.longitude - 0.75,
-                ],
-              ]}
-              zoom={11}
-              minZoom={6}
-              circle={{
-                center: [location.coords.latitude, location.coords.longitude],
-                radius: radius,
-              }}
-            />
+            {location !== undefined && (
+              <Map
+                className="flex-1 mt-4 overflow-hidden rounded-lg w-full"
+                position={[location.coords.latitude, location.coords.longitude]}
+                bounds={[
+                  [
+                    location.coords.latitude + 0.75,
+                    location.coords.longitude + 0.75,
+                  ],
+                  [
+                    location.coords.latitude - 0.75,
+                    location.coords.longitude - 0.75,
+                  ],
+                ]}
+                zoom={11}
+                minZoom={6}
+                circle={{
+                  center: [location.coords.latitude, location.coords.longitude],
+                  radius: radius,
+                }}
+              />
+            )}
           </div>
 
           <div className="m-4">
