@@ -239,7 +239,7 @@ export const Nearby: FC = () => {
           </SwipeableItem>
         )}
         fetchContent={fetchPosts}
-        header={<div className="px-4 w-full" ref={sizerRef} />}
+        fixedHeader={<div className="px-4 w-full" ref={sizerRef} />}
       />
 
       {showFABs && (

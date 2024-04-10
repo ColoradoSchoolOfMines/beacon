@@ -7,14 +7,14 @@ import {
   IonItemSliding,
   ItemSlidingCustomEvent,
 } from "@ionic/react";
-import {FC, ReactNode, useRef} from "react";
+import {FC, HTMLAttributes, ReactNode, useRef} from "react";
 
 import {usePersistentStore} from "~/lib/stores/persistent";
 
 /**
  * Swipeable item component props
  */
-interface SwipeableItemProps {
+interface SwipeableItemProps extends HTMLAttributes<HTMLIonItemSlidingElement> {
   /**
    * Item content
    */
@@ -52,6 +52,7 @@ export const SwipeableItem: FC<SwipeableItemProps> = ({
   endOption,
   startAction,
   endAction,
+  ...props
 }) => {
   // Hooks
   const previousRatio = useRef<number>();
@@ -100,7 +101,7 @@ export const SwipeableItem: FC<SwipeableItemProps> = ({
   };
 
   return (
-    <IonItemSliding onIonDrag={onItemSlidingSwipe}>
+    <IonItemSliding {...props} onIonDrag={onItemSlidingSwipe}>
       {useSlidingActions && (
         <IonItemOptions side="start">{startOption}</IonItemOptions>
       )}

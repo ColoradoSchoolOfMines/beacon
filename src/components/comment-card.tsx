@@ -187,7 +187,7 @@ export const CommentCard: FC<CommentCardProps> = ({
       <IonCardContent className="p-4">
         <div className="flex flex-row items-center justify-between w-full">
           <AvatarContainer
-            className="h-10 w-10"
+            className="h-8 w-8"
             {...(comment.commenter_id === null
               ? {}
               : {

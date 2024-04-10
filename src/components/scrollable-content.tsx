@@ -82,14 +82,14 @@ interface ScrollableContentProps<T extends object> {
   onRefresh?: () => void | Promise<void>;
 
   /**
-   * Header slot
+   * Fixed header slot (Fixed to the top of the viewport)
    */
-  header?: ReactNode;
+  fixedHeader?: ReactNode;
 
   /**
-   * Footer slot
+   * Inline header slot (Inline with content items)
    */
-  footer?: ReactNode;
+  inlineHeader?: ReactNode;
 
   /**
    * Content range span (How many individual content items to fetch at a time)
@@ -141,8 +141,8 @@ export const ScrollableContent = <T extends object>({
   contentItemRenderer,
   fetchContent: baseFetchContent,
   onRefresh,
-  header,
-  footer,
+  fixedHeader,
+  inlineHeader,
   contentRangeSpan = 9,
   prefetchTimeCoefficient = 1.2,
   maximumScrollMetadatas = 10,
@@ -155,8 +155,8 @@ export const ScrollableContent = <T extends object>({
 
   // Hooks
   const [outOfContent, setOutOfContent] = useState(false);
+  const [fetching, setFetching] = useState(false);
 
-  const fetching = useRef(false);
   const contentRange = useRef<ContentRange>([...defaultContentRange]);
   const cutoffTimestamp = useRef<Date>(new Date());
   const fetchLatency = useRef(50);
@@ -205,11 +205,11 @@ export const ScrollableContent = <T extends object>({
     reset: boolean,
   ) => {
     // Enter critical section
-    if (fetching.current) {
+    if (fetching) {
       return;
     }
 
-    fetching.current = true;
+    setFetching(true);
 
     // Record the start time
     const startTime = Date.now();
@@ -229,11 +229,8 @@ export const ScrollableContent = <T extends object>({
     cutoffTimestamp.current = cutoff;
     fetchLatency.current = endTime - startTime;
 
-    // Call the refresh event handler
-    await onRefresh?.();
-
     // Exit critical section
-    fetching.current = false;
+    setFetching(false);
   };
 
   /**
@@ -256,6 +253,9 @@ export const ScrollableContent = <T extends object>({
   ) => {
     // Refresh content
     await refreshContent();
+
+    // Call the refresh event handler
+    await onRefresh?.();
 
     // Complete the refresher
     event.detail.complete();
@@ -386,62 +386,62 @@ export const ScrollableContent = <T extends object>({
       </IonRefresher>
 
       <div className="flex flex-col h-full w-full">
-        {header !== undefined && header}
+        {fixedHeader !== undefined && fixedHeader}
 
-        {contentItems.length > 0 ? (
-          <VList
-            className="bottom-0 ion-content-scroll-host left-0 overflow-y-auto right-0 top-0"
-            onScroll={onScroll}
-            onRangeChange={onRangeChange}
-            style={{
-              height,
-            }}
-            ref={virtualScroller}
-          >
-            {contentItems.map((contentItem, index) =>
-              contentItemRenderer(contentItem, index, () =>
-                onContentItemLoaded(contentItem),
-              ),
-            )}
+        <VList
+          className="bottom-0 ion-content-scroll-host left-0 overflow-y-auto right-0 top-0"
+          onScroll={onScroll}
+          onRangeChange={onRangeChange}
+          style={{
+            height,
+          }}
+          ref={virtualScroller}
+        >
+          {inlineHeader !== undefined && inlineHeader}
 
-            {contentItems.length > 0 && outOfContent ? (
-              <IonItem lines="none">
-                <p className="mt-6 mb-8 text-center text-xl w-full">
-                  No more {contentItemName}s to see 😢
-                  <br />
-                  <button
-                    aria-label={`Refresh all ${contentItemName}s`}
-                    onClick={refreshContent}
-                  >
-                    <u>Refresh</u>
-                  </button>{" "}
-                  the page to see new {contentItemName}s!
-                </p>
-              </IonItem>
-            ) : (
-              <IonInfiniteScroll>
-                <IonInfiniteScrollContent />
-              </IonInfiniteScroll>
-            )}
-          </VList>
-        ) : (
-          <div className="flex flex-col items-center justify-center flex-1">
-            {fetching ? (
-              <IonSpinner className="h-16 w-16" color="primary" />
-            ) : (
-              <div className="text-center">
-                <h1 className="text-8xl">😢</h1>
-                <p className="mt-4 text-xl">
-                  No {contentItemName}s to see 😢
-                  <br />
-                  Make a new {contentItemName} to see it here!
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+          {contentItems.map((contentItem, index) =>
+            contentItemRenderer(contentItem, index, () =>
+              onContentItemLoaded(contentItem),
+            ),
+          )}
 
-        {footer !== undefined && footer}
+          {contentItems.length > 0 && outOfContent && (
+            <IonItem lines="none">
+              <p className="mt-6 mb-8 text-center text-xl w-full">
+                No more {contentItemName}s to see 😢
+                <br />
+                <button
+                  aria-label={`Refresh all ${contentItemName}s`}
+                  onClick={refreshContent}
+                >
+                  <u>Refresh</u>
+                </button>{" "}
+                the page to see new {contentItemName}s!
+              </p>
+            </IonItem>
+          )}
+
+          {contentItems.length > 0 ? (
+            <IonInfiniteScroll>
+              <IonInfiniteScrollContent />
+            </IonInfiniteScroll>
+          ) : (
+            <div className="flex flex-col items-center justify-center">
+              {fetching ? (
+                <IonSpinner className="h-16 w-16" color="primary" />
+              ) : (
+                <div className="text-center">
+                  <h1 className="text-8xl">😢</h1>
+                  <p className="mt-4 text-xl">
+                    No {contentItemName}s to see 😢
+                    <br />
+                    Make a new {contentItemName} to see it here!
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </VList>
       </div>
     </IonContent>
   );
