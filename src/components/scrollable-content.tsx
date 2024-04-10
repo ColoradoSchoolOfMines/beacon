@@ -388,45 +388,50 @@ export const ScrollableContent = <T extends object>({
       <div className="flex flex-col h-full w-full">
         {fixedHeader !== undefined && fixedHeader}
 
-        <VList
-          className="bottom-0 ion-content-scroll-host left-0 overflow-y-auto right-0 top-0"
-          onScroll={onScroll}
-          onRangeChange={onRangeChange}
-          style={{
-            height,
-          }}
-          ref={virtualScroller}
-        >
-          {inlineHeader !== undefined && inlineHeader}
+        {contentItems.length > 0 ? (
+          <VList
+            className="ion-content-scroll-host"
+            onScroll={onScroll}
+            onRangeChange={onRangeChange}
+            style={{
+              height,
+            }}
+            ref={virtualScroller}
+          >
+            {inlineHeader !== undefined && inlineHeader}
 
-          {contentItems.map((contentItem, index) =>
-            contentItemRenderer(contentItem, index, () =>
-              onContentItemLoaded(contentItem),
-            ),
-          )}
+            {contentItems.map((contentItem, index) =>
+              contentItemRenderer(contentItem, index, () =>
+                onContentItemLoaded(contentItem),
+              ),
+            )}
 
-          {contentItems.length > 0 && outOfContent && (
-            <IonItem lines="none">
-              <p className="mt-6 mb-8 text-center text-xl w-full">
-                No more {contentItemName}s to see 😢
-                <br />
-                <button
-                  aria-label={`Refresh all ${contentItemName}s`}
-                  onClick={refreshContent}
-                >
-                  <u>Refresh</u>
-                </button>{" "}
-                the page to see new {contentItemName}s!
-              </p>
-            </IonItem>
-          )}
+            {contentItems.length > 0 && outOfContent && (
+              <IonItem lines="none">
+                <p className="mt-6 mb-8 text-center text-xl w-full">
+                  No more {contentItemName}s to see 😢
+                  <br />
+                  <button
+                    aria-label={`Refresh all ${contentItemName}s`}
+                    onClick={refreshContent}
+                  >
+                    <u>Refresh</u>
+                  </button>{" "}
+                  the page to see new {contentItemName}s!
+                </p>
+              </IonItem>
+            )}
 
-          {contentItems.length > 0 ? (
-            <IonInfiniteScroll>
-              <IonInfiniteScrollContent />
-            </IonInfiniteScroll>
-          ) : (
-            <div className="flex flex-col items-center justify-center">
+            {contentItems.length > 0 && (
+              <IonInfiniteScroll>
+                <IonInfiniteScrollContent />
+              </IonInfiniteScroll>
+            )}
+          </VList>
+        ) : (
+          <>
+            {inlineHeader !== undefined && inlineHeader}
+            <div className="flex flex-col flex-1 items-center justify-center">
               {fetching ? (
                 <IonSpinner className="h-16 w-16" color="primary" />
               ) : (
@@ -440,8 +445,8 @@ export const ScrollableContent = <T extends object>({
                 </div>
               )}
             </div>
-          )}
-        </VList>
+          </>
+        )}
       </div>
     </IonContent>
   );

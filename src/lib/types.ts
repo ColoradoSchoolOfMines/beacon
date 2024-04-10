@@ -53,6 +53,31 @@ export type PrefixKeys<T, P extends string> = {
 };
 
 /**
+ * Votable abstract entity
+ */
+export interface VotableEntity {
+  /**
+   * Unique entity identifier
+   */
+  id: string;
+
+  /**
+   * Whether or not the current user has upvoted the entity (`true`), downvoted the entity (`false`), or not voted on the entity (`null`)
+   */
+  upvote: boolean | null;
+
+  /**
+   * The current number of upvotes on the entity
+   */
+  upvotes: number;
+
+  /**
+   * The current number of downvotes on the entity
+   */
+  downvotes: number;
+}
+
+/**
  * Global information message metadata
  */
 export interface GlobalMessageMetadata {

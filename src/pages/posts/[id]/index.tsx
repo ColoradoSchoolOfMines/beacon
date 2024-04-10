@@ -1,5 +1,5 @@
 /**
- * @file Post home page
+ * @file Post index page
  */
 /* eslint-disable unicorn/no-null */
 /* eslint-disable camelcase */
@@ -17,7 +17,6 @@ import {
   IonTitle,
   IonToolbar,
 } from "@ionic/react";
-import {PostgrestError} from "@supabase/supabase-js";
 import {
   addOutline,
   addSharp,
@@ -26,7 +25,6 @@ import {
   arrowUpOutline,
   arrowUpSharp,
 } from "ionicons/icons";
-import {cloneDeep} from "lodash-es";
 import {FC, useEffect, useState} from "react";
 import {useHistory, useParams} from "react-router-dom";
 import {useMeasure} from "react-use";
@@ -38,12 +36,13 @@ import {SwipeableItem} from "~/components/swipeable-item";
 import {usePersistentStore} from "~/lib/stores/persistent";
 import {client} from "~/lib/supabase";
 import {Comment, Post} from "~/lib/types";
+import {toggleVote} from "~/lib/vote";
 
 /**
- * Post home page
+ * Post index page
  * @returns JSX
  */
-export const PostHome: FC = () => {
+export const PostIndex: FC = () => {
   // Hooks
   const [post, setPost] = useState<Post | undefined>();
   const [comments, setComments] = useState<Comment[]>([]);
@@ -149,75 +148,7 @@ export const PostHome: FC = () => {
    * @param upvote Whether the vote is an upvote or a downvote
    */
   const togglePostVote = async (post: Post, upvote: boolean) => {
-    const oldPost = cloneDeep(post);
-    let error: PostgrestError | null = null;
-
-    // Upvote the post
-    if (post.upvote !== true && upvote) {
-      // Optimistically update the post
-      setPost({
-        ...post,
-        upvotes: post.upvotes + 1,
-        downvotes: post.upvote === false ? post.downvotes - 1 : post.downvotes,
-        upvote: true,
-      });
-
-      // Upsert the vote
-      ({error} = await client.from("post_votes").upsert(
-        {
-          post_id: post.id,
-          upvote: true,
-        },
-        {
-          onConflict: "post_id, voter_id",
-        },
-      ));
-    }
-    // Downvote the post
-    else if (post.upvote !== false && !upvote) {
-      // Optimistically update the post
-      setPost({
-        ...post,
-        upvotes: post.upvote === true ? post.upvotes - 1 : post.upvotes,
-        downvotes: post.downvotes + 1,
-        upvote: false,
-      });
-
-      // Upsert the vote
-      ({error} = await client.from("post_votes").upsert(
-        {
-          post_id: post.id,
-          upvote: false,
-        },
-        {
-          onConflict: "post_id, voter_id",
-        },
-      ));
-    }
-    // Delete the vote
-    else {
-      // Optimistically update the post
-      setPost({
-        ...post,
-        upvotes: post.upvote === true ? post.upvotes - 1 : post.upvotes,
-        downvotes: post.upvote === false ? post.downvotes - 1 : post.downvotes,
-        upvote: null,
-      });
-
-      // Delete the vote
-      ({error} = await client
-        .from("post_votes")
-        .delete()
-        .eq("post_id", post.id));
-    }
-
-    // Handle error
-    if (error !== null) {
-      // Restore the post
-      setPost(oldPost);
-
-      return;
-    }
+    await toggleVote(post, setPost, upvote, "post_votes", "post_id");
   };
 
   /**
@@ -226,79 +157,13 @@ export const PostHome: FC = () => {
    * @param upvote Whether the vote is an upvote or a downvote
    */
   const toggleCommentVote = async (comment: Comment, upvote: boolean) => {
-    const oldComment = cloneDeep(comment);
-    let error: PostgrestError | null = null;
-
-    // Upvote the comment
-    if (comment.upvote !== true && upvote) {
-      // Optimistically update the comment
-      setComment({
-        ...comment,
-        upvotes: comment.upvotes + 1,
-        downvotes:
-          comment.upvote === false ? comment.downvotes - 1 : comment.downvotes,
-        upvote: true,
-      });
-
-      // Upsert the vote
-      ({error} = await client.from("comment_votes").upsert(
-        {
-          comment_id: comment.id,
-          upvote: true,
-        },
-        {
-          onConflict: "comment_id, voter_id",
-        },
-      ));
-    }
-    // Downvote the comment
-    else if (comment.upvote !== false && !upvote) {
-      // Optimistically update the comment
-      setComment({
-        ...comment,
-        upvotes:
-          comment.upvote === true ? comment.upvotes - 1 : comment.upvotes,
-        downvotes: comment.downvotes + 1,
-        upvote: false,
-      });
-
-      // Upsert the vote
-      ({error} = await client.from("comment_votes").upsert(
-        {
-          comment_id: comment.id,
-          upvote: false,
-        },
-        {
-          onConflict: "comment_id, voter_id",
-        },
-      ));
-    }
-    // Delete the vote
-    else {
-      // Optimistically update the comment
-      setComment({
-        ...comment,
-        upvotes:
-          comment.upvote === true ? comment.upvotes - 1 : comment.upvotes,
-        downvotes:
-          comment.upvote === false ? comment.downvotes - 1 : comment.downvotes,
-        upvote: null,
-      });
-
-      // Delete the vote
-      ({error} = await client
-        .from("comment_votes")
-        .delete()
-        .eq("comment_id", comment.id));
-    }
-
-    // Handle error
-    if (error !== null) {
-      // Restore the comment
-      setComment(oldComment);
-
-      return;
-    }
+    await toggleVote(
+      comment,
+      setComment,
+      upvote,
+      "comment_votes",
+      "comment_id",
+    );
   };
 
   /**

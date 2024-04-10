@@ -1,17 +1,17 @@
 /**
- * @file Home page
+ * @file Index page
  */
 
 import {IonButton, IonContent, IonIcon, IonPage} from "@ionic/react";
 import {navigateCircleOutline, navigateCircleSharp} from "ionicons/icons";
 import {FC, useEffect, useRef} from "react";
 import {useLocation} from "react-router-dom";
-import {useMeasure} from "react-use";
+import {useMeasure, useMedia} from "react-use";
 
 import {Header} from "~/components/header";
 import {usePersistentStore} from "~/lib/stores/persistent";
 import {Theme} from "~/lib/types";
-import styles from "~/pages/home.module.css";
+import styles from "~/pages/index.module.css";
 
 /**
  * Number of frames
@@ -19,15 +19,16 @@ import styles from "~/pages/home.module.css";
 const FRAME_COUNT = 5;
 
 /**
- * Home page
+ * Index page
  * @returns JSX
  */
-export const Home: FC = () => {
+export const Index: FC = () => {
   // Hooks
   const theme = usePersistentStore(state => state.theme);
   const [containerRef, {height, width}] = useMeasure();
   const contentRef = useRef<HTMLIonContentElement>(null);
   const location = useLocation();
+  const prefersReducedMotion = useMedia("(prefers-reduced-motion: reduce)");
 
   // Effects
   useEffect(() => {
@@ -82,18 +83,26 @@ export const Home: FC = () => {
             </filter>
 
             <rect
-              opacity={theme === Theme.DARK ? "0.1" : "0.4"}
-              width="100%"
-              height="100%"
+              opacity={theme === Theme.DARK ? "0.3" : "0.6"}
+              width="10000%"
+              height="10000%"
               filter="url(#noiseFilter)"
-            />
+            >
+              {!prefersReducedMotion && (
+                <animateMotion
+                  dur="500ms"
+                  repeatCount="indefinite"
+                  path="M -1000 -1000 L 1000 1000 L 0 0 L 1000 1000 L -1000 -1000 L 0 0 L -1000 -1000"
+                />
+              )}
+            </rect>
           </svg>
         </div>
 
         {/* First frame */}
         <div className="animate-fade-in animate-ease-in-out flex flex-col h-[var(--window-height)] items-center justify-center px-6 text-center w-full snap-center">
           <div className="my-2">
-            <h1 className="mb-1 text-7xl font-bold tracking-widest">BEACON</h1>
+            <h1 className="mb-1 text-7xl font-bold tracking-[0.2em]">BEACON</h1>
             <h2 className="mt-1 text-xl">A location-based social network.</h2>
           </div>
 
