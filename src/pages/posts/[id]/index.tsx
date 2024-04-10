@@ -33,10 +33,10 @@ import {CommentCard} from "~/components/comment-card";
 import {PostCard} from "~/components/post-card";
 import {ScrollableContent} from "~/components/scrollable-content";
 import {SwipeableItem} from "~/components/swipeable-item";
+import {insertView, toggleVote} from "~/lib/entities";
 import {usePersistentStore} from "~/lib/stores/persistent";
 import {client} from "~/lib/supabase";
 import {Comment, Post} from "~/lib/types";
-import {toggleVote} from "~/lib/vote";
 
 /**
  * Post index page
@@ -93,14 +93,6 @@ export const PostIndex: FC = () => {
   };
 
   /**
-   * Content refresh event handler
-   */
-  const onContentRefresh = async () => {
-    // Update the post
-    await updatePost();
-  };
-
-  /**
    * Fetch comments
    * @param start Start index
    * @param end End index
@@ -132,14 +124,7 @@ export const PostIndex: FC = () => {
    */
   const onCommentViewed = async (comment: Comment) => {
     // Insert the view
-    await client.from("comment_views").upsert(
-      {
-        comment_id: comment.id,
-      },
-      {
-        onConflict: "comment_id, viewer_id",
-      },
-    );
+    await insertView("comment_views", "comment_id", comment.id);
   };
 
   /**
@@ -227,7 +212,7 @@ export const PostIndex: FC = () => {
           </SwipeableItem>
         )}
         fetchContent={fetchComments}
-        onRefresh={onContentRefresh}
+        onRefresh={updatePost}
         fixedHeader={<div className="px-4 w-full" ref={sizerRef} />}
         inlineHeader={
           post !== undefined && (

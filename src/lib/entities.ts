@@ -1,5 +1,5 @@
 /**
- * @file Vote utility
+ * @file Entity utilities
  */
 
 import {PostgrestError} from "@supabase/supabase-js";
@@ -8,6 +8,37 @@ import {cloneDeep} from "lodash-es";
 import {Database} from "~/lib/schema";
 import {client} from "~/lib/supabase";
 import {KeysOfType, VotableEntity} from "~/lib/types";
+
+/**
+ * Insert a view
+ * @param table Table to insert the view into
+ * @param entityIDColumn Identifier column of the entity the view is for
+ * @param entityID ID of the entity to insert the view for
+ */
+export const insertView = async <
+  T extends KeysOfType<
+    Database["public"]["Tables"],
+    {
+      Row: {
+        id: string;
+        viewer_id: string;
+      };
+    }
+  >,
+>(
+  table: T,
+  entityIDColumn: keyof Database["public"]["Tables"][T]["Row"],
+  entityID: string,
+) => {
+  await client.from(table).upsert(
+    {
+      [entityIDColumn]: entityID,
+    } as any,
+    {
+      onConflict: `${entityIDColumn as string}, viewer_id`,
+    },
+  );
+};
 
 /**
  * Toggle a vote on an entity

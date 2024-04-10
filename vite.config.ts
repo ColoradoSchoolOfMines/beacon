@@ -55,7 +55,8 @@ export default defineConfig(async () => {
         registerType: "autoUpdate",
         manifest: {
           name: "Beacon",
-          short_name: "Location-based social media",
+          description: "Location-based social media",
+          start_url: "/nearby",
           theme_color: "#51c5db",
           background_color: "#0c1922",
           icons: [

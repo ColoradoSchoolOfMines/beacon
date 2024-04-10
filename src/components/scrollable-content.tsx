@@ -158,6 +158,7 @@ export const ScrollableContent = <T extends object>({
   const [fetching, setFetching] = useState(false);
 
   const contentRange = useRef<ContentRange>([...defaultContentRange]);
+  const visibleContentRange = useRef<ContentRange>([...defaultContentRange]);
   const cutoffTimestamp = useRef<Date>(new Date());
   const fetchLatency = useRef(50);
 
@@ -245,6 +246,50 @@ export const ScrollableContent = <T extends object>({
   };
 
   /**
+   * Update the viewed content items in the visible range
+   */
+  const updatedViewedContentItems = async () => {
+    // Check if all content items in range have been loaded
+    const allLoaded = contentItems
+      .slice(visibleContentRange.current[0], visibleContentRange.current[1])
+      .every(contentItem =>
+        loadedContentItems.current.has(contentItem[contentItemKey] as string),
+      );
+
+    // Mark all content items in range as viewed
+    if (allLoaded) {
+      const results = [];
+
+      for (
+        let i = visibleContentRange.current[0];
+        i < Math.min(visibleContentRange.current[1], contentItems.length);
+        i++
+      ) {
+        const contentItem = contentItems[i]!;
+
+        // Skip if the content item has already been viewed
+        if (
+          viewedContentItems.current.has(contentItem[contentItemKey] as string)
+        ) {
+          continue;
+        }
+
+        // Update the viewed content items
+        viewedContentItems.current.add(contentItem[contentItemKey] as string);
+
+        results.push(
+          (async () => {
+            // Call the content item viewed event handler
+            await onContentItemViewed?.(contentItem);
+          })(),
+        );
+      }
+
+      await Promise.all(results);
+    }
+  };
+
+  /**
    * Refresher refresh event handler
    * @param event Refresher refresh event
    */
@@ -323,60 +368,24 @@ export const ScrollableContent = <T extends object>({
    * @param end End index
    */
   const onRangeChange = async (start: number, end: number) => {
-    // Check if all content items in range have been loaded
-    let allLoaded = true;
+    // Update the visible content range
+    visibleContentRange.current[0] = start;
+    visibleContentRange.current[1] = end;
 
-    for (let i = start; i < end; i++) {
-      const contentItem = contentItems[i];
-
-      // Skip if the content item has already been loaded
-      if (
-        contentItem === undefined ||
-        !loadedContentItems.current.has(contentItem[contentItemKey] as string)
-      ) {
-        allLoaded = false;
-        break;
-      }
-    }
-
-    // Mark all content items in range as viewed
-    if (allLoaded) {
-      const results = [];
-
-      for (let i = start; i < end; i++) {
-        const contentItem = contentItems[i]!;
-
-        // Skip if the content item has already been viewed
-        if (
-          viewedContentItems.current.has(contentItem[contentItemKey] as string)
-        ) {
-          continue;
-        }
-
-        results.push(
-          (async () => {
-            // Call the content item viewed event handler
-            await onContentItemViewed?.(contentItem);
-
-            // Update the viewed content items
-            viewedContentItems.current.add(
-              contentItem[contentItemKey] as string,
-            );
-          })(),
-        );
-      }
-
-      await Promise.all(results);
-    }
+    // Update the viewed content items in the visible range
+    await updatedViewedContentItems();
   };
 
   /**
    * Content item load event handler
    * @param contentItem Content item
    */
-  const onContentItemLoaded = (contentItem: T) => {
+  const onContentItemLoaded = async (contentItem: T) => {
     // Update the loaded content items
     loadedContentItems.current.add(contentItem[contentItemKey] as string);
+
+    // Update the viewed content items in the visible range
+    await updatedViewedContentItems();
   };
 
   return (

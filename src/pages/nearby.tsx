@@ -32,10 +32,10 @@ import {useMeasure} from "react-use";
 import {PostCard} from "~/components/post-card";
 import {ScrollableContent} from "~/components/scrollable-content";
 import {SwipeableItem} from "~/components/swipeable-item";
+import {insertView, toggleVote} from "~/lib/entities";
 import {usePersistentStore} from "~/lib/stores/persistent";
 import {client} from "~/lib/supabase";
 import {Post} from "~/lib/types";
-import {toggleVote} from "~/lib/vote";
 
 /**
  * Nearby page
@@ -88,14 +88,7 @@ export const Nearby: FC = () => {
    */
   const onPostViewed = async (post: Post) => {
     // Insert the view
-    await client.from("post_views").upsert(
-      {
-        post_id: post.id,
-      },
-      {
-        onConflict: "post_id, viewer_id",
-      },
-    );
+    await insertView("post_views", "post_id", post.id);
   };
 
   /**
