@@ -218,17 +218,10 @@ export type Post<T extends boolean = boolean> = {
   created_at: NonNullable<
     Database["public"]["Views"]["personalized_posts"]["Row"]["created_at"]
   >;
-  radius: NonNullable<
-    Database["public"]["Views"]["personalized_posts"]["Row"]["radius"]
-  >;
   content: NonNullable<
     Database["public"]["Views"]["personalized_posts"]["Row"]["content"]
   >;
   has_media: T;
-  distance: NonNullable<
-    Database["public"]["Views"]["personalized_posts"]["Row"]["distance"]
-  >;
-
   views: NonNullable<
     Database["public"]["Views"]["personalized_posts"]["Row"]["views"]
   >;
@@ -240,6 +233,12 @@ export type Post<T extends boolean = boolean> = {
   >;
   comments: NonNullable<
     Database["public"]["Views"]["personalized_posts"]["Row"]["comments"]
+  >;
+  distance: NonNullable<
+    Database["public"]["Views"]["personalized_posts"]["Row"]["distance"]
+  >;
+  rank: NonNullable<
+    Database["public"]["Views"]["personalized_posts"]["Row"]["rank"]
   >;
 
   is_mine: NonNullable<
@@ -315,12 +314,14 @@ export interface Comment {
   content: NonNullable<
     Database["public"]["Views"]["personalized_comments"]["Row"]["content"]
   >;
-
   upvotes: NonNullable<
     Database["public"]["Views"]["personalized_comments"]["Row"]["upvotes"]
   >;
   downvotes: NonNullable<
     Database["public"]["Views"]["personalized_comments"]["Row"]["downvotes"]
+  >;
+  rank: NonNullable<
+    Database["public"]["Views"]["personalized_comments"]["Row"]["rank"]
   >;
 
   is_mine: NonNullable<

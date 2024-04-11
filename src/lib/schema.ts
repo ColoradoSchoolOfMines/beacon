@@ -1234,7 +1234,6 @@ export type Database = {
           poster_color: string | null;
           poster_emoji: string | null;
           poster_id: string | null;
-          radius: number | null;
           rank: number | null;
           upvote: boolean | null;
           upvotes: number | null;

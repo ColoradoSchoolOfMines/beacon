@@ -42,7 +42,12 @@ interface ScrollableContentProps<T extends object> {
   /**
    * Content item unique identifier key
    */
-  contentItemKey: KeysOfType<T, string>;
+  contentItemIDKey: KeysOfType<T, string>;
+
+  /**
+   * Content item rank key
+   */
+  contentItemRankKey: KeysOfType<T, number>;
 
   /**
    * Content item viewed event handler
@@ -65,16 +70,11 @@ interface ScrollableContentProps<T extends object> {
 
   /**
    * Fetch content
-   * @param start Start index
-   * @param end End index
-   * @param cutoff Cutoff timestamp (Fetch content created before or at this timestamp)
+   * @param limit Limit
+   * @param cutoffRank Cutoff rank or undefined for no cutoff
    * @returns Content items
    */
-  fetchContent: (
-    start: number,
-    end: number,
-    cutoff: Date,
-  ) => T[] | Promise<T[]>;
+  fetchContent: (limit: number, cutoffRank?: number) => T[] | Promise<T[]>;
 
   /**
    * Refresh event handler
@@ -87,9 +87,9 @@ interface ScrollableContentProps<T extends object> {
   header?: ReactNode;
 
   /**
-   * Content range span (How many individual content items to fetch at a time)
+   * Content range limit (Maximum number of content items to fetch at a time)
    */
-  contentRangeSpan?: number;
+  contentRangeLimit?: number;
 
   /**
    * Prefetch time coefficient (Multiplied by the estimated time to scroll to the bottom to determine when to prefetch more content)
@@ -131,13 +131,14 @@ export const ScrollableContent = <T extends object>({
   contentItemName,
   contentItems,
   setContentItems,
-  contentItemKey,
+  contentItemIDKey,
+  contentItemRankKey,
   onContentItemViewed,
   contentItemRenderer,
   fetchContent: baseFetchContent,
   onRefresh,
   header,
-  contentRangeSpan = 9,
+  contentRangeLimit = 9,
   prefetchTimeCoefficient = 1.2,
   maximumScrollMetadatas = 10,
 }: ScrollableContentProps<T>) => {
@@ -145,15 +146,14 @@ export const ScrollableContent = <T extends object>({
   /**
    * Default content index range
    */
-  const defaultContentRange: ContentRange = [0, contentRangeSpan];
+  const defaultContentRange: ContentRange = [0, contentRangeLimit];
 
   // Hooks
   const [outOfContent, setOutOfContent] = useState(false);
   const [fetching, setFetching] = useState(false);
 
-  const contentRange = useRef<ContentRange>([...defaultContentRange]);
+  const rankCutoff = useRef<number | undefined>(undefined);
   const visibleContentRange = useRef<ContentRange>([...defaultContentRange]);
-  const cutoffTimestamp = useRef<Date>(new Date());
   const fetchLatency = useRef(50);
 
   const virtualScroller = useRef<VListHandle>(null);
@@ -174,7 +174,7 @@ export const ScrollableContent = <T extends object>({
   // Effects
   useEffect(() => {
     // Fetch initial content items (non-blocking)
-    fetchContent(...defaultContentRange, cutoffTimestamp.current, false);
+    fetchContent(contentRangeLimit, true);
 
     // Register the refresh content function
     registerRefreshContent(refreshContent);
@@ -188,17 +188,10 @@ export const ScrollableContent = <T extends object>({
   // Methods
   /**
    * Fetch content
-   * @param start Start index
-   * @param end End index
-   * @param cutoff Cutoff timestamp
+   * @param limit Limit
    * @param reset Whether or not to reset the content items
    */
-  const fetchContent = async (
-    start: number,
-    end: number,
-    cutoff: Date,
-    reset: boolean,
-  ) => {
+  const fetchContent = async (limit: number, reset: boolean) => {
     // Enter critical section
     if (fetching) {
       return;
@@ -206,22 +199,28 @@ export const ScrollableContent = <T extends object>({
 
     setFetching(true);
 
+    // Record the rank cutoff
+    if (reset) {
+      rankCutoff.current = undefined;
+    }
+
     // Record the start time
     const startTime = Date.now();
 
     // Fetch the content
-    const items = await baseFetchContent(start, end, cutoff);
+    const items = await baseFetchContent(limit, rankCutoff.current);
 
     // Record the end time
     const endTime = Date.now();
 
     // Update the state
     setContentItems(reset ? items : contentItems.concat(items));
-    setOutOfContent(items.length < contentRangeSpan);
+    setOutOfContent(items.length < contentRangeLimit);
 
-    contentRange.current[0] = start;
-    contentRange.current[1] = end;
-    cutoffTimestamp.current = cutoff;
+    if (items.length > 0) {
+      rankCutoff.current = items.at(-1)![contentItemRankKey] as number;
+    }
+
     fetchLatency.current = endTime - startTime;
 
     // Exit critical section
@@ -233,7 +232,7 @@ export const ScrollableContent = <T extends object>({
    */
   const refreshContent = async () => {
     // Fetch content
-    await fetchContent(...defaultContentRange, new Date(), true);
+    await fetchContent(contentRangeLimit, true);
 
     // Reset scroll position
     virtualScroller.current?.scrollTo(0);
@@ -247,7 +246,7 @@ export const ScrollableContent = <T extends object>({
     const allLoaded = contentItems
       .slice(visibleContentRange.current[0], visibleContentRange.current[1])
       .every(contentItem =>
-        loadedContentItems.current.has(contentItem[contentItemKey] as string),
+        loadedContentItems.current.has(contentItem[contentItemIDKey] as string),
       );
 
     // Mark all content items in range as viewed
@@ -263,13 +262,15 @@ export const ScrollableContent = <T extends object>({
 
         // Skip if the content item has already been viewed
         if (
-          viewedContentItems.current.has(contentItem[contentItemKey] as string)
+          viewedContentItems.current.has(
+            contentItem[contentItemIDKey] as string,
+          )
         ) {
           continue;
         }
 
         // Update the viewed content items
-        viewedContentItems.current.add(contentItem[contentItemKey] as string);
+        viewedContentItems.current.add(contentItem[contentItemIDKey] as string);
 
         results.push(
           (async () => {
@@ -347,12 +348,7 @@ export const ScrollableContent = <T extends object>({
       prefetchTimeCoefficient * remainingTime <= fetchLatency.current
     ) {
       // Fetch content
-      await fetchContent(
-        contentRange.current[1] + 1,
-        contentRange.current[1] + contentRangeSpan + 1,
-        new Date(),
-        false,
-      );
+      await fetchContent(contentRangeLimit, false);
     }
   };
 
@@ -376,7 +372,7 @@ export const ScrollableContent = <T extends object>({
    */
   const onContentItemLoaded = async (contentItem: T) => {
     // Update the loaded content items
-    loadedContentItems.current.add(contentItem[contentItemKey] as string);
+    loadedContentItems.current.add(contentItem[contentItemIDKey] as string);
 
     // Update the viewed content items in the visible range
     await updatedViewedContentItems();

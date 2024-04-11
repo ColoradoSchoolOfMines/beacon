@@ -78,7 +78,7 @@ export const PostIndex: FC = () => {
     const {data, error} = await client
       .from("personalized_posts")
       .select(
-        "id, poster_id, created_at, content, has_media, blur_hash, aspect_ratio, views, distance, upvotes, downvotes, comments, is_mine, poster_color, poster_emoji, upvote",
+        "id, poster_id, created_at, content, has_media, blur_hash, aspect_ratio, views, upvotes, downvotes, comments, distance, rank, is_mine, poster_color, poster_emoji, upvote",
       )
       .eq("id", params.id)
       .single();
@@ -94,21 +94,27 @@ export const PostIndex: FC = () => {
 
   /**
    * Fetch comments
-   * @param start Start index
-   * @param end End index
-   * @param cutoff Cutoff timestamp
+   * @param limit Comments limit
+   * @param cutoffRank Cutoff rank or undefined for no cutoff
    * @returns Comments
    */
-  const fetchComments = async (start: number, end: number, cutoff: Date) => {
-    // Fetch comments
-    const {data, error} = await client
+  const fetchComments = async (limit: number, cutoffRank?: number) => {
+    // Build the query
+    let query = client
       .from("personalized_comments")
       .select(
-        "id, commenter_id, post_id, parent_id, created_at, content, views, upvotes, downvotes, is_mine, commenter_color, commenter_emoji, upvote",
+        "id, commenter_id, post_id, parent_id, created_at, content, views, upvotes, downvotes, rank, is_mine, commenter_color, commenter_emoji, upvote",
       )
-      .eq("post_id", params.id)
-      .lte("created_at", cutoff.toISOString())
-      .range(start, end);
+      .eq("post_id", params.id);
+
+    if (cutoffRank !== undefined) {
+      query = query.lt("rank", cutoffRank);
+    }
+
+    query = query.order("rank", {ascending: false}).limit(limit);
+
+    // Fetch comments
+    const {data, error} = await query;
 
     // Handle error
     if (data === null || error !== null) {
@@ -199,7 +205,8 @@ export const PostIndex: FC = () => {
         contentItemName="comment"
         contentItems={comments}
         setContentItems={setComments}
-        contentItemKey="id"
+        contentItemIDKey="id"
+        contentItemRankKey="rank"
         onContentItemViewed={onCommentViewed}
         contentItemRenderer={(comment, _, onLoad) => (
           <SwipeableItem

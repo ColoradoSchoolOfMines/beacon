@@ -59,20 +59,26 @@ export const Nearby: FC = () => {
 
   /**
    * Fetch posts
-   * @param start Start index
-   * @param end End index
-   * @param cutoff Cutoff timestamp
+   * @param limit Posts limit
+   * @param cutoffRank Cutoff rank or undefined for no cutoff
    * @returns Posts
    */
-  const fetchPosts = async (start: number, end: number, cutoff: Date) => {
-    // Fetch posts
-    const {data, error} = await client
+  const fetchPosts = async (limit: number, cutoffRank?: number) => {
+    // Build the query
+    let query = client
       .from("personalized_posts")
       .select(
-        "id, poster_id, created_at, content, has_media, blur_hash, aspect_ratio, views, distance, upvotes, downvotes, comments, is_mine, poster_color, poster_emoji, upvote",
-      )
-      .lte("created_at", cutoff.toISOString())
-      .range(start, end);
+        "id, poster_id, created_at, content, has_media, blur_hash, aspect_ratio, views, upvotes, downvotes, comments, distance, rank, is_mine, poster_color, poster_emoji, upvote",
+      );
+
+    if (cutoffRank !== undefined) {
+      query = query.lt("rank", cutoffRank);
+    }
+
+    query = query.order("rank", {ascending: false}).limit(limit);
+
+    // Fetch posts
+    const {data, error} = await query;
 
     // Handle error
     if (data === null || error !== null) {
@@ -136,7 +142,8 @@ export const Nearby: FC = () => {
         contentItemName="post"
         contentItems={posts}
         setContentItems={setPosts}
-        contentItemKey="id"
+        contentItemIDKey="id"
+        contentItemRankKey="rank"
         onContentItemViewed={onPostViewed}
         contentItemRenderer={(post, index, onLoad) => (
           <SwipeableItem

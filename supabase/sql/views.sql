@@ -40,7 +40,6 @@ AS (
     id,
     poster_id,
     created_at,
-    radius,
     content,
     has_media,
     blur_hash,
@@ -66,7 +65,6 @@ AS (
     -- Or only select posts for which the user is within the post's radius
     OR personalized_post.distance <= personalized_post.radius
   )
-  ORDER BY rank DESC
 );
 
 -- Comments with additional, user-specific information
@@ -123,5 +121,4 @@ AS (
     -- Or only show comments for posts the user has access to
     OR utilities.validate_post_access(post_id, auth.uid())
   )
-  ORDER BY rank DESC
 );
