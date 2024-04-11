@@ -391,7 +391,7 @@ export const ScrollableContent = <T extends object>({
       <div className="flex flex-col h-full w-full">
         {contentItems.length > 0 ? (
           <VList
-            className="ion-content-scroll-host"
+            className="ion-content-scroll-host overflow-auto"
             onScroll={onScroll}
             onRangeChange={onRangeChange}
             style={{
@@ -423,7 +423,7 @@ export const ScrollableContent = <T extends object>({
               </IonItem>
             )}
 
-            {contentItems.length > 0 && (
+            {contentItems.length > 0 && fetching && (
               <IonInfiniteScroll>
                 <IonInfiniteScrollContent />
               </IonInfiniteScroll>
