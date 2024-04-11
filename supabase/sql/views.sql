@@ -1,7 +1,7 @@
 /**
  * Setup views
  *
- * Prerequisites: functions.sql, tables_*.sql
+ * Prerequisites: functions.sql, tables.sql
  */
 
 -- Posts with additional, user-specific information
@@ -94,7 +94,7 @@ AS (
       vote.upvote
     FROM public.comments comment
     LEFT JOIN public.profiles profile ON profile.id = comment.commenter_id
-    LEFT JOIN public.post_votes vote ON vote.post_id = comment.post_id AND vote.voter_id = auth.uid()
+    LEFT JOIN public.comment_votes vote ON vote.comment_id = comment.id AND vote.voter_id = auth.uid()
   )
   SELECT
     id,
@@ -106,6 +106,7 @@ AS (
     views,
     upvotes,
     downvotes,
+    public.calculate_rank(0, upvotes - downvotes, created_at) AS rank,
 
     commenter_color,
     commenter_emoji,
@@ -120,4 +121,5 @@ AS (
     -- Or only show comments for posts the user has access to
     OR utilities.validate_post_access(post_id, auth.uid())
   )
+  ORDER BY rank DESC
 );
