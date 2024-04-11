@@ -178,8 +178,25 @@ BEGIN
 END;
 $$;
 
--- Prune old webauthn challenges
-CREATE OR REPLACE FUNCTION utilities.prune_webauthn_challenges()
+-- Prune expired locations trigger function
+CREATE OR REPLACE FUNCTION utilities.prune_expired_locations()
+RETURNS VOID
+SECURITY DEFINER
+VOLATILE
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  -- Expiration interval
+  _interval CONSTANT INTERVAL := INTERVAL '1 hour';
+BEGIN
+  -- Delete expired locations
+  DELETE FROM public.locations
+  WHERE created_at < (NOW() - _interval);
+END;
+$$;
+
+-- Prune expired webauthn challenges
+CREATE OR REPLACE FUNCTION utilities.prune_expired_webauthn_challenges()
 RETURNS VOID
 SECURITY DEFINER
 VOLATILE
@@ -303,18 +320,24 @@ BEGIN
 END;
 $$;
 
--- Prune old locations trigger function
-CREATE OR REPLACE FUNCTION utilities.prune_locations()
+/* ------------------------------------- Trigger functions ------------------------------------- */
+
+-- Prune locations trigger function
+CREATE OR REPLACE FUNCTION utilities.prune_locations_trigger()
 RETURNS TRIGGER
 SECURITY DEFINER
 VOLATILE
 LANGUAGE plpgsql
 AS $$
+DECLARE
+  -- Expiration interval
+  _interval CONSTANT INTERVAL := INTERVAL '1 hour';
 BEGIN
-  -- Keep only 5 newest locations for the user
+  -- Keep only 5 newest locations that haven't expired for the user
   DELETE FROM public.locations
   WHERE
     user_id = NEW.user_id AND
+    created_at < (NOW() - _interval) AND
     id NOT IN (
       SELECT id
       FROM public.locations
@@ -325,8 +348,6 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
-/* ------------------------------------- Trigger functions ------------------------------------- */
 
 -- Setup a profile for a new user trigger function
 CREATE OR REPLACE FUNCTION utilities.setup_profile_trigger()
@@ -655,6 +676,20 @@ BEGIN
   -- Delete all webauthn credentials for the current user
   DELETE FROM auth.webauthn_credentials
   WHERE user_id = auth.uid();
+END;
+$$;
+
+-- Delete a user's account
+CREATE OR REPLACE FUNCTION public.delete_account()
+RETURNS VOID
+SECURITY DEFINER
+VOLATILE
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  -- Delete the user's account
+  DELETE FROM auth.users
+  WHERE id = auth.uid();
 END;
 $$;
 

@@ -20,7 +20,7 @@ EXECUTE FUNCTION utilities.validate_location_trigger();
 CREATE TRIGGER prune_locations_after_insert
 AFTER INSERT ON public.locations
 FOR EACH ROW
-EXECUTE FUNCTION utilities.prune_locations();
+EXECUTE FUNCTION utilities.prune_locations_trigger();
 
 -- Anonymize the location of a new post
 CREATE TRIGGER anonymize_post_location_before_insert

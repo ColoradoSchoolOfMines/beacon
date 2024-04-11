@@ -1252,6 +1252,10 @@ export type Database = {
         };
         Returns: number;
       };
+      delete_account: {
+        Args: Record<PropertyKey, never>;
+        Returns: undefined;
+      };
       delete_webauthn_credentials: {
         Args: Record<PropertyKey, never>;
         Returns: undefined;
@@ -1300,6 +1304,10 @@ export type Database = {
       get_random_emoji: {
         Args: Record<PropertyKey, never>;
         Returns: string;
+      };
+      prune_expired_locations: {
+        Args: Record<PropertyKey, never>;
+        Returns: undefined;
       };
       prune_webauthn_challenges: {
         Args: Record<PropertyKey, never>;

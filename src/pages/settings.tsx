@@ -33,8 +33,11 @@ import {
   refreshSharp,
   trashBinOutline,
   trashBinSharp,
+  warningOutline,
+  warningSharp,
 } from "ionicons/icons";
 import {FC} from "react";
+import {useHistory} from "react-router-dom";
 
 import {
   beginRegistration,
@@ -73,6 +76,15 @@ const PASSKEYS_DELETED_MESSAGE_METADATA: GlobalMessageMetadata = {
 };
 
 /**
+ * Account deleted message metadata
+ */
+const ACCOUNT_DELETED_MESSAGE_METADATA: GlobalMessageMetadata = {
+  symbol: Symbol("settings.account-deleted"),
+  name: "Account Deleted",
+  description: "Your account has been successfully deleted",
+};
+
+/**
  * Settings page
  * @returns JSX
  */
@@ -107,6 +119,7 @@ export const Settings: FC = () => {
 
   const reset = usePersistentStore(state => state.reset);
 
+  const history = useHistory();
   const [present] = useIonActionSheet();
 
   /**
@@ -189,9 +202,10 @@ export const Settings: FC = () => {
           text: "Delete",
           role: "destructive",
           /**
-           * Handle the sign out
+           * Delete passkeys handler
            */
           handler: async () => {
+            // Delete the passkeys
             const {error} = await client.rpc("delete_webauthn_credentials");
 
             // Handle error
@@ -223,11 +237,56 @@ export const Settings: FC = () => {
           text: "Sign out",
           role: "destructive",
           /**
-           * Handle the sign out
+           * Sign out handler
            */
           handler: async () => {
             // Sign out
             await client.auth.signOut();
+
+            // Redirect to the home
+            history.push("/");
+          },
+        },
+      ],
+    });
+
+  /**
+   * Delete account
+   * @returns Promise
+   */
+  const deleteAccount = () =>
+    present({
+      header: "Delete Your Account",
+      subHeader:
+        "Are you sure you want to delete your account? This action cannot be undone.",
+      buttons: [
+        {
+          text: "Cancel",
+          role: "cancel",
+        },
+        {
+          text: "Delete My Account",
+          role: "destructive",
+          /**
+           * Delete account handler
+           */
+          handler: async () => {
+            // Delete the account
+            const {error} = await client.rpc("delete_account");
+
+            // Handle error
+            if (error) {
+              return;
+            }
+
+            // Sign out
+            await client.auth.signOut();
+
+            // Redirect to the home
+            history.push("/");
+
+            // Display the message
+            setMessage(ACCOUNT_DELETED_MESSAGE_METADATA);
           },
         },
       ],
@@ -326,7 +385,12 @@ export const Settings: FC = () => {
 
             <IonItem button={true} onClick={resetSettings}>
               <IonLabel>Reset all settings</IonLabel>
-              <IonIcon slot="end" ios={refreshOutline} md={refreshSharp} />
+              <IonIcon
+                color="danger"
+                slot="end"
+                ios={refreshOutline}
+                md={refreshSharp}
+              />
             </IonItem>
           </IonItemGroup>
 
@@ -344,12 +408,32 @@ export const Settings: FC = () => {
 
             <IonItem button={true} onClick={deletePasskeys}>
               <IonLabel>Delete all passkeys</IonLabel>
-              <IonIcon slot="end" ios={trashBinOutline} md={trashBinSharp} />
+              <IonIcon
+                color="danger"
+                slot="end"
+                ios={trashBinOutline}
+                md={trashBinSharp}
+              />
             </IonItem>
 
             <IonItem button={true} onClick={signOut}>
               <IonLabel>Sign out</IonLabel>
-              <IonIcon slot="end" ios={logOutOutline} md={logOutSharp} />
+              <IonIcon
+                color="danger"
+                slot="end"
+                ios={logOutOutline}
+                md={logOutSharp}
+              />
+            </IonItem>
+
+            <IonItem button={true} onClick={deleteAccount}>
+              <IonLabel>Delete Account</IonLabel>
+              <IonIcon
+                color="danger"
+                slot="end"
+                ios={warningOutline}
+                md={warningSharp}
+              />
             </IonItem>
           </IonItemGroup>
 
