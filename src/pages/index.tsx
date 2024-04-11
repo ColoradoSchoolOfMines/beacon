@@ -6,7 +6,7 @@ import {IonButton, IonContent, IonIcon, IonPage} from "@ionic/react";
 import {navigateCircleOutline, navigateCircleSharp} from "ionicons/icons";
 import {FC, useEffect, useRef} from "react";
 import {useLocation} from "react-router-dom";
-import {useMeasure, useMedia} from "react-use";
+import {useMeasure} from "react-use";
 
 import {Header} from "~/components/header";
 import {usePersistentStore} from "~/lib/stores/persistent";
@@ -28,7 +28,6 @@ export const Index: FC = () => {
   const [containerRef, {height, width}] = useMeasure();
   const contentRef = useRef<HTMLIonContentElement>(null);
   const location = useLocation();
-  const prefersReducedMotion = useMedia("(prefers-reduced-motion: reduce)");
 
   // Effects
   useEffect(() => {
@@ -83,19 +82,11 @@ export const Index: FC = () => {
             </filter>
 
             <rect
-              opacity={theme === Theme.DARK ? "0.3" : "0.6"}
-              width="10000%"
-              height="10000%"
+              opacity={theme === Theme.DARK ? "0.2" : "0.4"}
+              width="100%"
+              height="100%"
               filter="url(#noiseFilter)"
-            >
-              {!prefersReducedMotion && (
-                <animateMotion
-                  dur="500ms"
-                  repeatCount="indefinite"
-                  path="M -1000 -1000 L 1000 1000 L 0 0 L 1000 1000 L -1000 -1000 L 0 0 L -1000 -1000"
-                />
-              )}
-            </rect>
+            />
           </svg>
         </div>
 

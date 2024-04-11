@@ -203,7 +203,7 @@ export const PostIndex: FC = () => {
           >
             <IonItem lines="none">
               <CommentCard
-                className={`mb-2 mx-0 w-full ${index === 0 ? "mt-0" : "mt-2"}`}
+                className={`max-w-256 mb-2 mx-auto w-full ${index === 0 ? "mt-0" : "mt-2"}`}
                 comment={comment}
                 onLoad={onLoad}
                 toggleVote={upvote => toggleCommentVote(comment, upvote)}
@@ -213,46 +213,51 @@ export const PostIndex: FC = () => {
         )}
         fetchContent={fetchComments}
         onRefresh={updatePost}
-        fixedHeader={<div className="px-4 w-full" ref={sizerRef} />}
-        inlineHeader={
-          post !== undefined && (
-            <SwipeableItem
-              className="overflow-initial"
-              key={post.id}
-              startOption={
-                <IonItemOption color="success">
-                  <IonIcon
-                    slot="icon-only"
-                    ios={arrowUpOutline}
-                    md={arrowUpSharp}
+        header={
+          <>
+            {post !== undefined && (
+              <SwipeableItem
+                className="overflow-initial"
+                key={post.id}
+                startOption={
+                  <IonItemOption color="success">
+                    <IonIcon
+                      slot="icon-only"
+                      ios={arrowUpOutline}
+                      md={arrowUpSharp}
+                    />
+                  </IonItemOption>
+                }
+                endOption={
+                  <IonItemOption color="danger">
+                    <IonIcon
+                      slot="icon-only"
+                      ios={arrowDownOutline}
+                      md={arrowDownSharp}
+                    />
+                  </IonItemOption>
+                }
+                startAction={() => togglePostVote(post, true)}
+                endAction={() => togglePostVote(post, false)}
+              >
+                <IonItem lines="none">
+                  <PostCard
+                    className="max-w-256 mb-0 mt-4 mx-auto w-full"
+                    post={post}
+                    postLinkDetail={false}
+                    width={width}
+                    toggleVote={upvote => togglePostVote(post, upvote)}
                   />
-                </IonItemOption>
-              }
-              endOption={
-                <IonItemOption color="danger">
-                  <IonIcon
-                    slot="icon-only"
-                    ios={arrowDownOutline}
-                    md={arrowDownSharp}
-                  />
-                </IonItemOption>
-              }
-              startAction={() => togglePostVote(post, true)}
-              endAction={() => togglePostVote(post, false)}
-            >
-              <IonItem lines="none">
-                <PostCard
-                  className="mb-0 mt-4 mx-0 w-full"
-                  post={post}
-                  postLinkDetail={false}
-                  width={width}
-                  toggleVote={upvote => togglePostVote(post, upvote)}
-                />
-              </IonItem>
+                </IonItem>
+              </SwipeableItem>
+            )}
 
-              <hr className="my-4 mx-4" />
-            </SwipeableItem>
-          )
+            <hr className="my-4 mx-4" />
+
+            <IonItem className="h-0" lines="none">
+              <div className="max-w-256 w-full" ref={sizerRef} />
+            </IonItem>
+          </>
         }
       />
 

@@ -82,14 +82,9 @@ interface ScrollableContentProps<T extends object> {
   onRefresh?: () => void | Promise<void>;
 
   /**
-   * Fixed header slot (Fixed to the top of the viewport)
+   * Header slot (Inline with content items)
    */
-  fixedHeader?: ReactNode;
-
-  /**
-   * Inline header slot (Inline with content items)
-   */
-  inlineHeader?: ReactNode;
+  header?: ReactNode;
 
   /**
    * Content range span (How many individual content items to fetch at a time)
@@ -141,8 +136,7 @@ export const ScrollableContent = <T extends object>({
   contentItemRenderer,
   fetchContent: baseFetchContent,
   onRefresh,
-  fixedHeader,
-  inlineHeader,
+  header,
   contentRangeSpan = 9,
   prefetchTimeCoefficient = 1.2,
   maximumScrollMetadatas = 10,
@@ -389,14 +383,12 @@ export const ScrollableContent = <T extends object>({
   };
 
   return (
-    <IonContent className="relative" scrollY={false} ref={contentRef}>
+    <IonContent scrollY={false} ref={contentRef}>
       <IonRefresher onIonRefresh={onRefresherRefresh} slot="fixed">
         <IonRefresherContent />
       </IonRefresher>
 
       <div className="flex flex-col h-full w-full">
-        {fixedHeader !== undefined && fixedHeader}
-
         {contentItems.length > 0 ? (
           <VList
             className="ion-content-scroll-host"
@@ -407,7 +399,7 @@ export const ScrollableContent = <T extends object>({
             }}
             ref={virtualScroller}
           >
-            {inlineHeader !== undefined && inlineHeader}
+            {header !== undefined && header}
 
             {contentItems.map((contentItem, index) =>
               contentItemRenderer(contentItem, index, () =>
@@ -439,7 +431,8 @@ export const ScrollableContent = <T extends object>({
           </VList>
         ) : (
           <>
-            {inlineHeader !== undefined && inlineHeader}
+            {header !== undefined && header}
+
             <div className="flex flex-col flex-1 items-center justify-center">
               {fetching ? (
                 <IonSpinner className="h-16 w-16" color="primary" />

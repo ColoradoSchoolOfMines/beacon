@@ -152,7 +152,7 @@ export const Nearby: FC = () => {
           >
             <IonItem lines="none">
               <PostCard
-                className={`mb-2 mx-0 w-full ${index === 0 ? "mt-4" : "mt-2"}`}
+                className={`max-w-256 mb-2 mx-auto w-full ${index === 0 ? "mt-4" : "mt-2"}`}
                 postLinkDetail={true}
                 width={width}
                 post={post}
@@ -163,7 +163,11 @@ export const Nearby: FC = () => {
           </SwipeableItem>
         )}
         fetchContent={fetchPosts}
-        fixedHeader={<div className="px-4 w-full" ref={sizerRef} />}
+        header={
+          <IonItem className="h-0" lines="none">
+            <div className="max-w-256 w-full" ref={sizerRef} />
+          </IonItem>
+        }
       />
 
       {showFABs && (

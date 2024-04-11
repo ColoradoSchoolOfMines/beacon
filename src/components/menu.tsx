@@ -163,7 +163,7 @@ export const Menu: FC = () => {
   const menu = useRef<HTMLIonMenuElement>(null);
 
   return (
-    <IonMenu contentId="main" type="overlay" ref={menu}>
+    <IonMenu className="md:max-w-64" contentId="main" type="overlay" ref={menu}>
       <IonContent>
         <IonList className="flex flex-col h-full py-4">
           <IonListHeader className="p-0">
