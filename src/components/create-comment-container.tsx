@@ -8,7 +8,6 @@ import {
   IonButtons,
   IonContent,
   IonHeader,
-  IonMenuButton,
   IonPage,
   IonTitle,
   IonToolbar,
@@ -22,11 +21,6 @@ import {Post} from "~/lib/types";
  * Create comment page container component props
  */
 interface CreateCommentContainerProps {
-  /**
-   * Whether to show the back button or the menu button
-   */
-  back: boolean;
-
   /**
    * Parent post
    */
@@ -44,7 +38,6 @@ interface CreateCommentContainerProps {
  * @returns JSX
  */
 export const CreateCommentContainer: FC<CreateCommentContainerProps> = ({
-  back,
   post,
   children,
 }) => (
@@ -52,13 +45,9 @@ export const CreateCommentContainer: FC<CreateCommentContainerProps> = ({
     <IonHeader className="ion-no-border">
       <IonToolbar>
         <IonButtons slot="start">
-          {back ? (
-            <IonBackButton
-              defaultHref={post === undefined ? undefined : `/posts/${post.id}`}
-            />
-          ) : (
-            <IonMenuButton />
-          )}
+          <IonBackButton
+            defaultHref={post === undefined ? undefined : `/posts/${post.id}`}
+          />
         </IonButtons>
 
         <IonTitle>Create Comment</IonTitle>

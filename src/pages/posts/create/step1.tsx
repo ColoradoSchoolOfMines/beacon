@@ -228,7 +228,7 @@ export const Step1: FC = () => {
   };
 
   return (
-    <CreatePostContainer back={false}>
+    <CreatePostContainer>
       <form className="h-full" onSubmit={handleSubmit(onSubmit)}>
         <IonList className="flex flex-col h-full py-0">
           <Controller
@@ -313,6 +313,7 @@ export const Step1: FC = () => {
 
                       <input
                         accept={MEDIA_MIME_TYPES.join(",")}
+                        capture="environment"
                         className="h-0 w-0"
                         onChange={event =>
                           onChange(

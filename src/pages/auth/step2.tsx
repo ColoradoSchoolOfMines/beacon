@@ -88,7 +88,7 @@ export const Step2: FC = () => {
   };
 
   return (
-    <AuthContainer back={true}>
+    <AuthContainer>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Controller
           control={control}

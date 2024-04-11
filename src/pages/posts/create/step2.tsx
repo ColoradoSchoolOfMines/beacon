@@ -245,7 +245,7 @@ export const Step2: FC = () => {
   };
 
   return (
-    <CreatePostContainer back={true}>
+    <CreatePostContainer>
       <form className="h-full" onSubmit={handleSubmit(onSubmit)}>
         <IonList className="flex flex-col h-full py-0">
           <IonItem>

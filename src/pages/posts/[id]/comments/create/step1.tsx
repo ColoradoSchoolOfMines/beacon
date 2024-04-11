@@ -187,7 +187,7 @@ export const Step1: FC = () => {
   };
 
   return (
-    <CreateCommentContainer back={false} post={post}>
+    <CreateCommentContainer post={post}>
       <form className="h-full" onSubmit={handleSubmit(onSubmit)}>
         <IonList className="flex flex-col h-full py-0">
           <Controller

@@ -93,7 +93,7 @@ export const Step3: FC = () => {
   const onSubmit = async (data: FormSchema) => await verify(data.code);
 
   return (
-    <AuthContainer back={true}>
+    <AuthContainer>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Controller
           control={control}

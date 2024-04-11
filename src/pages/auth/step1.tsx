@@ -95,7 +95,7 @@ export const Step1: FC = () => {
   };
 
   return (
-    <AuthContainer back={false}>
+    <AuthContainer>
       {checkPasskeySupport() && (
         <>
           <IonButton

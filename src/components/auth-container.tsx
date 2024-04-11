@@ -11,7 +11,6 @@ import {
   IonCardTitle,
   IonContent,
   IonHeader,
-  IonMenuButton,
   IonPage,
   IonTitle,
   IonToolbar,
@@ -23,11 +22,6 @@ import {FC, ReactNode} from "react";
  */
 interface AuthContainerProps {
   /**
-   * Whether to show the back button or the menu button
-   */
-  back: boolean;
-
-  /**
    * Children
    */
   children: ReactNode;
@@ -38,12 +32,12 @@ interface AuthContainerProps {
  * @param props Props
  * @returns JSX
  */
-export const AuthContainer: FC<AuthContainerProps> = ({back, children}) => (
+export const AuthContainer: FC<AuthContainerProps> = ({children}) => (
   <IonPage>
     <IonHeader className="ion-no-border">
       <IonToolbar>
         <IonButtons slot="start">
-          {back ? <IonBackButton defaultHref="/auth/1" /> : <IonMenuButton />}
+          <IonBackButton defaultHref="/" />
         </IonButtons>
 
         <IonTitle>Authentication</IonTitle>
