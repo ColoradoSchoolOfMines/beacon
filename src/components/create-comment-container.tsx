@@ -15,16 +15,15 @@ import {
 import {FC, ReactNode} from "react";
 
 import styles from "~/components/create-comment-container.module.css";
-import {Post} from "~/lib/types";
 
 /**
  * Create comment page container component props
  */
 interface CreateCommentContainerProps {
   /**
-   * Parent post
+   * Parent post ID
    */
-  post?: Post;
+  postID: string;
 
   /**
    * Children
@@ -38,16 +37,14 @@ interface CreateCommentContainerProps {
  * @returns JSX
  */
 export const CreateCommentContainer: FC<CreateCommentContainerProps> = ({
-  post,
+  postID,
   children,
 }) => (
   <IonPage>
     <IonHeader className="ion-no-border">
       <IonToolbar>
         <IonButtons slot="start">
-          <IonBackButton
-            defaultHref={post === undefined ? undefined : `/posts/${post.id}`}
-          />
+          <IonBackButton defaultHref={`/posts/${postID}`} />
         </IonButtons>
 
         <IonTitle>Create Comment</IonTitle>

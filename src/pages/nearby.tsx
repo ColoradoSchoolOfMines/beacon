@@ -69,7 +69,7 @@ export const Nearby: FC = () => {
     const {data, error} = await client
       .from("personalized_posts")
       .select(
-        "id, poster_id, created_at, content, has_media, blur_hash, aspect_ratio, views, distance, upvotes, downvotes, comments, poster_color, poster_emoji, upvote",
+        "id, poster_id, created_at, content, has_media, blur_hash, aspect_ratio, views, distance, upvotes, downvotes, comments, is_mine, poster_color, poster_emoji, upvote",
       )
       .lte("created_at", cutoff.toISOString())
       .range(start, end);
@@ -98,6 +98,18 @@ export const Nearby: FC = () => {
    */
   const togglePostVote = async (post: Post, upvote: boolean) => {
     await toggleVote(post, setPost, upvote, "post_votes", "post_id");
+  };
+
+  /**
+   * Delete a post
+   * @param post Post to delete
+   */
+  const deletePost = async (post: Post) => {
+    // Delete the post
+    await client.from("posts").delete().eq("id", post.id);
+
+    // Remove the post from the state
+    setPosts(posts.filter(p => p.id !== post.id));
   };
 
   /**
@@ -158,6 +170,7 @@ export const Nearby: FC = () => {
                 post={post}
                 onLoad={onLoad}
                 toggleVote={upvote => togglePostVote(post, upvote)}
+                onDeleted={post.is_mine ? () => deletePost(post) : undefined}
               />
             </IonItem>
           </SwipeableItem>

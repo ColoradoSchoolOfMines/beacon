@@ -78,7 +78,7 @@ export const PostIndex: FC = () => {
     const {data, error} = await client
       .from("personalized_posts")
       .select(
-        "id, poster_id, created_at, content, has_media, blur_hash, aspect_ratio, views, distance, upvotes, downvotes, comments, poster_color, poster_emoji, upvote",
+        "id, poster_id, created_at, content, has_media, blur_hash, aspect_ratio, views, distance, upvotes, downvotes, comments, is_mine, poster_color, poster_emoji, upvote",
       )
       .eq("id", params.id)
       .single();
@@ -104,7 +104,7 @@ export const PostIndex: FC = () => {
     const {data, error} = await client
       .from("personalized_comments")
       .select(
-        "id, commenter_id, post_id, parent_id, created_at, content, views, upvotes, downvotes, commenter_color, commenter_emoji, upvote",
+        "id, commenter_id, post_id, parent_id, created_at, content, views, upvotes, downvotes, is_mine, commenter_color, commenter_emoji, upvote",
       )
       .eq("post_id", params.id)
       .lte("created_at", cutoff.toISOString())
@@ -137,6 +137,18 @@ export const PostIndex: FC = () => {
   };
 
   /**
+   * Delete a post
+   * @param post Post to delete
+   */
+  const deletePost = async (post: Post) => {
+    // Delete the post
+    await client.from("posts").delete().eq("id", post.id);
+
+    // Redirect to the nearby page
+    history.push("/nearby");
+  };
+
+  /**
    * Toggle a vote on a comment
    * @param comment Comment to toggle the vote on
    * @param upvote Whether the vote is an upvote or a downvote
@@ -149,6 +161,18 @@ export const PostIndex: FC = () => {
       "comment_votes",
       "comment_id",
     );
+  };
+
+  /**
+   * Delete a comment
+   * @param comment Comment to delete
+   */
+  const deleteComments = async (comment: Comment) => {
+    // Delete the comment
+    await client.from("comments").delete().eq("id", comment.id);
+
+    // Remove the comment from the state
+    setComments(comments.filter(c => c.id !== comment.id));
   };
 
   /**
@@ -177,7 +201,7 @@ export const PostIndex: FC = () => {
         setContentItems={setComments}
         contentItemKey="id"
         onContentItemViewed={onCommentViewed}
-        contentItemRenderer={(comment, index, onLoad) => (
+        contentItemRenderer={(comment, _, onLoad) => (
           <SwipeableItem
             key={comment.id}
             startOption={
@@ -203,10 +227,13 @@ export const PostIndex: FC = () => {
           >
             <IonItem lines="none">
               <CommentCard
-                className={`max-w-256 mb-2 mx-auto w-full ${index === 0 ? "mt-0" : "mt-2"}`}
+                className="max-w-256 mx-auto my-2 w-full"
                 comment={comment}
                 onLoad={onLoad}
                 toggleVote={upvote => toggleCommentVote(comment, upvote)}
+                onDeleted={
+                  comment.is_mine ? () => deleteComments(comment) : undefined
+                }
               />
             </IonItem>
           </SwipeableItem>
@@ -240,19 +267,20 @@ export const PostIndex: FC = () => {
                 startAction={() => togglePostVote(post, true)}
                 endAction={() => togglePostVote(post, false)}
               >
-                <IonItem lines="none">
+                <IonItem>
                   <PostCard
-                    className="max-w-256 mb-0 mt-4 mx-auto w-full"
+                    className="max-w-256 mb-2 mt-4 mx-auto w-full"
                     post={post}
                     postLinkDetail={false}
                     width={width}
                     toggleVote={upvote => togglePostVote(post, upvote)}
+                    onDeleted={
+                      post.is_mine ? () => deletePost(post) : undefined
+                    }
                   />
                 </IonItem>
               </SwipeableItem>
             )}
-
-            <hr className="my-4 mx-4" />
 
             <IonItem className="h-0" lines="none">
               <div className="max-w-256 w-full" ref={sizerRef} />

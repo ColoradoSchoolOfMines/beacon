@@ -11,6 +11,7 @@ import {
   IonList,
   IonPopover,
   IonRouterLink,
+  useIonActionSheet,
 } from "@ionic/react";
 import {
   arrowDownOutline,
@@ -23,6 +24,8 @@ import {
   shareSocialSharp,
   timeOutline,
   timeSharp,
+  trashBinOutline,
+  trashBinSharp,
   warningOutline,
   warningSharp,
 } from "ionicons/icons";
@@ -83,6 +86,11 @@ interface CommentCardProps extends HTMLAttributes<HTMLIonCardElement> {
    * @param upvote Whether the vote is an upvote or a downvote
    */
   toggleVote: (upvote: boolean) => void;
+
+  /**
+   * Comment deleted event handler
+   */
+  onDeleted?: () => void;
 }
 
 /**
@@ -94,6 +102,7 @@ export const CommentCard: FC<CommentCardProps> = ({
   comment,
   onLoad,
   toggleVote,
+  onDeleted,
   ...props
 }) => {
   // Variables
@@ -102,6 +111,8 @@ export const CommentCard: FC<CommentCardProps> = ({
   // Hooks
   const id = useId();
   const [time, setTime] = useState<string | undefined>();
+
+  const [present] = useIonActionSheet();
 
   const setMessage = useEphemeralUIStore(state => state.setMessage);
 
@@ -132,7 +143,7 @@ export const CommentCard: FC<CommentCardProps> = ({
   /**
    * Share the comment
    */
-  const share = async () => {
+  const shareComment = async () => {
     // Generate the URL
     const url = new URL(`/posts/${comment.post_id}`, window.location.origin);
 
@@ -155,27 +166,72 @@ export const CommentCard: FC<CommentCardProps> = ({
 
   /**
    * Report the comment
+   * @returns Promise
    */
-  const report = async () => {
-    // Insert the report
-    const {error} = await client.from("comment_reports").insert({
-      // eslint-disable-next-line camelcase
-      comment_id: comment.id,
+  const reportComment = () =>
+    present({
+      header: "Report Comment",
+      subHeader:
+        "Are you sure you want to report this comment? This action cannot be undone.",
+      buttons: [
+        {
+          text: "Cancel",
+          role: "cancel",
+        },
+        {
+          text: "Report",
+          role: "destructive",
+          /**
+           * Comment report handler
+           */
+          handler: async () => {
+            // Insert the report
+            const {error} = await client.from("comment_reports").insert({
+              // eslint-disable-next-line camelcase
+              comment_id: comment.id,
+            });
+
+            // Handle error
+            if (error !== null) {
+              if (error.code === "23505") {
+                // Display the message
+                setMessage(ALREADY_REPORTED_MESSAGE_METADATA);
+              }
+
+              return;
+            }
+
+            // Display the message
+            setMessage(NEW_REPORT_MESSAGE_METADATA);
+          },
+        },
+      ],
     });
 
-    // Handle error
-    if (error !== null) {
-      if (error.code === "23505") {
-        // Display the message
-        setMessage(ALREADY_REPORTED_MESSAGE_METADATA);
-      }
-
-      return;
-    }
-
-    // Display the message
-    setMessage(NEW_REPORT_MESSAGE_METADATA);
-  };
+  /**
+   * Delete the comment
+   * @returns Promise
+   */
+  const deleteComment = () =>
+    present({
+      header: "Delete Comment",
+      subHeader:
+        "Are you sure you want to delete this comment? This action cannot be undone.",
+      buttons: [
+        {
+          text: "Cancel",
+          role: "cancel",
+        },
+        {
+          text: "Delete",
+          role: "destructive",
+          /**
+           * Comment delete handler
+           */
+          handler: onDeleted,
+        },
+      ],
+    });
 
   return (
     <IonCard
@@ -280,7 +336,7 @@ export const CommentCard: FC<CommentCardProps> = ({
                     fill="clear"
                     onClick={event => {
                       event.preventDefault();
-                      share();
+                      shareComment();
                     }}
                   >
                     <IonIcon
@@ -292,14 +348,14 @@ export const CommentCard: FC<CommentCardProps> = ({
                   </IonButton>
                 </IonItem>
 
-                <IonItem lines="none">
+                <IonItem lines={onDeleted === undefined ? "none" : undefined}>
                   <IonButton
                     className="w-full"
                     color="danger"
                     fill="clear"
                     onClick={event => {
                       event.preventDefault();
-                      report();
+                      reportComment();
                     }}
                   >
                     <IonIcon
@@ -310,6 +366,27 @@ export const CommentCard: FC<CommentCardProps> = ({
                     Report
                   </IonButton>
                 </IonItem>
+
+                {onDeleted !== undefined && (
+                  <IonItem lines="none">
+                    <IonButton
+                      className="w-full"
+                      color="danger"
+                      fill="clear"
+                      onClick={event => {
+                        event.preventDefault();
+                        deleteComment();
+                      }}
+                    >
+                      <IonIcon
+                        slot="start"
+                        ios={trashBinOutline}
+                        md={trashBinSharp}
+                      />
+                      Delete
+                    </IonButton>
+                  </IonItem>
+                )}
               </IonList>
             </IonPopover>
           </div>

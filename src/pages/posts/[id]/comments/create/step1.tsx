@@ -34,7 +34,7 @@ import {Markdown} from "~/components/markdown";
 import {SupplementalError} from "~/components/supplemental-error";
 import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
 import {client} from "~/lib/supabase";
-import {GlobalMessageMetadata, Post} from "~/lib/types";
+import {GlobalMessageMetadata} from "~/lib/types";
 import styles from "~/pages/posts/[id]/comments/create/step1.module.css";
 
 /**
@@ -90,8 +90,6 @@ type FormSchema = z.infer<typeof formSchema>;
  */
 export const Step1: FC = () => {
   // Hooks
-  const [post, setPost] = useState<Post | undefined>();
-
   const [contentTextarea, setContentTextarea] =
     // eslint-disable-next-line unicorn/no-null
     useState<HTMLIonTextareaElement | null>(null);
@@ -113,11 +111,6 @@ export const Step1: FC = () => {
 
   // Effects
   useEffect(() => {
-    // Fetch the post
-    fetchPost();
-  }, []);
-
-  useEffect(() => {
     if (contentTextarea === null) {
       return;
     }
@@ -131,39 +124,13 @@ export const Step1: FC = () => {
 
   // Methods
   /**
-   * Fetch the post
-   */
-  const fetchPost = async () => {
-    // Get the post
-    const {data, error} = await client
-      .from("personalized_posts")
-      .select(
-        "id, poster_id, created_at, content, has_media, blur_hash, aspect_ratio, views, distance, upvotes, downvotes, comments, poster_color, poster_emoji, upvote",
-      )
-      .eq("id", params.id)
-      .single();
-
-    // Handle error
-    if (data === null || error !== null) {
-      return;
-    }
-
-    // Update the state
-    setPost(data as any);
-  };
-
-  /**
    * Form submit handler
    * @param form Form data
    */
   const onSubmit = async (form: FormSchema) => {
-    if (post === undefined) {
-      throw new TypeError("Post is undefined");
-    }
-
     // Insert the post
     const {error} = await client.from("comments").insert({
-      post_id: post.id!,
+      post_id: params.id,
       private_anonymous: form.anonymous,
       content: form.content,
     });
@@ -187,7 +154,7 @@ export const Step1: FC = () => {
   };
 
   return (
-    <CreateCommentContainer post={post}>
+    <CreateCommentContainer postID={params.id}>
       <form className="h-full" onSubmit={handleSubmit(onSubmit)}>
         <IonList className="flex flex-col h-full py-0">
           <Controller

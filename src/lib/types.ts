@@ -242,6 +242,9 @@ export type Post<T extends boolean = boolean> = {
     Database["public"]["Views"]["personalized_posts"]["Row"]["comments"]
   >;
 
+  is_mine: NonNullable<
+    Database["public"]["Views"]["personalized_posts"]["Row"]["is_mine"]
+  >;
   poster_color: Database["public"]["Views"]["personalized_posts"]["Row"]["poster_color"];
   poster_emoji: Database["public"]["Views"]["personalized_posts"]["Row"]["poster_emoji"];
 
@@ -320,6 +323,9 @@ export interface Comment {
     Database["public"]["Views"]["personalized_comments"]["Row"]["downvotes"]
   >;
 
+  is_mine: NonNullable<
+    Database["public"]["Views"]["personalized_comments"]["Row"]["is_mine"]
+  >;
   commenter_color: NonNullable<
     Database["public"]["Views"]["personalized_comments"]["Row"]["commenter_color"]
   >;

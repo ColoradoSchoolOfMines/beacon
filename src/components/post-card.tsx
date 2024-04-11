@@ -11,6 +11,7 @@ import {
   IonList,
   IonPopover,
   IonRouterLink,
+  useIonActionSheet,
 } from "@ionic/react";
 import {
   arrowDownOutline,
@@ -29,6 +30,8 @@ import {
   shareSocialSharp,
   timeOutline,
   timeSharp,
+  trashBinOutline,
+  trashBinSharp,
   warningOutline,
   warningSharp,
 } from "ionicons/icons";
@@ -110,6 +113,11 @@ interface PostCardProps extends HTMLAttributes<HTMLIonCardElement> {
    * @param upvote Whether the vote is an upvote or a downvote
    */
   toggleVote: (upvote: boolean) => void;
+
+  /**
+   * Post deleted event handler
+   */
+  onDeleted?: () => void;
 }
 
 /**
@@ -123,6 +131,7 @@ export const PostCard: FC<PostCardProps> = ({
   width,
   onLoad,
   toggleVote,
+  onDeleted,
   ...props
 }) => {
   // Variables
@@ -145,6 +154,8 @@ export const PostCard: FC<PostCardProps> = ({
   >();
 
   const history = useHistory();
+
+  const [present] = useIonActionSheet();
 
   const setMessage = useEphemeralUIStore(state => state.setMessage);
 
@@ -242,9 +253,22 @@ export const PostCard: FC<PostCardProps> = ({
   };
 
   /**
+   * Card click event handler
+   * @param event Event
+   */
+  const onCardClick = (event: MouseEvent<HTMLIonCardElement>) => {
+    if (event.defaultPrevented || !postLinkDetail) {
+      return;
+    }
+
+    // Go to the post detail page
+    history.push(`/posts/${post.id}`);
+  };
+
+  /**
    * Share the post
    */
-  const share = async () => {
+  const sharePost = async () => {
     // Generate the URL
     const url = new URL(`/posts/${post.id}`, window.location.origin);
     const strUrl = url.toString();
@@ -262,40 +286,72 @@ export const PostCard: FC<PostCardProps> = ({
 
   /**
    * Report the post
+   * @returns Promise
    */
-  const report = async () => {
-    // Insert the report
-    const {error} = await client.from("post_reports").insert({
-      // eslint-disable-next-line camelcase
-      post_id: post.id,
+  const reportPost = () =>
+    present({
+      header: "Report Post",
+      subHeader:
+        "Are you sure you want to report this post? This action cannot be undone.",
+      buttons: [
+        {
+          text: "Cancel",
+          role: "cancel",
+        },
+        {
+          text: "Report",
+          role: "destructive",
+          /**
+           * Post report handler
+           */
+          handler: async () => {
+            // Insert the report
+            const {error} = await client.from("post_reports").insert({
+              // eslint-disable-next-line camelcase
+              post_id: post.id,
+            });
+
+            // Handle error
+            if (error !== null) {
+              if (error.code === "23505") {
+                // Display the message
+                setMessage(ALREADY_REPORTED_MESSAGE_METADATA);
+              }
+
+              return;
+            }
+
+            // Display the message
+            setMessage(NEW_REPORT_MESSAGE_METADATA);
+          },
+        },
+      ],
     });
 
-    // Handle error
-    if (error !== null) {
-      if (error.code === "23505") {
-        // Display the message
-        setMessage(ALREADY_REPORTED_MESSAGE_METADATA);
-      }
-
-      return;
-    }
-
-    // Display the message
-    setMessage(NEW_REPORT_MESSAGE_METADATA);
-  };
-
   /**
-   * Card click event handler
-   * @param event Event
+   * Delete the post
+   * @returns Promise
    */
-  const onCardClick = (event: MouseEvent<HTMLIonCardElement>) => {
-    if (event.defaultPrevented || !postLinkDetail) {
-      return;
-    }
-
-    // Go to the post detail page
-    history.push(`/posts/${post.id}`);
-  };
+  const deletePost = () =>
+    present({
+      header: "Delete Post",
+      subHeader:
+        "Are you sure you want to delete this post? This action cannot be undone.",
+      buttons: [
+        {
+          text: "Cancel",
+          role: "cancel",
+        },
+        {
+          text: "Delete",
+          role: "destructive",
+          /**
+           * Comment delete handler
+           */
+          handler: onDeleted,
+        },
+      ],
+    });
 
   return (
     <IonCard
@@ -471,7 +527,7 @@ export const PostCard: FC<PostCardProps> = ({
                     fill="clear"
                     onClick={event => {
                       event.preventDefault();
-                      share();
+                      sharePost();
                     }}
                   >
                     <IonIcon
@@ -483,14 +539,14 @@ export const PostCard: FC<PostCardProps> = ({
                   </IonButton>
                 </IonItem>
 
-                <IonItem lines="none">
+                <IonItem lines={onDeleted === undefined ? "none" : undefined}>
                   <IonButton
                     className="w-full"
                     color="danger"
                     fill="clear"
                     onClick={event => {
                       event.preventDefault();
-                      report();
+                      reportPost();
                     }}
                   >
                     <IonIcon
@@ -501,6 +557,27 @@ export const PostCard: FC<PostCardProps> = ({
                     Report
                   </IonButton>
                 </IonItem>
+
+                {onDeleted !== undefined && (
+                  <IonItem lines="none">
+                    <IonButton
+                      className="w-full"
+                      color="danger"
+                      fill="clear"
+                      onClick={event => {
+                        event.preventDefault();
+                        deletePost();
+                      }}
+                    >
+                      <IonIcon
+                        slot="start"
+                        ios={trashBinOutline}
+                        md={trashBinSharp}
+                      />
+                      Delete
+                    </IonButton>
+                  </IonItem>
+                )}
               </IonList>
             </IonPopover>
           </div>

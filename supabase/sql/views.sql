@@ -52,6 +52,7 @@ AS (
     distance,
     public.calculate_rank(distance, upvotes - downvotes, created_at) AS rank,
 
+    private_poster_id = auth.uid() AS is_mine,
     poster_color,
     poster_emoji,
 
@@ -108,6 +109,7 @@ AS (
     downvotes,
     public.calculate_rank(0, upvotes - downvotes, created_at) AS rank,
 
+    private_commenter_id = auth.uid() AS is_mine,
     commenter_color,
     commenter_emoji,
 
