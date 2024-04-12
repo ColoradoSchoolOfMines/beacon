@@ -42,13 +42,10 @@ CREATE TABLE auth.webauthn_credentials (
   public_key VARCHAR(1000) NOT NULL
 );
 
--- Profiles (Modifying auth.users is considered bad practice, so additonal user data is stored here)
+-- Profiles (Exposed to other users)
 CREATE TABLE public.profiles (
   -- Primary key (Foreign key to auth.users)
   id UUID NOT NULL PRIMARY KEY REFERENCES auth.users ON UPDATE CASCADE ON DELETE CASCADE,
-
-  -- Creation timestamp
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW() CHECK (created_at <= NOW()),
 
   -- Random color
   color TEXT NOT NULL DEFAULT utilities.get_random_color(),

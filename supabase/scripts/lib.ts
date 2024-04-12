@@ -235,7 +235,9 @@ export const writeEnvs = async () => {
       `VITE_HCAPTCHA_SITE_KEY = "" # Required!
 # VITE_SUPABASE_FUNCTIONS_URL = ""
 VITE_SUPABASE_URL = ${JSON.stringify(status.apiUrl)}
-VITE_SUPABASE_ANON_KEY = ${JSON.stringify(status.anonKey)}`,
+VITE_SUPABASE_ANON_KEY = ${JSON.stringify(status.anonKey)}
+# VITE_TERMS_AND_CONDITIONS = "src/assets/terms.md"
+# VITE_PRIVACY_POLICY = "src/assets/privacy.md"`,
       {
         flag: envFlags,
       },

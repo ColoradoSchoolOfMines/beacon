@@ -6,7 +6,7 @@ import {User} from "@supabase/supabase-js";
 import humanizeDuration, {Options} from "humanize-duration";
 import {Duration} from "luxon";
 
-import {MeasurementSystem, RequiredAuthState} from "~/lib/types";
+import {AuthState, MeasurementSystem, UserMetadata} from "~/lib/types";
 
 /**
  * Meters to feet conversion factor
@@ -24,25 +24,21 @@ export const METERS_TO_KILOMETERS = 0.001;
 export const METERS_TO_MILES = 0.000621371;
 
 /**
- * Check if the user meets the required authentication state
+ * Get the user's current auth state
  * @param user User
- * @param requiredState Required authentication state
- * @returns Whether the user meets the required authentication state
+ * @returns User's current auth state
  */
-export const checkRequiredAuthState = (
-  user: User | undefined,
-  requiredState: RequiredAuthState,
-): boolean => {
-  switch (requiredState) {
-    case RequiredAuthState.AUTHENTICATED:
-      return user !== undefined;
-
-    case RequiredAuthState.UNAUTHENTICATED:
-      return user === undefined;
-
-    case RequiredAuthState.ANY:
-      return true;
+export const getAuthState = (user: User | undefined): AuthState => {
+  if (user === undefined) {
+    return AuthState.UNAUTHENTICATED;
   }
+
+  // Get the user metadata
+  const metadata = user.user_metadata as UserMetadata;
+
+  return metadata.acceptedTerms
+    ? AuthState.AUTHENTICATED_TERMS
+    : AuthState.AUTHENTICATED_NO_TERMS;
 };
 
 /**

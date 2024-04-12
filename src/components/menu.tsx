@@ -30,8 +30,8 @@ import {useLocation} from "react-router-dom";
 
 import logo from "~/assets/logo.png";
 import {useEphemeralUserStore} from "~/lib/stores/ephemeral-user";
-import {RequiredAuthState} from "~/lib/types";
-import {checkRequiredAuthState} from "~/lib/utils";
+import {AuthState} from "~/lib/types";
+import {getAuthState} from "~/lib/utils";
 
 /**
  * Menu navigation item position
@@ -51,9 +51,9 @@ interface NavItem {
   url: string;
 
   /**
-   * Required authentication state to show this item
+   * Required authentication state to show this item or undefined if the item is always available
    */
-  requiredState: RequiredAuthState;
+  requiredState: AuthState | undefined;
 
   /**
    * Item position
@@ -82,7 +82,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   {
     title: "Home",
-    requiredState: RequiredAuthState.UNAUTHENTICATED,
+    requiredState: AuthState.UNAUTHENTICATED,
     url: "/",
     position: NavItemPosition.TOP,
     iosIcon: homeOutline,
@@ -90,7 +90,7 @@ const navItems: NavItem[] = [
   },
   {
     title: "Authentication",
-    requiredState: RequiredAuthState.UNAUTHENTICATED,
+    requiredState: AuthState.UNAUTHENTICATED,
     url: "/auth/1",
     position: NavItemPosition.TOP,
     iosIcon: lockClosedOutline,
@@ -98,7 +98,7 @@ const navItems: NavItem[] = [
   },
   {
     title: "Nearby",
-    requiredState: RequiredAuthState.AUTHENTICATED,
+    requiredState: AuthState.AUTHENTICATED_TERMS,
     url: "/nearby",
     position: NavItemPosition.TOP,
     iosIcon: navigateCircleOutline,
@@ -106,7 +106,7 @@ const navItems: NavItem[] = [
   },
   {
     title: "Create Post",
-    requiredState: RequiredAuthState.AUTHENTICATED,
+    requiredState: AuthState.AUTHENTICATED_TERMS,
     url: "/posts/create/1",
     position: NavItemPosition.TOP,
     iosIcon: createOutline,
@@ -114,7 +114,7 @@ const navItems: NavItem[] = [
   },
   {
     title: "Settings",
-    requiredState: RequiredAuthState.AUTHENTICATED,
+    requiredState: AuthState.AUTHENTICATED_TERMS,
     url: "/settings",
     position: NavItemPosition.BOTTOM,
     iosIcon: settingsOutline,
@@ -177,7 +177,8 @@ export const Menu: FC = () => {
             .filter(
               navItem =>
                 navItem.position === NavItemPosition.TOP &&
-                checkRequiredAuthState(user, navItem.requiredState),
+                (navItem.requiredState === undefined ||
+                  navItem.requiredState === getAuthState(user)),
             )
             .map((navItem, index) => (
               <NavItem key={index} {...navItem} />
@@ -189,7 +190,8 @@ export const Menu: FC = () => {
             .filter(
               navItem =>
                 navItem.position === NavItemPosition.BOTTOM &&
-                checkRequiredAuthState(user, navItem.requiredState),
+                (navItem.requiredState === undefined ||
+                  navItem.requiredState === getAuthState(user)),
             )
             .map((navItem, index) => (
               <NavItem key={index} {...navItem} />

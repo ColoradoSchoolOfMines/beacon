@@ -4,6 +4,7 @@
  */
 /* eslint-disable camelcase */
 
+import {readFile} from "node:fs/promises";
 import {dirname, join} from "node:path";
 import {fileURLToPath} from "node:url";
 
@@ -36,11 +37,34 @@ export default defineConfig(async () => {
     "HEAD",
   ]);
 
+  // Read the terms and conditions text
+  const termsAndConditionsText = await readFile(
+    join(
+      root,
+      process.env.VITE_TERMS_AND_CONDITIONS ??
+        "src/assets/terms-and-conditions.md",
+    ),
+    "utf8",
+  );
+
+  // Read the privacy policy text
+  const privacyPolicyText = await readFile(
+    join(
+      root,
+      process.env.VITE_PRIVACY_POLICY ?? "src/assets/privacy-policy.md",
+    ),
+    "utf8",
+  );
+
   return {
     define: {
       "import.meta.env.VERSION": JSON.stringify(version),
       "import.meta.env.GIT_BRANCH": JSON.stringify(branch),
       "import.meta.env.GIT_COMMIT": JSON.stringify(commit),
+      "import.meta.env.VITE_TERMS_AND_CONDITIONS": JSON.stringify(
+        termsAndConditionsText,
+      ),
+      "import.meta.env.VITE_PRIVACY_POLICY": JSON.stringify(privacyPolicyText),
     },
     plugins: [
       TopLevelAwait(),

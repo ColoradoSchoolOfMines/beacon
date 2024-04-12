@@ -14,11 +14,12 @@ import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
 import {useEphemeralUserStore} from "~/lib/stores/ephemeral-user";
 import {usePersistentStore} from "~/lib/stores/persistent";
 import {client} from "~/lib/supabase";
-import {GlobalMessageMetadata, RequiredAuthState, Theme} from "~/lib/types";
-import {checkRequiredAuthState} from "~/lib/utils";
+import {AuthState, GlobalMessageMetadata, Theme} from "~/lib/types";
+import {getAuthState} from "~/lib/utils";
 import {Step1 as AuthStep1} from "~/pages/auth/step1";
 import {Step2 as AuthStep2} from "~/pages/auth/step2";
 import {Step3 as AuthStep3} from "~/pages/auth/step3";
+import {Step4 as AuthStep4} from "~/pages/auth/step4";
 import {Error} from "~/pages/error";
 import {Index} from "~/pages/index";
 import {Nearby} from "~/pages/nearby";
@@ -26,7 +27,9 @@ import {Step1 as CreateCommentStep1} from "~/pages/posts/[id]/comments/create/st
 import {PostIndex} from "~/pages/posts/[id]/index";
 import {Step1 as CreatePostStep1} from "~/pages/posts/create/step1";
 import {Step2 as CreatePostStep2} from "~/pages/posts/create/step2";
+import {Privacy} from "~/pages/privacy";
 import {Settings} from "~/pages/settings";
+import {Terms} from "~/pages/terms";
 
 /**
  * Signed out message metadata
@@ -38,49 +41,73 @@ const SIGNED_OUT_MESSAGE_METADATA: GlobalMessageMetadata = {
 };
 
 /**
+ * Route authentication state
+ */
+interface RouteAuthState {
+  /**
+   * Route path pattern
+   */
+  pathname: RegExp;
+
+  /**
+   * Required authentication state or undefined if the route is always available
+   */
+  requiredState: AuthState | undefined;
+}
+
+/**
  * Route authentication states
  */
-const routeAuthStates = [
+const routeAuthStates: RouteAuthState[] = [
   {
     pathname: /^\/$/,
-    requiredState: RequiredAuthState.ANY,
+    requiredState: undefined,
+  },
+  {
+    pathname: /^\/terms-and-conditions$/,
+    requiredState: undefined,
+  },
+  {
+    pathname: /^\/privacy-policy$/,
+    requiredState: undefined,
   },
   {
     pathname: /^\/auth\/1$/,
-    requiredState: RequiredAuthState.UNAUTHENTICATED,
+    requiredState: AuthState.UNAUTHENTICATED,
   },
   {
     pathname: /^\/auth\/2$/,
-    requiredState: RequiredAuthState.UNAUTHENTICATED,
+    requiredState: AuthState.UNAUTHENTICATED,
   },
   {
     pathname: /^\/auth\/3$/,
-    requiredState: RequiredAuthState.UNAUTHENTICATED,
+    requiredState: AuthState.UNAUTHENTICATED,
+  },
+  {
+    pathname: /^\/auth\/4$/,
+    requiredState: AuthState.AUTHENTICATED_NO_TERMS,
   },
   {
     pathname: /^\/nearby$/,
-    requiredState: RequiredAuthState.AUTHENTICATED,
+    requiredState: AuthState.AUTHENTICATED_TERMS,
   },
   {
     pathname: /^\/posts\/create\/1$/,
-    requiredState: RequiredAuthState.AUTHENTICATED,
+    requiredState: AuthState.AUTHENTICATED_TERMS,
   },
   {
     pathname: /^\/posts\/create\/2$/,
-    requiredState: RequiredAuthState.AUTHENTICATED,
+    requiredState: AuthState.AUTHENTICATED_TERMS,
   },
   {
     pathname: /^\/posts\/[\dA-Fa-f]{8}(?:-[\dA-Fa-f]{4}){3}-[\dA-Fa-f]{12}$/,
-    requiredState: RequiredAuthState.AUTHENTICATED,
+    requiredState: AuthState.AUTHENTICATED_TERMS,
   },
   {
     pathname: /^\/settings$/,
-    requiredState: RequiredAuthState.AUTHENTICATED,
+    requiredState: AuthState.AUTHENTICATED_TERMS,
   },
-] as {
-  pathname: RegExp;
-  requiredState: RequiredAuthState;
-}[];
+];
 
 // Set the user from the session (Block because this doesn't make a request to the backend)
 const session = await client.auth.getSession();
@@ -133,21 +160,46 @@ export const App: FC = () => {
       regex.test(pathname),
     )?.requiredState;
 
-    // Check the required authentication state
-    if (
-      requiredState !== undefined &&
-      !checkRequiredAuthState(user, requiredState)
-    ) {
-      // Go to the required route
-      switch (requiredState) {
-        case RequiredAuthState.UNAUTHENTICATED:
-          history.push("/nearby");
-          break;
+    if (requiredState === undefined) {
+      return;
+    }
 
-        case RequiredAuthState.AUTHENTICATED:
-          history.push("/auth/1");
-          break;
-      }
+    // Get the user's current authentication state
+    const authState = getAuthState(user);
+
+    // User needs to authenticate
+    if (
+      authState === AuthState.UNAUTHENTICATED &&
+      [
+        AuthState.AUTHENTICATED_NO_TERMS,
+        AuthState.AUTHENTICATED_TERMS,
+      ].includes(requiredState)
+    ) {
+      history.push("/auth/1");
+      return;
+    }
+
+    // User needs to accept the terms and conditions
+    if (
+      authState === AuthState.AUTHENTICATED_NO_TERMS &&
+      requiredState === AuthState.AUTHENTICATED_TERMS
+    ) {
+      history.push("/auth/4");
+      return;
+    }
+
+    // User is already authenticated and has accepted the terms and conditions
+    if (
+      ([
+        AuthState.AUTHENTICATED_NO_TERMS,
+        AuthState.AUTHENTICATED_TERMS,
+      ].includes(authState) &&
+        requiredState === AuthState.UNAUTHENTICATED) ||
+      (authState === AuthState.AUTHENTICATED_TERMS &&
+        requiredState === AuthState.AUTHENTICATED_NO_TERMS)
+    ) {
+      history.push("/nearby");
+      return;
     }
   };
 
@@ -160,7 +212,7 @@ export const App: FC = () => {
 
   // Subscribe to auth changes
   useEffect(() => {
-    client.auth.onAuthStateChange((event, session) => {
+    client.auth.onAuthStateChange(async (event, session) => {
       let newUser = user;
 
       switch (event) {
@@ -202,6 +254,14 @@ export const App: FC = () => {
             <Index />
           </Route>
 
+          <Route path="/terms-and-conditions" exact={true}>
+            <Terms />
+          </Route>
+
+          <Route path="/privacy-policy" exact={true}>
+            <Privacy />
+          </Route>
+
           {/* Unauthenticated routes */}
           <Route path="/auth/1" exact={true}>
             <AuthStep1 />
@@ -216,6 +276,10 @@ export const App: FC = () => {
           </Route>
 
           {/* Authenticated routes */}
+          <Route path="/auth/4" exact={true}>
+            <AuthStep4 />
+          </Route>
+
           <Route path="/nearby" exact={true}>
             <Nearby />
           </Route>

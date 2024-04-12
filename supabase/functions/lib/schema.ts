@@ -1143,19 +1143,16 @@ export type Database = {
       profiles: {
         Row: {
           color: string
-          created_at: string
           emoji: string
           id: string
         }
         Insert: {
           color?: string
-          created_at?: string
           emoji?: string
           id: string
         }
         Update: {
           color?: string
-          created_at?: string
           emoji?: string
           id?: string
         }

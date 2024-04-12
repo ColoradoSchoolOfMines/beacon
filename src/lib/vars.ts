@@ -39,6 +39,16 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
  */
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+/**
+ * The terms and conditions markdown text
+ */
+const TERMS_AND_CONDITIONS = import.meta.env.VITE_TERMS_AND_CONDITIONS;
+
+/**
+ * The privacy policy markdown text
+ */
+const PRIVACY_POLICY = import.meta.env.VITE_PRIVACY_POLICY;
+
 // Validate variables
 const vars = {
   VERSION,
@@ -47,6 +57,8 @@ const vars = {
   HCAPTCHA_SITE_KEY,
   SUPABASE_URL,
   SUPABASE_ANON_KEY,
+  TERMS_AND_CONDITIONS,
+  PRIVACY_POLICY,
 };
 
 const missing = [];
@@ -66,7 +78,9 @@ export {
   GIT_BRANCH,
   GIT_COMMIT,
   HCAPTCHA_SITE_KEY,
+  PRIVACY_POLICY,
   SUPABASE_ANON_KEY,
   SUPABASE_URL,
+  TERMS_AND_CONDITIONS,
   VERSION,
 };

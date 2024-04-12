@@ -53,6 +53,16 @@ export type PrefixKeys<T, P extends string> = {
 };
 
 /**
+ * User account metadata
+ */
+export interface UserMetadata {
+  /**
+   * Whether or not the user has accepted the latest terms and conditions
+   */
+  acceptedTerms: boolean;
+}
+
+/**
  * Votable abstract entity
  */
 export interface VotableEntity {
@@ -128,23 +138,23 @@ export enum MeasurementSystem {
 }
 
 /**
- * Required authentication state
+ * User authentication states
  */
-export enum RequiredAuthState {
+export enum AuthState {
   /**
-   * User must be authenticated
+   * User is authenticated and has accepted the latest terms and conditions
    */
-  AUTHENTICATED = "authenticated",
+  AUTHENTICATED_TERMS = "authenticated_terms",
 
   /**
-   * User must be unauthenticated
+   * User is authenticated, but hasn't accepted the latest terms and conditions
+   */
+  AUTHENTICATED_NO_TERMS = "authenticated_no_terms",
+
+  /**
+   * User isn't unauthenticated
    */
   UNAUTHENTICATED = "unauthenticated",
-
-  /**
-   * User can be authenticated or unauthenticated
-   */
-  ANY = "any",
 }
 
 /**

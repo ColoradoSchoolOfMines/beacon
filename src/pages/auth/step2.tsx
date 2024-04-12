@@ -16,7 +16,7 @@ import {SupplementalError} from "~/components/supplemental-error";
 import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
 import {usePersistentStore} from "~/lib/stores/persistent";
 import {client} from "~/lib/supabase";
-import {Theme} from "~/lib/types";
+import {Theme, UserMetadata} from "~/lib/types";
 import {HCAPTCHA_SITE_KEY} from "~/lib/vars";
 
 /**
@@ -67,6 +67,9 @@ export const Step2: FC = () => {
       options: {
         captchaToken: form.captchaToken,
         emailRedirectTo: new URL("/nearby", window.location.origin).toString(),
+        data: {
+          acceptedTerms: false,
+        } as UserMetadata,
       },
     });
 
@@ -88,7 +91,7 @@ export const Step2: FC = () => {
   };
 
   return (
-    <AuthContainer>
+    <AuthContainer back={true}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Controller
           control={control}

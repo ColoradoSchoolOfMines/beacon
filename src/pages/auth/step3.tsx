@@ -13,6 +13,7 @@ import {z} from "zod";
 import {AuthContainer} from "~/components/auth-container";
 import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
 import {client} from "~/lib/supabase";
+import {UserMetadata} from "~/lib/types";
 
 /**
  * Failed to login message metadata symbol
@@ -57,7 +58,7 @@ export const Step3: FC = () => {
    */
   const verify = async (code: string) => {
     // Log in
-    const {error} = await client.auth.verifyOtp({
+    const {data, error} = await client.auth.verifyOtp({
       email: email!,
       token: code,
       type: "email",
@@ -81,8 +82,11 @@ export const Step3: FC = () => {
       return;
     }
 
-    // Go to nearby
-    history.push("/nearby");
+    // Get the user metadata
+    const userMetadata = data!.user!.user_metadata as UserMetadata;
+
+    // Go to the terms and conditions if the user hasn't accepted them
+    history.push(userMetadata.acceptedTerms ? "/nearby" : "/auth/4");
   };
 
   /**
@@ -93,7 +97,7 @@ export const Step3: FC = () => {
   const onSubmit = async (data: FormSchema) => await verify(data.code);
 
   return (
-    <AuthContainer>
+    <AuthContainer back={true}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Controller
           control={control}

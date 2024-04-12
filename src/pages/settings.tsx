@@ -444,34 +444,30 @@ export const Settings: FC = () => {
 
             <IonItem>
               <IonLabel>Version</IonLabel>
-              <IonNote className="ml-0 p-0" slot="end">
-                {VERSION}
-              </IonNote>
+              <IonNote slot="end">{VERSION}</IonNote>
             </IonItem>
 
             <IonItem>
               <IonLabel>Branch</IonLabel>
-              <IonNote className="ml-0 p-0" slot="end">
-                {GIT_BRANCH}
-              </IonNote>
+              <IonNote slot="end">{GIT_BRANCH}</IonNote>
             </IonItem>
 
             <IonItem>
               <IonLabel>Commit</IonLabel>
-              <IonNote className="ml-0 p-0" slot="end">
-                {GIT_COMMIT}
-              </IonNote>
+              <IonNote slot="end">{GIT_COMMIT}</IonNote>
             </IonItem>
+          </IonItemGroup>
 
+          <IonItemGroup>
+            <IonItemDivider>
+              <IonLabel>Links</IonLabel>
+            </IonItemDivider>
             <IonItem
               rel="noreferrer"
               target="_blank"
               href="https://github.com/ColoradoSchoolOfMines/Beacon"
             >
               <IonLabel>Source code</IonLabel>
-              <IonNote className="ml-0 p-0 text-[0.9rem]" slot="end">
-                github.com/...
-              </IonNote>
             </IonItem>
 
             <IonItem
@@ -480,9 +476,14 @@ export const Settings: FC = () => {
               href="https://github.com/ColoradoSchoolOfMines/beacon/issues/new/choose"
             >
               <IonLabel>Bug report/feature request</IonLabel>
-              <IonNote className="ml-0 p-0 text-[0.9rem]" slot="end">
-                github.com/...
-              </IonNote>
+            </IonItem>
+
+            <IonItem target="_blank" href="/terms-and-conditions">
+              <IonLabel>Terms and Conditions</IonLabel>
+            </IonItem>
+
+            <IonItem target="_blank" href="/privacy-policy">
+              <IonLabel>Privacy Policy</IonLabel>
             </IonItem>
           </IonItemGroup>
         </IonList>

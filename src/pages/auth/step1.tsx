@@ -18,6 +18,7 @@ import {
 } from "~/lib/api/auth";
 import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
 import {client} from "~/lib/supabase";
+import {UserMetadata} from "~/lib/types";
 
 /**
  * Passkey failed use credential message metadata symbol
@@ -82,8 +83,19 @@ export const Step1: FC = () => {
       refresh_token: endRes.session!.refresh_token,
     });
 
-    // Go to nearby
-    history.push("/nearby");
+    // Get the user
+    const {data, error} = await client.auth.getUser();
+
+    // Handle error
+    if (error !== null) {
+      return;
+    }
+
+    // Get the user metadata
+    const userMetadata = data!.user!.user_metadata as UserMetadata;
+
+    // Go to the terms and conditions if the user hasn't accepted them
+    history.push(userMetadata.acceptedTerms ? "/nearby" : "/auth/4");
   };
 
   /**
@@ -95,7 +107,7 @@ export const Step1: FC = () => {
   };
 
   return (
-    <AuthContainer>
+    <AuthContainer back={false}>
       {checkPasskeySupport() && (
         <>
           <IonButton

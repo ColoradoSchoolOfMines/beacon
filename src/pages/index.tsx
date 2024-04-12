@@ -3,7 +3,14 @@
  */
 
 import {IonButton, IonContent, IonIcon, IonPage} from "@ionic/react";
-import {navigateCircleOutline, navigateCircleSharp} from "ionicons/icons";
+import {
+  documentTextOutline,
+  documentTextSharp,
+  navigateCircleOutline,
+  navigateCircleSharp,
+  shieldOutline,
+  shieldSharp,
+} from "ionicons/icons";
 import {FC, useEffect, useRef} from "react";
 import {useLocation} from "react-router-dom";
 import {useMeasure} from "react-use";
@@ -16,7 +23,7 @@ import styles from "~/pages/index.module.css";
 /**
  * Number of frames
  */
-const FRAME_COUNT = 5;
+const FRAME_COUNT = 6;
 
 /**
  * Index page
@@ -159,6 +166,39 @@ export const Index: FC = () => {
               md={navigateCircleSharp}
             />
             Get Started
+          </IonButton>
+        </div>
+
+        {/* Sixth frame */}
+        <div className="flex flex-col h-[var(--window-height)] items-center justify-center px-6 text-center w-full snap-center">
+          <div className="my-2">
+            <h2 className="text-4xl">Legal Stuff</h2>
+          </div>
+
+          <IonButton
+            className="my-2"
+            color="dark"
+            fill="outline"
+            target="_blank"
+            href="/terms-and-conditions"
+          >
+            <IonIcon
+              slot="start"
+              ios={documentTextOutline}
+              md={documentTextSharp}
+            />
+            Terms and Conditions
+          </IonButton>
+
+          <IonButton
+            className="my-2"
+            color="dark"
+            fill="outline"
+            target="_blank"
+            href="/privacy-policy"
+          >
+            <IonIcon slot="start" ios={shieldOutline} md={shieldSharp} />
+            Privacy Policy
           </IonButton>
         </div>
       </IonContent>
