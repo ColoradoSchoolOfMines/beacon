@@ -66,13 +66,31 @@ npm run supabase:functions
 npm run supabase:reset
 ```
 
+### Production
+
+#### Build
+
+To build the frontend for production, run:
+
+```bash
+docker build -t beacon-frontend -f deployment/frontend.dockerfile -e VITE_HCAPTCHA_SITE_KEY=SEE_BELOW -e VITE_SUPABASE_FUNCTIONS_URL=SEE_BELOW -e VITE_SUPABASE_URL=SEE_BELOW -e VITE_SUPABASE_ANON_KEY=SEE_BELOW -e VITE_TERMS_AND_CONDITIONS=SEE_BELOW -e VITE_PRIVACY_POLICY=SEE_BELOW .
+```
+
+#### Run
+
+To run the frontend in production, run:
+
+```bash
+docker run -p 80:8080 beacon-frontend
+```
+
 ### Frontend Environment Variables
 
 | Name                          | Description                                                                                         | Default/Required                                                                                                         |
 | ----------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | `VITE_HCAPTCHA_SITE_KEY`      | The hCaptcha site key                                                                               | Required ( :warning: **Must be manually set** :warning:; see [hCaptcha dashboard](https://dashboard.hcaptcha.com/sites)) |
 | `VITE_SUPABASE_FUNCTIONS_URL` | The absolute base URL of the Supabase functions                                                     | Defaults to the Supabase API URL                                                                                         |
-| `VITE_SUPABASE_URL`           | The Supabase API URL                                                                                | Required (Automatically set by the setup script)                                                                         |
+| `VITE_SUPABASE_URL`           | The absolute Supabase API URL                                                                       | Required (Automatically set by the setup script)                                                                         |
 | `VITE_SUPABASE_ANON_KEY`      | The Supabase API anonymous key                                                                      | Required (Automatically set by the setup script)                                                                         |
 | `VITE_TERMS_AND_CONDITIONS`   | The path to the terms and conditions markdown file (Read into `VITE_TERMS_AND_CONDITIONS` variable) | Defaults to `src/assets/terms-and-conditions.md`                                                                         |
 | `VITE_PRIVACY_POLICY`         | The path to the privacy policy markdown file (Read into `VITE_PRIVACY_POLICY` variable)             | Defaults to `src/assets/privacy-policy.md`                                                                               |

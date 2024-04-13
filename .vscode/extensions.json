@@ -5,6 +5,7 @@
     "editorconfig.editorconfig",
     "esbenp.prettier-vscode",
     "seatonjiang.gitmoji-vscode",
-    "yoavbls.pretty-ts-errors"
+    "yoavbls.pretty-ts-errors",
+    "zamerick.vscode-caddyfile-syntax"
   ]
 }

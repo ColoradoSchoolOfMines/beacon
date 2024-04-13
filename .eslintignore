@@ -1,3 +1,6 @@
+# Generated Caddyfile
+deployment/Caddyfile
+
 # Supabase
 supabase/functions/*
 
