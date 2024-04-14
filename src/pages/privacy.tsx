@@ -24,7 +24,7 @@ export const Privacy: FC = () => {
   // Hooks
   const privacyPolicy = useAsync(async () => {
     // Fetch the privacy policy
-    const response = await fetch("/legal/privacy-policy.md");
+    const response = await fetch("/custom/privacy-policy.md");
 
     // Convert the response to text
     return await response.text();
