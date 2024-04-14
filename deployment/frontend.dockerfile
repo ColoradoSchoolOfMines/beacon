@@ -18,10 +18,6 @@ RUN npm install --omit=dev
 # Build static content
 RUN npm run build
 
-# Generate the Caddyfile
-RUN rm -f /app/deployment/Caddyfile
-RUN npm run caddyfile:generate
-
 # Base image (https://hub.docker.com/layers/library/caddy/2.7.6-alpine/images/sha256-a6054d207060158cd0f019d6a35907bf47d1f8dacf58cdb63075a930d8ebca38?context=explore)
 FROM caddy:2.7.6-alpine@sha256:95ce04978787e23e35143d23b8af2fbb6d6de55213b54a2e9ed2dbf8ffe7313c
 

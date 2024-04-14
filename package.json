@@ -1,7 +1,7 @@
 {
   "name": "beacon",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.1-alpha.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -14,8 +14,7 @@
     "supabase:reset": "tsx scripts/reset.ts",
     "supabase:start": "tsx scripts/start.ts",
     "supabase:status": "supabase status",
-    "supabase:schema": "tsx scripts/schema.ts",
-    "caddyfile:generate": "tsx scripts/caddyfile.ts"
+    "supabase:schema": "tsx scripts/schema.ts"
   },
   "dependencies": {
     "@capacitor/app": "5.0.7",
@@ -71,6 +70,7 @@
     "unocss": "^0.58.9",
     "virtua": "^0.29.2",
     "vite": "^5.2.8",
+    "vite-plugin-ejs": "^1.7.0",
     "vite-plugin-pwa": "^0.19.7",
     "vite-plugin-svgr": "^4.2.0",
     "vite-plugin-top-level-await": "^1.4.1",

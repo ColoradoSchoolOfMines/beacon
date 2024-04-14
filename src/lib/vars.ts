@@ -3,6 +3,13 @@
  */
 
 /**
+ * Runtime variables
+ */
+const RUNTIME_VARS = (
+  import.meta.env.DEV ? import.meta.env : (window as any).__VITE_VARS__
+) as ImportMetaEnv;
+
+/**
  * Current semantic version
  */
 const VERSION = import.meta.env.VERSION;
@@ -20,34 +27,24 @@ const GIT_BRANCH = import.meta.env.GIT_BRANCH;
 /**
  * Functions absolute base URL
  */
-const FUNCTIONS_URL = import.meta.env.VITE_SUPABASE_FUNCTIONS_URL as
+const FUNCTIONS_URL = RUNTIME_VARS.VITE_SUPABASE_FUNCTIONS_URL as
   | string
   | undefined;
 
 /**
  * hCaptcha site key
  */
-const HCAPTCHA_SITE_KEY = import.meta.env.VITE_HCAPTCHA_SITE_KEY;
+const HCAPTCHA_SITE_KEY = RUNTIME_VARS.VITE_HCAPTCHA_SITE_KEY;
 
 /**
  * Supabase API URL
  */
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_URL = RUNTIME_VARS.VITE_SUPABASE_URL;
 
 /**
  * Supabase API anonymous key
  */
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-/**
- * The terms and conditions markdown text
- */
-const TERMS_AND_CONDITIONS = import.meta.env.VITE_TERMS_AND_CONDITIONS;
-
-/**
- * The privacy policy markdown text
- */
-const PRIVACY_POLICY = import.meta.env.VITE_PRIVACY_POLICY;
+const SUPABASE_ANON_KEY = RUNTIME_VARS.VITE_SUPABASE_ANON_KEY;
 
 // Validate variables
 const vars = {
@@ -57,8 +54,6 @@ const vars = {
   HCAPTCHA_SITE_KEY,
   SUPABASE_URL,
   SUPABASE_ANON_KEY,
-  TERMS_AND_CONDITIONS,
-  PRIVACY_POLICY,
 };
 
 const missing = [];
@@ -78,9 +73,7 @@ export {
   GIT_BRANCH,
   GIT_COMMIT,
   HCAPTCHA_SITE_KEY,
-  PRIVACY_POLICY,
   SUPABASE_ANON_KEY,
   SUPABASE_URL,
-  TERMS_AND_CONDITIONS,
   VERSION,
 };
