@@ -26,7 +26,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           flavor: latest=true
-          images: ghcr.io/ColoradoSchoolOfMines/beacon-frontend
+          images: ghcr.io/ColoradoSchoolOfMines/beacon
           tags: |
             type=ref,event=branch
             type=ref,event=pr
