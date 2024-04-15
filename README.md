@@ -75,7 +75,7 @@ npm run supabase:reset
 To build the frontend for production, run:
 
 ```bash
-docker build -t beacon-frontend -f deployment/frontend.dockerfile .
+docker build -t beacon -f deployment/frontend.dockerfile .
 ```
 
 #### Run
@@ -83,7 +83,7 @@ docker build -t beacon-frontend -f deployment/frontend.dockerfile .
 To run the frontend in production, run:
 
 ```bash
-docker run -p 80:8080 beacon-frontend
+docker run -p 80:8080 beacon
 ```
 
 ### Frontend Environment Variables

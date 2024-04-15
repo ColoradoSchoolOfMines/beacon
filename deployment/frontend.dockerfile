@@ -7,7 +7,7 @@ FROM node:20.12.2-alpine3.18@sha256:d328c7bc3305e1ab26491817936c8151a47a8861ad61
 RUN apk add --no-cache git
 
 # Set working directory
-WORKDIR /dev
+WORKDIR /build
 
 # Copy source code
 COPY . .
@@ -24,14 +24,16 @@ FROM caddy:2.7.6-alpine@sha256:95ce04978787e23e35143d23b8af2fbb6d6de55213b54a2e9
 # Install packages
 RUN apk add --no-cache wget
 
+# Remove old files
+RUN rm -rf /etc/caddy/Caddyfile /usr/share/caddy
+
 # Create the non-root user
 RUN adduser -D caddy
 USER caddy
 
 # Copy files
-RUN rm -rf /etc/caddy/Caddyfile /usr/share/caddy
-COPY --from=builder /dev/deployment/Caddyfile /etc/caddy/Caddyfile
-COPY --from=builder /dev/dist /usr/share/caddy
+COPY --from=builder /build/deployment/Caddyfile /etc/caddy/Caddyfile
+COPY --from=builder /build/dist /usr/share/caddy
 
 # Expose port
 EXPOSE 8080
