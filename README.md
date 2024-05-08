@@ -86,20 +86,6 @@ docker run -p 80:8080 beacon
 | `VITE_SUPABASE_URL`                           | `CADDY_SUPABASE_URL`                     | The absolute Supabase API URL  | Required (Automatically set by the setup script)                                                                         |
 | `VITE_SUPABASE_ANON_KEY`                      | `CADDY_SUPABASE_ANON_KEY`                | The Supabase API anonymous key | Required (Automatically set by the setup script)                                                                         |
 
-### Function Environment Variables
-
-| Name                          | Description                           | Default/Required                                         |
-| ----------------------------- | ------------------------------------- | -------------------------------------------------------- |
-| `HCAPTCHA_SITE_KEY`           | The hCaptcha site key                 | Required ( :warning: **Must be manually set** :warning:) |
-| `HCAPTCHA_SECRET_KEY`         | The hCaptcha secret key               | Required ( :warning: **Must be manually set** :warning:) |
-| `X_SUPABASE_DB_URL`           | The Supabase database URL             | Required (Automatically set by the runtime)              |
-| `X_SUPABASE_URL`              | The Supabase API URL                  | Required (Automatically set by the runtime)              |
-| `X_SUPABASE_ANON_KEY`         | The Supabase API anonymous key        | Required (Automatically set by the runtime)              |
-| `X_SUPABASE_SERVICE_ROLE_KEY` | The Supabase API service role key     | Required (Automatically set by the runtime)              |
-| `X_SUPABASE_JWT_SECRET`       | The Supabase JWT secret               | Required (Automatically set by the setup script)         |
-| `X_SUPABASE_JWT_ISSUER`       | The Supabase JWT issuer               | Required (Automatically set by the setup script)         |
-| `X_SUPABASE_JWT_EXP`          | The Supabase JWT expiration (Seconds) | Defaults to `3600` seconds (`1` hour)                    |
-
 ### Technologies
 
 - Frontend
