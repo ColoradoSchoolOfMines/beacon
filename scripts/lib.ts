@@ -215,8 +215,6 @@ export const generateSupabaseSchema = async () => {
     "--schema",
     "public",
     "--schema",
-    "auth",
-    "--schema",
     "utilities",
   ];
 

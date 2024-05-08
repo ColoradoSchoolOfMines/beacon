@@ -8,6 +8,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
+    "analyze": "vite-bundle-visualizer --open",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "supabase:reset": "tsx scripts/reset.ts",
@@ -86,6 +87,7 @@
     "eslint-plugin-unicorn": "^52.0.0",
     "prettier": "^3.2.5",
     "prettier-plugin-multiline-arrays": "^3.0.4",
-    "supabase": "^1.165.0"
+    "supabase": "^1.165.0",
+    "vite-bundle-visualizer": "^1.1.0"
   }
 }
