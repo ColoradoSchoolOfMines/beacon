@@ -1,7 +1,5 @@
 /**
  * Setup miscellaneous things after the main setup
- *
- * Prerequisites: before.sql, tables.sql
  */
 
 /* -------------------------------------- Setup cron jobs -------------------------------------- */

@@ -1,7 +1,5 @@
 /**
  * Setup triggers
- *
- * Prerequisites: functions.sql, tables.sql
  */
 
 -- Create a profile for a new user

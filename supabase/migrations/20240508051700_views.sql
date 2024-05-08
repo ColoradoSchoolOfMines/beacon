@@ -1,7 +1,5 @@
 /**
  * Setup views
- *
- * Prerequisites: functions.sql, tables.sql
  */
 
 -- Posts with additional, user-specific information

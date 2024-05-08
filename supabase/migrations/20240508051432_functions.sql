@@ -1,7 +1,5 @@
 /**
  * Setup functions
- *
- * Prerequisites: before.sql
  */
 
 /* --------------------------------- Private utility functions --------------------------------- */
@@ -10,7 +8,7 @@
 --
 -- This function has been verified to produce a uniform distribution of values using a one-sample Kolmogorov-Smirnov
 -- test with a null hypothesis of perfect uniform distribution with a p value of exactly 0.0 (Less round-off errors)
--- for a sample size of 1 million. See safe_random_analysis.py for more information.
+-- for a sample size of 1 million.
 --
 -- Note that because this function uses rejection-sampling, timing attacks are hypothetically possible, especially
 -- if the RNG is predictable (Though that in itself represents a rather grave security concern).

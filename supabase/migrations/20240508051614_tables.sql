@@ -1,7 +1,5 @@
 /**
  * Setup tables
- *
- * Prerequisites: before.sql, functions.sql, types.sql
  */
 
 /* ---------------------------------------- Setup tables --------------------------------------- */
