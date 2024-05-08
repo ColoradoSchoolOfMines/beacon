@@ -2,34 +2,34 @@
  * @file Auth step 2 page
  */
 
-import HCaptcha from "@hcaptcha/react-hcaptcha";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {IonButton, IonIcon, IonInput} from "@ionic/react";
-import {paperPlaneOutline, paperPlaneSharp} from "ionicons/icons";
-import {FC, useRef} from "react";
+import {checkmarkOutline, checkmarkSharp} from "ionicons/icons";
+import {FC} from "react";
 import {Controller, useForm} from "react-hook-form";
 import {useHistory} from "react-router-dom";
 import {z} from "zod";
 
 import {AuthContainer} from "~/components/auth-container";
-import {SupplementalError} from "~/components/supplemental-error";
 import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
-import {usePersistentStore} from "~/lib/stores/persistent";
 import {client} from "~/lib/supabase";
-import {Theme, UserMetadata} from "~/lib/types";
-import {HCAPTCHA_SITE_KEY} from "~/lib/vars";
+import {UserMetadata} from "~/lib/types";
+
+/**
+ * Failed to login message metadata symbol
+ */
+const FAILED_TO_LOGIN_MESSAGE_METADATA_SYMBOL = Symbol("auth.failed-to-login");
 
 /**
  * Form schema
  */
 const formSchema = z.object({
-  email: z.string().email(),
-  captchaToken: z
-    .string({
-      // eslint-disable-next-line camelcase
-      required_error: "Please complete the challenge",
-    })
-    .min(1, "Please complete the challenge"),
+  code: z
+    .string()
+    .min(1)
+    .refine(value => /^\d+$/.test(value), {
+      message: "Invalid code",
+    }),
 });
 
 /**
@@ -41,11 +41,10 @@ type FormSchema = z.infer<typeof formSchema>;
  * Auth step 2 component
  * @returns JSX
  */
-export const Step2: FC = () => {
+export const Step3: FC = () => {
   // Hooks
-  const captcha = useRef<HCaptcha>(null);
-  const setEmail = useEphemeralUIStore(state => state.setEmail);
-  const theme = usePersistentStore(state => state.theme);
+  const email = useEphemeralUIStore(state => state.email);
+  const setMessage = useEphemeralUIStore(state => state.setMessage);
   const history = useHistory();
 
   const {control, handleSubmit, reset} = useForm<FormSchema>({
@@ -54,89 +53,84 @@ export const Step2: FC = () => {
 
   // Methods
   /**
-   * Form submit handler
-   * @param form Form data
+   * Verify the code
+   * @param code Code
    */
-  const onSubmit = async (form: FormSchema) => {
-    // Store the email for later
-    setEmail(form.email);
-
-    // Begin the log in process
-    const {error} = await client.auth.signInWithOtp({
-      email: form.email,
-      options: {
-        captchaToken: form.captchaToken,
-        emailRedirectTo: new URL("/nearby", window.location.origin).toString(),
-        data: {
-          acceptedTerms: false,
-        } as UserMetadata,
-      },
+  const verify = async (code: string) => {
+    // Log in
+    const {data, error} = await client.auth.verifyOtp({
+      email: email!,
+      token: code,
+      type: "email",
     });
 
     // Handle the error
     if (error !== null) {
-      // Partially reset the form
-      reset({
-        email: form.email,
+      // Reset the form
+      reset();
+
+      // Display the message
+      setMessage({
+        symbol: FAILED_TO_LOGIN_MESSAGE_METADATA_SYMBOL,
+        name: "Failed to log in",
+        description: error.message,
       });
 
-      // Reset the captcha
-      captcha.current?.resetCaptcha();
+      // Go back to the previous step
+      history.goBack();
 
       return;
     }
 
-    // Go to the next step
-    history.push("/auth/3");
+    // Get the user metadata
+    const userMetadata = data!.user!.user_metadata as UserMetadata;
+
+    // Go to the terms and conditions if the user hasn't accepted them
+    history.push(userMetadata.acceptedTerms ? "/nearby" : "/auth/3");
   };
+
+  /**
+   * Form submit handler
+   * @param data Form data
+   * @returns Nothing
+   */
+  const onSubmit = async (data: FormSchema) => await verify(data.code);
 
   return (
     <AuthContainer back={true}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Controller
           control={control}
-          name="email"
+          name="code"
           render={({
             field: {onChange, onBlur, value},
             fieldState: {error, isTouched, invalid},
           }) => (
             <IonInput
-              className={`min-w-64 ${(invalid || isTouched) && "ion-touched"} ${
-                invalid && "ion-invalid"
-              } ${!invalid && isTouched && "ion-valid"}`}
+              className={`min-w-64 mb-4 ${
+                (invalid || isTouched) && "ion-touched"
+              } ${invalid && "ion-invalid"} ${
+                !invalid && isTouched && "ion-valid"
+              }`}
               errorText={error?.message}
               fill="outline"
-              label="Email"
+              label="Code"
               labelPlacement="floating"
               onIonBlur={onBlur}
-              onIonInput={onChange}
-              type="email"
+              onIonChange={onChange}
+              type="text"
               value={value}
             />
           )}
         />
-        <Controller
-          control={control}
-          name="captchaToken"
-          render={({field: {onChange}, fieldState: {error}}) => (
-            <div className="py-4">
-              <HCaptcha
-                onVerify={token => onChange(token)}
-                ref={captcha}
-                sitekey={HCAPTCHA_SITE_KEY}
-                theme={theme === Theme.DARK ? "dark" : "light"}
-              />
-              <SupplementalError error={error?.message} />
-            </div>
-          )}
-        />
+
         <IonButton
           className="mb-0 mt-4 mx-0 overflow-hidden rounded-lg w-full"
           expand="full"
           type="submit"
         >
-          <IonIcon slot="start" ios={paperPlaneOutline} md={paperPlaneSharp} />
-          Send Login Code
+          <IonIcon slot="start" ios={checkmarkOutline} md={checkmarkSharp} />
+          Verify Code
         </IonButton>
       </form>
     </AuthContainer>

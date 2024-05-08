@@ -172,11 +172,6 @@ const getSupabaseStatus = async () => {
 const frontendEnv = join(root, ".env");
 
 /**
- * Function environment file
- */
-const functionsEnv = join(root, "supabase", "functions", ".env");
-
-/**
  * Environment file flags
  */
 const envFlags = constants.O_CREAT | constants.O_EXCL | constants.O_WRONLY;
@@ -193,36 +188,8 @@ export const writeEnvs = async () => {
     await writeFile(
       frontendEnv,
       `VITE_HCAPTCHA_SITE_KEY = "" # Required!
-# VITE_SUPABASE_FUNCTIONS_URL = ""
 VITE_SUPABASE_URL = ${JSON.stringify(status.apiUrl)}
 VITE_SUPABASE_ANON_KEY = ${JSON.stringify(status.anonKey)}`,
-      {
-        flag: envFlags,
-      },
-    );
-  } catch (error) {
-    if ((error as any)?.code !== "EEXIST") {
-      throw error;
-    }
-  }
-
-  try {
-    await writeFile(
-      functionsEnv,
-      `# WEBAUTHN_RP_ID = "beacon.localhost"
-# WEBAUTHN_RP_ORIGIN = "https://beacon.localhost"
-# WEBAUTHN_RP_NAME = "Beacon Social Network"
-HCAPTCHA_SITE_KEY = "" # Required!
-HCAPTCHA_SECRET_KEY = "" # Required!
-X_SUPABASE_DB_URL = ${JSON.stringify(status.dbUrl)}
-X_SUPABASE_URL = ${JSON.stringify(status.apiUrl)}
-X_SUPABASE_ANON_KEY = ${JSON.stringify(status.anonKey)}
-X_SUPABASE_SERVICE_ROLE_KEY = ${JSON.stringify(status.serviceRoleKey)}
-X_SUPABASE_JWT_SECRET = ${JSON.stringify(status.jwtSecret)}
-X_SUPABASE_JWT_ISSUER = ${JSON.stringify(
-        new URL("/auth/v1", status.apiUrl).toString(),
-      )}
-# X_SUPABASE_JWT_EXP = 3600`,
       {
         flag: envFlags,
       },
@@ -275,11 +242,6 @@ export const generateSupabaseSchema = async () => {
 const frontendSchema = join(root, "src", "lib", "schema.ts");
 
 /**
- * Backend schema file
- */
-const backendSchema = join(root, "supabase", "functions", "lib", "schema.ts");
-
-/**
  * Write Supabase schema files
  */
 export const writeSupabaseSchema = async () => {
@@ -294,8 +256,6 @@ export const writeSupabaseSchema = async () => {
 
   // Write the files
   await writeFile(frontendSchema, content);
-
-  await writeFile(backendSchema, content);
 
   const {all, exitCode, failed} = await execa(
     "eslint",

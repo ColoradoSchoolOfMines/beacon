@@ -2,40 +2,19 @@
  * @file Auth step 3 page
  */
 
-import {zodResolver} from "@hookform/resolvers/zod";
-import {IonButton, IonIcon, IonInput} from "@ionic/react";
-import {checkmarkOutline, checkmarkSharp} from "ionicons/icons";
-import {FC} from "react";
-import {Controller, useForm} from "react-hook-form";
+import {IonButton, IonIcon} from "@ionic/react";
+import {
+  checkmarkOutline,
+  checkmarkSharp,
+  closeOutline,
+  closeSharp,
+} from "ionicons/icons";
+import {FC, FormEvent} from "react";
 import {useHistory} from "react-router-dom";
-import {z} from "zod";
 
 import {AuthContainer} from "~/components/auth-container";
-import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
 import {client} from "~/lib/supabase";
 import {UserMetadata} from "~/lib/types";
-
-/**
- * Failed to login message metadata symbol
- */
-const FAILED_TO_LOGIN_MESSAGE_METADATA_SYMBOL = Symbol("auth.failed-to-login");
-
-/**
- * Form schema
- */
-const formSchema = z.object({
-  code: z
-    .string()
-    .min(1)
-    .refine(value => /^\d+$/.test(value), {
-      message: "Invalid code",
-    }),
-});
-
-/**
- * Form schema type
- */
-type FormSchema = z.infer<typeof formSchema>;
 
 /**
  * Auth step 3 component
@@ -43,86 +22,77 @@ type FormSchema = z.infer<typeof formSchema>;
  */
 export const Step3: FC = () => {
   // Hooks
-  const email = useEphemeralUIStore(state => state.email);
-  const setMessage = useEphemeralUIStore(state => state.setMessage);
   const history = useHistory();
-
-  const {control, handleSubmit, reset} = useForm<FormSchema>({
-    resolver: zodResolver(formSchema),
-  });
 
   // Methods
   /**
-   * Verify the code
-   * @param code Code
+   * Form submit handler
+   * @param event Form event
+   * @returns Nothing
    */
-  const verify = async (code: string) => {
-    // Log in
-    const {data, error} = await client.auth.verifyOtp({
-      email: email!,
-      token: code,
-      type: "email",
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    // Update the user's terms and conditions agreement
+    const {error} = await client.auth.updateUser({
+      data: {
+        acceptedTerms: true,
+      } as UserMetadata,
     });
 
     // Handle the error
     if (error !== null) {
-      // Reset the form
-      reset();
-
-      // Display the message
-      setMessage({
-        symbol: FAILED_TO_LOGIN_MESSAGE_METADATA_SYMBOL,
-        name: "Failed to log in",
-        description: error.message,
-      });
-
-      // Go back to the previous step
-      history.goBack();
-
       return;
     }
 
-    // Get the user metadata
-    const userMetadata = data!.user!.user_metadata as UserMetadata;
-
-    // Go to the terms and conditions if the user hasn't accepted them
-    history.push(userMetadata.acceptedTerms ? "/nearby" : "/auth/4");
+    // Go to nearby
+    history.push("/nearby");
   };
 
   /**
-   * Form submit handler
-   * @param data Form data
-   * @returns Nothing
+   * Reject button click handler
    */
-  const onSubmit = async (data: FormSchema) => await verify(data.code);
+  const reject = () => {
+    // Log out
+    client.auth.signOut();
+
+    // Go to home
+    history.push("/");
+  };
 
   return (
     <AuthContainer back={true}>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Controller
-          control={control}
-          name="code"
-          render={({
-            field: {onChange, onBlur, value},
-            fieldState: {error, isTouched, invalid},
-          }) => (
-            <IonInput
-              className={`min-w-64 mb-4 ${
-                (invalid || isTouched) && "ion-touched"
-              } ${invalid && "ion-invalid"} ${
-                !invalid && isTouched && "ion-valid"
-              }`}
-              errorText={error?.message}
-              fill="outline"
-              label="Code"
-              labelPlacement="floating"
-              onIonBlur={onBlur}
-              onIonChange={onChange}
-              type="text"
-              value={value}
-            />
-          )}
-        />
+      <form onSubmit={onSubmit}>
+        <p>
+          You agree to the{" "}
+          <a
+            className="font-bold underline"
+            target="_blank"
+            href="/terms-and-conditions"
+          >
+            terms and conditions
+          </a>{" "}
+          and{" "}
+          <a
+            className="font-bold underline"
+            target="_blank"
+            href="/privacy-policy"
+          >
+            privacy policy
+          </a>{" "}
+          of this app. This includes (but is not limited to):
+        </p>
+
+        <ul className="list-disc list-inside my-1">
+          <li>
+            We reserve the right to remove any content and ban any user at any
+            time at our own discretion.
+          </li>
+          <li>Violating the terms and conditions will result in a ban.</li>
+          <li>
+            We collect your geolocation data to filter content to your location.
+          </li>
+        </ul>
 
         <IonButton
           className="mb-0 mt-4 mx-0 overflow-hidden rounded-lg w-full"
@@ -130,7 +100,16 @@ export const Step3: FC = () => {
           type="submit"
         >
           <IonIcon slot="start" ios={checkmarkOutline} md={checkmarkSharp} />
-          Verify Code
+          Agreee
+        </IonButton>
+        <IonButton
+          className="mb-0 mt-4 mx-0 overflow-hidden rounded-lg w-full"
+          color="danger"
+          expand="full"
+          onClick={reject}
+        >
+          <IonIcon slot="start" ios={closeOutline} md={closeSharp} />
+          Reject
         </IonButton>
       </form>
     </AuthContainer>

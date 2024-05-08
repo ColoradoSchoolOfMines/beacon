@@ -25,13 +25,6 @@ const GIT_COMMIT = import.meta.env.GIT_COMMIT;
 const GIT_BRANCH = import.meta.env.GIT_BRANCH;
 
 /**
- * Functions absolute base URL
- */
-const FUNCTIONS_URL = RUNTIME_VARS.VITE_SUPABASE_FUNCTIONS_URL as
-  | string
-  | undefined;
-
-/**
  * hCaptcha site key
  */
 const HCAPTCHA_SITE_KEY = RUNTIME_VARS.VITE_HCAPTCHA_SITE_KEY;
@@ -69,7 +62,6 @@ if (missing.length > 0) {
 }
 
 export {
-  FUNCTIONS_URL,
   GIT_BRANCH,
   GIT_COMMIT,
   HCAPTCHA_SITE_KEY,

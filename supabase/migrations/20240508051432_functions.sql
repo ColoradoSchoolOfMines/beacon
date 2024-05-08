@@ -105,77 +105,6 @@ BEGIN
 END;
 $$;
 
--- Register the webauthn credential after a challenge has been successfully verified
-CREATE OR REPLACE FUNCTION utilities.register_webauthn_credential(
-  -- User ID
-  _user_id UUID,
-
-  -- Challenge ID
-  _challenge_id UUID,
-
-  -- Client-side credential ID
-  _client_credential_id TEXT,
-
-  -- Credential counter
-  _counter BIGINT,
-
-  -- Credential public key
-  _public_key VARCHAR(1000)
-)
-RETURNS VOID
-SECURITY DEFINER
-VOLATILE
-LANGUAGE plpgsql
-AS $$
-BEGIN
-  -- Insert the credential
-  INSERT INTO auth.webauthn_credentials (
-    user_id,
-    client_credential_id,
-    counter,
-    public_key
-  ) VALUES (
-    _user_id,
-    _client_credential_id,
-    _counter,
-    _public_key
-  );
-
-  -- Delete the challenge
-  DELETE FROM auth.webauthn_challenges
-  WHERE id = _challenge_id;
-END;
-$$;
-
--- Update the webauthn credential after a challenge has been successfully verified
-CREATE OR REPLACE FUNCTION utilities.authenticate_webauthn_credential(
-  -- User ID
-  _user_id UUID,
-
-  -- Challenge ID
-  _challenge_id UUID,
-
-  -- Credential ID
-  _credential_id UUID,
-
-  -- New credential counter
-  _new_counter BIGINT
-)
-RETURNS VOID
-SECURITY DEFINER
-VOLATILE
-LANGUAGE plpgsql
-AS $$
-BEGIN
-  -- Update the credential
-  UPDATE auth.webauthn_credentials SET counter = _new_counter WHERE id = _credential_id AND user_id = _user_id;
-
-  -- Delete the challenge
-  DELETE FROM auth.webauthn_challenges
-  WHERE id = _challenge_id;
-END;
-$$;
-
 -- Prune expired locations trigger function
 CREATE OR REPLACE FUNCTION utilities.prune_expired_locations()
 RETURNS VOID
@@ -189,23 +118,6 @@ DECLARE
 BEGIN
   -- Delete expired locations
   DELETE FROM public.locations
-  WHERE created_at < (NOW() - _interval);
-END;
-$$;
-
--- Prune expired webauthn challenges
-CREATE OR REPLACE FUNCTION utilities.prune_expired_webauthn_challenges()
-RETURNS VOID
-SECURITY DEFINER
-VOLATILE
-LANGUAGE plpgsql
-AS $$
-DECLARE
-  -- Expiration interval
-  _interval CONSTANT INTERVAL := INTERVAL '1 hour';
-BEGIN
-  -- Delete expired challenges
-  DELETE FROM auth.webauthn_challenges
   WHERE created_at < (NOW() - _interval);
 END;
 $$;
@@ -662,20 +574,6 @@ END;
 $$;
 
 /* -------------------------------------- Public functions ------------------------------------- */
-
--- Delete all webauthn credentials for the current user
-CREATE OR REPLACE FUNCTION public.delete_webauthn_credentials()
-RETURNS VOID
-SECURITY DEFINER
-VOLATILE
-LANGUAGE plpgsql
-AS $$
-BEGIN
-  -- Delete all webauthn credentials for the current user
-  DELETE FROM auth.webauthn_credentials
-  WHERE user_id = auth.uid();
-END;
-$$;
 
 -- Delete a user's account
 CREATE OR REPLACE FUNCTION public.delete_account()

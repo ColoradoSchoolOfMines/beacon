@@ -130,9 +130,6 @@ redirect_uri = ""
 # or any other third-party OIDC providers.
 url = ""
 
-[functions.auth]
-import_map = "./functions/import_map_supabase.json"
-
 [analytics]
 enabled = false
 port = 54327

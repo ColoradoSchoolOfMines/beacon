@@ -195,18 +195,6 @@ export type MediaCategoryElement<T extends MediaCategory> =
   T extends MediaCategory.IMAGE ? HTMLImageElement : HTMLVideoElement;
 
 /**
- * WebAuthn challenge
- */
-export type WebauthnChallenge =
-  Database["auth"]["Tables"]["webauthn_challenges"]["Row"];
-
-/**
- * WebAuthn credential
- */
-export type WebauthnCredential =
-  Database["auth"]["Tables"]["webauthn_credentials"]["Row"];
-
-/**
  * Profile (Modifying auth.users is considered bad practice, so additonal user data is stored here)
  */
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];

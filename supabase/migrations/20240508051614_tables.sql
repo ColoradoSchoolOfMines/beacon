@@ -4,42 +4,6 @@
 
 /* ---------------------------------------- Setup tables --------------------------------------- */
 
--- WebAuthn challenges
-CREATE TABLE auth.webauthn_challenges (
-  -- Primary key
-  id UUID NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
-
-  -- Creation timestamp
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW() CHECK (created_at <= NOW()),
-
-  -- Challenge type
-  type auth.webauthn_challenge_type NOT NULL,
-
-  -- Challenge (Up to 100 characters)
-  challenge VARCHAR(100) NOT NULL
-);
-
--- WebAuthn credentials
-CREATE TABLE auth.webauthn_credentials (
-  -- Primary key
-  id UUID NOT NULL PRIMARY KEY DEFAULT uuid_generate_v4(),
-
-  -- User ID (Foreign key to auth.users)
-  user_id UUID NOT NULL REFERENCES auth.users ON UPDATE CASCADE ON DELETE CASCADE,
-
-  -- Creation timestamp
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW() CHECK (created_at <= NOW()),
-
-  -- Client-side credential ID (Up to 1000 characters)
-  client_credential_id VARCHAR(1000) NOT NULL,
-
-  -- Crdential use counter (To prevent replay attacks)
-  counter BIGINT NOT NULL DEFAULT 0,
-
-  -- Public key (Up to 1000 characters)
-  public_key VARCHAR(1000) NOT NULL
-);
-
 -- Profiles (Exposed to other users)
 CREATE TABLE public.profiles (
   -- Primary key (Foreign key to auth.users)

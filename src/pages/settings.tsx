@@ -22,58 +22,22 @@ import {
   IonToolbar,
   useIonActionSheet,
 } from "@ionic/react";
-import {startRegistration} from "@simplewebauthn/browser";
-import {RegistrationResponseJSON} from "@simplewebauthn/types";
 import {
-  keyOutline,
-  keySharp,
   logOutOutline,
   logOutSharp,
   refreshOutline,
   refreshSharp,
-  trashBinOutline,
-  trashBinSharp,
   warningOutline,
   warningSharp,
 } from "ionicons/icons";
 import {FC} from "react";
 import {useHistory} from "react-router-dom";
 
-import {
-  beginRegistration,
-  checkPasskeySupport,
-  endRegistration,
-} from "~/lib/api/auth";
 import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
 import {usePersistentStore} from "~/lib/stores/persistent";
 import {client} from "~/lib/supabase";
 import {GlobalMessageMetadata, MeasurementSystem, Theme} from "~/lib/types";
 import {GIT_BRANCH, GIT_COMMIT, VERSION} from "~/lib/vars";
-
-/**
- * Passkey failed to create credential message metadata symbol
- */
-const PASSKEY_FAILED_TO_CREATE_CREDENTIAL_MESSAGE_METADATA_SYMBOL = Symbol(
-  "settings.passkey-failed-to-create-credential",
-);
-
-/**
- * Passkey registered message metadata
- */
-const PASSKEY_REGISTERED_MESSAGE_METADATA: GlobalMessageMetadata = {
-  symbol: Symbol("settings.passkey-registered"),
-  name: "Passkey Registered",
-  description: "The passkey has been successfully registered",
-};
-
-/**
- * Passkeys deleted message metadata
- */
-const PASSKEYS_DELETED_MESSAGE_METADATA: GlobalMessageMetadata = {
-  symbol: Symbol("settings.passkeys-deleted"),
-  name: "Passkeys Deleted",
-  description: "All passkeys associated with your account have been deleted",
-};
 
 /**
  * Account deleted message metadata
@@ -145,81 +109,6 @@ export const Settings: FC = () => {
     });
 
   // Methods
-  /**
-   * Register a passkey
-   */
-  const registerPasskey = async () => {
-    // Begin the registration
-    const beginRes = await beginRegistration();
-
-    // Handle error
-    if (!beginRes.ok) {
-      return;
-    }
-
-    // Generate the credential
-    let response: RegistrationResponseJSON | undefined = undefined;
-
-    try {
-      response = await startRegistration(beginRes.options!);
-    } catch (error) {
-      // Display the message
-      setMessage({
-        symbol: PASSKEY_FAILED_TO_CREATE_CREDENTIAL_MESSAGE_METADATA_SYMBOL,
-        name: "Passkey Error",
-        description: `Failed to create credential: ${error}`,
-      });
-
-      return;
-    }
-
-    // End the registration
-    const endRes = await endRegistration(beginRes.challengeId!, response);
-
-    // Handle error
-    if (!endRes) {
-      return;
-    }
-
-    // Display the message
-    setMessage(PASSKEY_REGISTERED_MESSAGE_METADATA);
-  };
-
-  /**
-   * Delete all passkeys for the current user
-   * @returns Promise
-   */
-  const deletePasskeys = () =>
-    present({
-      header: "Delete all passkeys",
-      subHeader: "Are you sure you want to delete all passkeys?",
-      buttons: [
-        {
-          text: "Cancel",
-          role: "cancel",
-        },
-        {
-          text: "Delete",
-          role: "destructive",
-          /**
-           * Delete passkeys handler
-           */
-          handler: async () => {
-            // Delete the passkeys
-            const {error} = await client.rpc("delete_webauthn_credentials");
-
-            // Handle error
-            if (error) {
-              return;
-            }
-
-            // Display the message
-            setMessage(PASSKEYS_DELETED_MESSAGE_METADATA);
-          },
-        },
-      ],
-    });
-
   /**
    * Sign out
    * @returns Promise
@@ -398,23 +287,6 @@ export const Settings: FC = () => {
             <IonItemDivider>
               <IonLabel>Account</IonLabel>
             </IonItemDivider>
-
-            {checkPasskeySupport() && (
-              <IonItem button={true} onClick={registerPasskey}>
-                <IonLabel>Register passkey</IonLabel>
-                <IonIcon slot="end" ios={keyOutline} md={keySharp} />
-              </IonItem>
-            )}
-
-            <IonItem button={true} onClick={deletePasskeys}>
-              <IonLabel>Delete all passkeys</IonLabel>
-              <IonIcon
-                color="danger"
-                slot="end"
-                ios={trashBinOutline}
-                md={trashBinSharp}
-              />
-            </IonItem>
 
             <IonItem button={true} onClick={signOut}>
               <IonLabel>Sign out</IonLabel>

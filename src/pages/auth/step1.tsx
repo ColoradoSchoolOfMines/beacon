@@ -1,31 +1,41 @@
-/* eslint-disable camelcase */
 /**
  * @file Auth step 1 page
  */
 
-import {IonButton, IonIcon, IonNote} from "@ionic/react";
-import {startAuthentication} from "@simplewebauthn/browser";
-import {AuthenticationResponseJSON} from "@simplewebauthn/types";
-import {callOutline, callSharp, keyOutline, keySharp} from "ionicons/icons";
-import {FC} from "react";
+import HCaptcha from "@hcaptcha/react-hcaptcha";
+import {zodResolver} from "@hookform/resolvers/zod";
+import {IonButton, IonIcon, IonInput} from "@ionic/react";
+import {paperPlaneOutline, paperPlaneSharp} from "ionicons/icons";
+import {FC, useRef} from "react";
+import {Controller, useForm} from "react-hook-form";
 import {useHistory} from "react-router-dom";
+import {z} from "zod";
 
 import {AuthContainer} from "~/components/auth-container";
-import {
-  beginAuthentication,
-  checkPasskeySupport,
-  endAuthentication,
-} from "~/lib/api/auth";
+import {SupplementalError} from "~/components/supplemental-error";
 import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
+import {usePersistentStore} from "~/lib/stores/persistent";
 import {client} from "~/lib/supabase";
-import {UserMetadata} from "~/lib/types";
+import {Theme, UserMetadata} from "~/lib/types";
+import {HCAPTCHA_SITE_KEY} from "~/lib/vars";
 
 /**
- * Passkey failed use credential message metadata symbol
+ * Form schema
  */
-const PASSKEY_FAILED_USE_CREDENTIAL_MESSAGE_METADATA_SYMBOL = Symbol(
-  "auth.passkey.failed-use-credential",
-);
+const formSchema = z.object({
+  email: z.string().email(),
+  captchaToken: z
+    .string({
+      // eslint-disable-next-line camelcase
+      required_error: "Please complete the challenge",
+    })
+    .min(1, "Please complete the challenge"),
+});
+
+/**
+ * Form schema type
+ */
+type FormSchema = z.infer<typeof formSchema>;
 
 /**
  * Auth step 1 component
@@ -33,116 +43,102 @@ const PASSKEY_FAILED_USE_CREDENTIAL_MESSAGE_METADATA_SYMBOL = Symbol(
  */
 export const Step1: FC = () => {
   // Hooks
+  const captcha = useRef<HCaptcha>(null);
+  const setEmail = useEphemeralUIStore(state => state.setEmail);
+  const theme = usePersistentStore(state => state.theme);
   const history = useHistory();
-  const setMessage = useEphemeralUIStore(state => state.setMessage);
+
+  const {control, handleSubmit, reset} = useForm<FormSchema>({
+    resolver: zodResolver(formSchema),
+  });
 
   // Methods
   /**
-   * Attempt to use a passkey to login
+   * Form submit handler
+   * @param form Form data
    */
-  const usePasskey = async () => {
-    // Begin the authentication
-    const beginRes = await beginAuthentication();
+  const onSubmit = async (form: FormSchema) => {
+    // Store the email for later
+    setEmail(form.email);
 
-    // Handle error
-    if (!beginRes.ok) {
-      return;
-    }
-
-    // Generate the credential
-    let response: AuthenticationResponseJSON | undefined = undefined;
-
-    try {
-      response = await startAuthentication(beginRes.options!);
-    } catch (error) {
-      // Display the message
-      setMessage({
-        symbol: PASSKEY_FAILED_USE_CREDENTIAL_MESSAGE_METADATA_SYMBOL,
-        name: "Passkey Error",
-        description: `Failed to use credential: ${error}`,
-      });
-
-      return;
-    }
-
-    // End the authentication
-    const endRes = await endAuthentication(
-      beginRes.challengeId!,
-      response.id,
-      response,
-    );
-
-    // Handle error
-    if (!endRes.ok) {
-      return;
-    }
-
-    // Update the session
-    await client.auth.setSession({
-      access_token: endRes.session!.access_token,
-      refresh_token: endRes.session!.refresh_token,
+    // Begin the log in process
+    const {error} = await client.auth.signInWithOtp({
+      email: form.email,
+      options: {
+        captchaToken: form.captchaToken,
+        emailRedirectTo: new URL("/nearby", window.location.origin).toString(),
+        data: {
+          acceptedTerms: false,
+        } as UserMetadata,
+      },
     });
 
-    // Get the user
-    const {data, error} = await client.auth.getUser();
-
-    // Handle error
+    // Handle the error
     if (error !== null) {
+      // Partially reset the form
+      reset({
+        email: form.email,
+      });
+
+      // Reset the captcha
+      captcha.current?.resetCaptcha();
+
       return;
     }
 
-    // Get the user metadata
-    const userMetadata = data!.user!.user_metadata as UserMetadata;
-
-    // Go to the terms and conditions if the user hasn't accepted them
-    history.push(userMetadata.acceptedTerms ? "/nearby" : "/auth/4");
-  };
-
-  /**
-   * Attempt to use an email to login
-   */
-  const useEmail = () => {
     // Go to the next step
     history.push("/auth/2");
   };
 
   return (
-    <AuthContainer back={false}>
-      {checkPasskeySupport() && (
-        <>
-          <IonButton
-            className="m-0 overflow-hidden rounded-lg w-full"
-            color="primary"
-            expand="full"
-            onClick={usePasskey}
-          >
-            <IonIcon slot="start" ios={keyOutline} md={keySharp} />
-            Authenticate With Passkey
-          </IonButton>
-
-          <IonNote className="block mt-2 text-center">
-            Log into an <b>existing</b> account with a passkey.
-          </IonNote>
-
-          <div className="after:border-b-1 after:border-solid after:content-[''] after:flex-1 after:ml-4 before:border-b-1 before:border-solid before:content-[''] before:flex-1 before:mr-4 flex items-center my-4">
-            <p>Or</p>
-          </div>
-        </>
-      )}
-      <IonButton
-        className="m-0 overflow-hidden rounded-lg w-full"
-        color="secondary"
-        expand="full"
-        onClick={useEmail}
-      >
-        <IonIcon slot="start" ios={callOutline} md={callSharp} />
-        Authenticate With Email
-      </IonButton>
-
-      <IonNote className="block mt-2 text-center">
-        Create a <b>new</b> account or log into an <b>existing</b> account with
-        an email address.
-      </IonNote>
+    <AuthContainer back={true}>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Controller
+          control={control}
+          name="email"
+          render={({
+            field: {onChange, onBlur, value},
+            fieldState: {error, isTouched, invalid},
+          }) => (
+            <IonInput
+              className={`min-w-64 ${(invalid || isTouched) && "ion-touched"} ${
+                invalid && "ion-invalid"
+              } ${!invalid && isTouched && "ion-valid"}`}
+              errorText={error?.message}
+              fill="outline"
+              label="Email"
+              labelPlacement="floating"
+              onIonBlur={onBlur}
+              onIonInput={onChange}
+              type="email"
+              value={value}
+            />
+          )}
+        />
+        <Controller
+          control={control}
+          name="captchaToken"
+          render={({field: {onChange}, fieldState: {error}}) => (
+            <div className="py-4">
+              <HCaptcha
+                onVerify={token => onChange(token)}
+                ref={captcha}
+                sitekey={HCAPTCHA_SITE_KEY}
+                theme={theme === Theme.DARK ? "dark" : "light"}
+              />
+              <SupplementalError error={error?.message} />
+            </div>
+          )}
+        />
+        <IonButton
+          className="mb-0 mt-4 mx-0 overflow-hidden rounded-lg w-full"
+          expand="full"
+          type="submit"
+        >
+          <IonIcon slot="start" ios={paperPlaneOutline} md={paperPlaneSharp} />
+          Send Login Code
+        </IonButton>
+      </form>
     </AuthContainer>
   );
 };

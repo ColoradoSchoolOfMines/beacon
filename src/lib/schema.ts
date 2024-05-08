@@ -42,6 +42,7 @@ export type Database = {
       flow_state: {
         Row: {
           auth_code: string;
+          auth_code_issued_at: string | null;
           authentication_method: string;
           code_challenge: string;
           code_challenge_method: Database["auth"]["Enums"]["code_challenge_method"];
@@ -55,6 +56,7 @@ export type Database = {
         };
         Insert: {
           auth_code: string;
+          auth_code_issued_at?: string | null;
           authentication_method: string;
           code_challenge: string;
           code_challenge_method: Database["auth"]["Enums"]["code_challenge_method"];
@@ -68,6 +70,7 @@ export type Database = {
         };
         Update: {
           auth_code?: string;
+          auth_code_issued_at?: string | null;
           authentication_method?: string;
           code_challenge?: string;
           code_challenge_method?: Database["auth"]["Enums"]["code_challenge_method"];
@@ -306,6 +309,7 @@ export type Database = {
           id: string;
           metadata_url: string | null;
           metadata_xml: string;
+          name_id_format: string | null;
           sso_provider_id: string;
           updated_at: string | null;
         };
@@ -316,6 +320,7 @@ export type Database = {
           id: string;
           metadata_url?: string | null;
           metadata_xml: string;
+          name_id_format?: string | null;
           sso_provider_id: string;
           updated_at?: string | null;
         };
@@ -326,6 +331,7 @@ export type Database = {
           id?: string;
           metadata_url?: string | null;
           metadata_xml?: string;
+          name_id_format?: string | null;
           sso_provider_id?: string;
           updated_at?: string | null;
         };
@@ -344,7 +350,6 @@ export type Database = {
           created_at: string | null;
           flow_state_id: string | null;
           for_email: string | null;
-          from_ip_address: unknown | null;
           id: string;
           redirect_to: string | null;
           request_id: string;
@@ -355,7 +360,6 @@ export type Database = {
           created_at?: string | null;
           flow_state_id?: string | null;
           for_email?: string | null;
-          from_ip_address?: unknown | null;
           id: string;
           redirect_to?: string | null;
           request_id: string;
@@ -366,7 +370,6 @@ export type Database = {
           created_at?: string | null;
           flow_state_id?: string | null;
           for_email?: string | null;
-          from_ip_address?: unknown | null;
           id?: string;
           redirect_to?: string | null;
           request_id?: string;
@@ -525,6 +528,7 @@ export type Database = {
           id: string;
           instance_id: string | null;
           invited_at: string | null;
+          is_anonymous: boolean;
           is_sso_user: boolean;
           is_super_admin: boolean | null;
           last_sign_in_at: string | null;
@@ -561,6 +565,7 @@ export type Database = {
           id: string;
           instance_id?: string | null;
           invited_at?: string | null;
+          is_anonymous?: boolean;
           is_sso_user?: boolean;
           is_super_admin?: boolean | null;
           last_sign_in_at?: string | null;
@@ -597,6 +602,7 @@ export type Database = {
           id?: string;
           instance_id?: string | null;
           invited_at?: string | null;
+          is_anonymous?: boolean;
           is_sso_user?: boolean;
           is_super_admin?: boolean | null;
           last_sign_in_at?: string | null;
@@ -1305,7 +1311,7 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: undefined;
       };
-      prune_webauthn_challenges: {
+      prune_expired_webauthn_challenges: {
         Args: Record<PropertyKey, never>;
         Returns: undefined;
       };
