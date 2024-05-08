@@ -41,7 +41,7 @@ type FormSchema = z.infer<typeof formSchema>;
  * Auth step 2 component
  * @returns JSX
  */
-export const Step3: FC = () => {
+export const Step2: FC = () => {
   // Hooks
   const email = useEphemeralUIStore(state => state.email);
   const setMessage = useEphemeralUIStore(state => state.setMessage);

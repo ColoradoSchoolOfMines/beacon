@@ -19,7 +19,6 @@ import {getAuthState} from "~/lib/utils";
 import {Step1 as AuthStep1} from "~/pages/auth/step1";
 import {Step2 as AuthStep2} from "~/pages/auth/step2";
 import {Step3 as AuthStep3} from "~/pages/auth/step3";
-import {Step4 as AuthStep4} from "~/pages/auth/step4";
 import {Error} from "~/pages/error";
 import {Index} from "~/pages/index";
 import {Nearby} from "~/pages/nearby";
@@ -81,10 +80,6 @@ const routeAuthStates: RouteAuthState[] = [
   },
   {
     pathname: /^\/auth\/3$/,
-    requiredState: AuthState.UNAUTHENTICATED,
-  },
-  {
-    pathname: /^\/auth\/4$/,
     requiredState: AuthState.AUTHENTICATED_NO_TERMS,
   },
   {
@@ -184,7 +179,7 @@ export const App: FC = () => {
       authState === AuthState.AUTHENTICATED_NO_TERMS &&
       requiredState === AuthState.AUTHENTICATED_TERMS
     ) {
-      history.push("/auth/4");
+      history.push("/auth/3");
       return;
     }
 
@@ -276,10 +271,6 @@ export const App: FC = () => {
           </Route>
 
           {/* Authenticated routes */}
-          <Route path="/auth/4" exact={true}>
-            <AuthStep4 />
-          </Route>
-
           <Route path="/nearby" exact={true}>
             <Nearby />
           </Route>
