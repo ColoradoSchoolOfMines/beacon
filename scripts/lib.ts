@@ -214,8 +214,6 @@ export const generateSupabaseSchema = async () => {
     "--local",
     "--schema",
     "public",
-    "--schema",
-    "utilities",
   ];
 
   // Generate the schema

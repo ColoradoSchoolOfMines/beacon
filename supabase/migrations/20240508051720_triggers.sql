@@ -2,6 +2,8 @@
  * Setup triggers
  */
 
+/* --------------------------------------- Setup triggers -------------------------------------- */
+
 -- Create a profile for a new user
 CREATE TRIGGER create_profile_after_insert
 AFTER INSERT ON auth.users

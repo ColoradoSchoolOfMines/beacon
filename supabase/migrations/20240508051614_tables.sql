@@ -28,7 +28,7 @@ CREATE TABLE public.locations (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW() CHECK (created_at <= NOW()),
 
   -- Location (EPSG4326 - used by the W3C geolocation API)
-  location GEOGRAPHY(POINT, 4326) NOT NULL
+  location extensions.GEOGRAPHY(POINT, 4326) NOT NULL
 );
 
 -- Posts
@@ -48,7 +48,7 @@ CREATE TABLE public.posts (
   ) STORED,
 
   -- Private post filter location (EPSG4326 - used by the W3C geolocation API)
-  private_location GEOGRAPHY(POINT, 4326) NOT NULL DEFAULT utilities.get_latest_location(auth.uid()),
+  private_location extensions.GEOGRAPHY(POINT, 4326) NOT NULL DEFAULT utilities.get_latest_location(auth.uid()),
 
   -- Creation timestamp
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW() CHECK (created_at <= NOW()),

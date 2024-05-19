@@ -2,11 +2,13 @@
  * Setup views
  */
 
+/* ---------------------------------------- Setup views ---------------------------------------- */
+
 -- Posts with additional, user-specific information
 CREATE VIEW public.personalized_posts
 WITH (
   security_barrier = TRUE,
-  security_invoker = FALSE
+  security_invoker = TRUE
 )
 AS (
   WITH personalized_post AS (
@@ -69,7 +71,7 @@ AS (
 CREATE VIEW public.personalized_comments
 WITH (
   security_barrier = TRUE,
-  security_invoker = FALSE
+  security_invoker = TRUE
 )
 AS (
   WITH personalized_comment AS (

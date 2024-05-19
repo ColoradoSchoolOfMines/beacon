@@ -574,58 +574,6 @@ export type Database = {
       [_ in never]: never;
     };
   };
-  utilities: {
-    Tables: {
-      [_ in never]: never;
-    };
-    Views: {
-      [_ in never]: never;
-    };
-    Functions: {
-      get_latest_location: {
-        Args: {
-          _user_id: string;
-        };
-        Returns: unknown;
-      };
-      get_random_color: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
-      get_random_emoji: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
-      prune_expired_locations: {
-        Args: Record<PropertyKey, never>;
-        Returns: undefined;
-      };
-      safe_random: {
-        Args: Record<PropertyKey, never>;
-        Returns: number;
-      };
-      validate_media_object_name: {
-        Args: {
-          _object_name: string;
-          _user_id: string;
-        };
-        Returns: boolean;
-      };
-      validate_post_access: {
-        Args: {
-          _post_id: string;
-          _user_id: string;
-        };
-        Returns: boolean;
-      };
-    };
-    Enums: {
-      [_ in never]: never;
-    };
-    CompositeTypes: {
-      [_ in never]: never;
-    };
-  };
 };
 
 type PublicSchema = Database[Extract<keyof Database, "public">];

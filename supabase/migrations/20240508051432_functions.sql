@@ -16,6 +16,7 @@ CREATE OR REPLACE FUNCTION utilities.safe_random()
 RETURNS DOUBLE PRECISION
 VOLATILE
 LANGUAGE plpgsql
+SET search_path = ''
 AS $$
 DECLARE
   -- Maximum value of a BIGINT as a double precision number
@@ -41,6 +42,7 @@ CREATE OR REPLACE FUNCTION utilities.get_random_color()
 RETURNS TEXT
 VOLATILE
 LANGUAGE plpgsql
+SET search_path = ''
 AS $$
 DECLARE
   -- Possible colors (Select Tailwind colors using the 300, 500, and 800 variants; similar colors have been removed)
@@ -91,6 +93,7 @@ CREATE OR REPLACE FUNCTION utilities.get_random_emoji()
 RETURNS TEXT
 VOLATILE
 LANGUAGE plpgsql
+SET search_path = ''
 AS $$
 DECLARE
   -- Possible emojis (Similar, hard-to-identify, or any other emojis that would otherwise be strange to use for an avatar have been removed)
@@ -111,6 +114,7 @@ RETURNS VOID
 SECURITY DEFINER
 VOLATILE
 LANGUAGE plpgsql
+SET search_path = ''
 AS $$
 DECLARE
   -- Expiration interval
@@ -131,6 +135,7 @@ RETURNS BOOLEAN
 SECURITY DEFINER
 STABLE
 LANGUAGE plpgsql
+SET search_path = ''
 AS $$
 BEGIN
   RETURN EXISTS (
@@ -160,6 +165,7 @@ RETURNS BOOLEAN
 SECURITY DEFINER
 STABLE
 LANGUAGE plpgsql
+SET search_path = ''
 AS $$
 DECLARE
   -- Parsed name segments
@@ -197,17 +203,18 @@ CREATE OR REPLACE FUNCTION utilities.get_latest_location(
   -- User ID for which to get the latest location
   _user_id UUID
 )
-RETURNS GEOGRAPHY(POINT, 4326)
+RETURNS extensions.GEOGRAPHY(POINT, 4326)
 SECURITY DEFINER
 VOLATILE
 LANGUAGE plpgsql
+SET search_path = ''
 AS $$
 DECLARE
   -- Created at
   _created_at TIMESTAMPTZ;
 
   -- Location
-  _location GEOGRAPHY(POINT, 4326);
+  _location extensions.GEOGRAPHY(POINT, 4326);
 BEGIN
   -- Get the latest location
   SELECT created_at, location INTO _created_at, _location
@@ -238,6 +245,7 @@ RETURNS TRIGGER
 SECURITY DEFINER
 VOLATILE
 LANGUAGE plpgsql
+SET search_path = ''
 AS $$
 DECLARE
   -- Expiration interval
@@ -265,6 +273,7 @@ RETURNS TRIGGER
 SECURITY DEFINER
 VOLATILE
 LANGUAGE plpgsql
+SET search_path = ''
 AS $$
 BEGIN
   -- Insert a new profile for the user
@@ -283,13 +292,14 @@ CREATE OR REPLACE FUNCTION utilities.validate_location_trigger()
 RETURNS TRIGGER
 SECURITY DEFINER
 LANGUAGE plpgsql
+SET search_path = ''
 AS $$
 DECLARE
   -- Previous created at
   _previous_created_at TIMESTAMPTZ;
 
   -- Previous location
-  _previous_location GEOGRAPHY(POINT, 4326);
+  _previous_location extensions.GEOGRAPHY(POINT, 4326);
 
   -- The _elapsed time (in seconds) between the new location and the previous location
   _elapsed BIGINT;
@@ -335,15 +345,16 @@ RETURNS TRIGGER
 SECURITY DEFINER
 VOLATILE
 LANGUAGE plpgsql
+SET search_path = ''
 AS $$
 DECLARE
   _uncertainty DOUBLE PRECISION := 0.10;
 
   -- Old location as a geometry point
-  _old_location GEOMETRY;
+  _old_location extensions.GEOMETRY;
 BEGIN
   -- Convert the old location to a geometry point
-  _old_location = NEW.private_location::GEOMETRY;
+  _old_location = NEW.private_location::extensions.GEOMETRY;
 
   -- Add some uncertainty relative to the post's radius (To increase resistance against static trilateration attacks)
   NEW.private_location = extensions.ST_Project(
@@ -361,6 +372,7 @@ RETURNS TRIGGER
 SECURITY DEFINER
 VOLATILE
 LANGUAGE plpgsql
+SET search_path = ''
 AS $$
 BEGIN
   -- Delete the media
@@ -380,6 +392,7 @@ RETURNS TRIGGER
 SECURITY DEFINER
 VOLATILE
 LANGUAGE plpgsql
+SET search_path = ''
 AS $$
 DECLARE
   -- Post ID
@@ -404,6 +417,7 @@ RETURNS TRIGGER
 SECURITY DEFINER
 VOLATILE
 LANGUAGE plpgsql
+SET search_path = ''
 AS $$
 DECLARE
   -- Post ID
@@ -446,6 +460,7 @@ RETURNS TRIGGER
 SECURITY DEFINER
 VOLATILE
 LANGUAGE plpgsql
+SET search_path = ''
 AS $$
 DECLARE
   -- Comment ID
@@ -513,6 +528,7 @@ RETURNS TRIGGER
 SECURITY DEFINER
 VOLATILE
 LANGUAGE plpgsql
+SET search_path = ''
 AS $$
 DECLARE
   -- Comment ID
@@ -537,6 +553,7 @@ RETURNS TRIGGER
 SECURITY DEFINER
 VOLATILE
 LANGUAGE plpgsql
+SET search_path = ''
 AS $$
 DECLARE
   -- Comment ID
@@ -581,6 +598,7 @@ RETURNS VOID
 SECURITY DEFINER
 VOLATILE
 LANGUAGE plpgsql
+SET search_path = ''
 AS $$
 BEGIN
   -- Delete the user's account
@@ -592,16 +610,17 @@ $$;
 -- Calculate the distance from the current user's location to a specified location
 CREATE OR REPLACE FUNCTION public.distance_to(
   -- Other location to calculate the distance to
-  _other_location GEOGRAPHY(POINT, 4326)
+  _other_location extensions.GEOGRAPHY(POINT, 4326)
 )
 RETURNS DOUBLE PRECISION
 SECURITY DEFINER
 VOLATILE
 LANGUAGE plpgsql
+SET search_path = ''
 AS $$
 DECLARE
   -- Current user's location
-  _user_location GEOGRAPHY(POINT, 4326) := utilities.get_latest_location(auth.uid());
+  _user_location extensions.GEOGRAPHY(POINT, 4326) := utilities.get_latest_location(auth.uid());
 BEGIN
   RETURN extensions.ST_Distance(_user_location, _other_location);
 END;
@@ -621,6 +640,7 @@ CREATE OR REPLACE FUNCTION public.calculate_rank(
 RETURNS BIGINT
 IMMUTABLE
 LANGUAGE plpgsql
+SET search_path = ''
 AS $$
 DECLARE
   -- Ranking scale factor
