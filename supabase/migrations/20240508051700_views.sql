@@ -8,7 +8,7 @@
 CREATE VIEW public.personalized_posts
 WITH (
   security_barrier = TRUE,
-  security_invoker = TRUE
+  security_invoker = FALSE
 )
 AS (
   WITH personalized_post AS (
@@ -71,7 +71,7 @@ AS (
 CREATE VIEW public.personalized_comments
 WITH (
   security_barrier = TRUE,
-  security_invoker = TRUE
+  security_invoker = FALSE
 )
 AS (
   WITH personalized_comment AS (

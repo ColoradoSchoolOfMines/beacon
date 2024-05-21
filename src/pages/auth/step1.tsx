@@ -66,7 +66,7 @@ export const Step1: FC = () => {
       email: form.email,
       options: {
         captchaToken: form.captchaToken,
-        emailRedirectTo: new URL("/nearby", window.location.origin).toString(),
+        emailRedirectTo: new URL("/auth/2", window.location.origin).toString(),
         data: {
           acceptedTerms: false,
         } as UserMetadata,

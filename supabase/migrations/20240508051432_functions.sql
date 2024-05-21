@@ -358,7 +358,7 @@ BEGIN
 
   -- Add some uncertainty relative to the post's radius (To increase resistance against static trilateration attacks)
   NEW.private_location = extensions.ST_Project(
-    _old_location::GEOGRAPHY,
+    _old_location::extensions.GEOGRAPHY,
     (-(_uncertainty / 2) * NEW.radius) + (_uncertainty * NEW.radius * utilities.safe_random()),
     2 * PI() * utilities.safe_random()
   );
@@ -366,6 +366,7 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+
 -- Post deleted trigger function
 CREATE OR REPLACE FUNCTION utilities.post_deleted_trigger()
 RETURNS TRIGGER
