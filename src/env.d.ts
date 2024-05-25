@@ -13,6 +13,11 @@ interface ImportMetaEnv {
    * The Supabase API key
    */
   readonly VITE_SUPABASE_ANON_KEY: string;
+
+  /**
+   * The Sentry DSN
+   */
+  readonly VITE_SENTRY_DSN?: string;
 }
 
 interface ImportMeta {

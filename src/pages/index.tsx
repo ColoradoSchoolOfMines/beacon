@@ -179,7 +179,6 @@ export const Index: FC = () => {
             className="my-2"
             color="dark"
             fill="outline"
-            target="_blank"
             href="/terms-and-conditions"
           >
             <IonIcon
@@ -194,7 +193,6 @@ export const Index: FC = () => {
             className="my-2"
             color="dark"
             fill="outline"
-            target="_blank"
             href="/privacy-policy"
           >
             <IonIcon slot="start" ios={shieldOutline} md={shieldSharp} />

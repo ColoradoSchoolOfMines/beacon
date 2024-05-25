@@ -350,11 +350,11 @@ export const Settings: FC = () => {
               <IonLabel>Bug report/feature request</IonLabel>
             </IonItem>
 
-            <IonItem target="_blank" href="/terms-and-conditions">
+            <IonItem href="/terms-and-conditions">
               <IonLabel>Terms and Conditions</IonLabel>
             </IonItem>
 
-            <IonItem target="_blank" href="/privacy-policy">
+            <IonItem href="/privacy-policy">
               <IonLabel>Privacy Policy</IonLabel>
             </IonItem>
           </IonItemGroup>

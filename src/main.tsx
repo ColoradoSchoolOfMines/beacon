@@ -21,10 +21,38 @@ import "~/lib/geolocation";
 
 import {IonApp, isPlatform, setupIonicReact} from "@ionic/react";
 import {IonReactRouter} from "@ionic/react-router";
+import {browserTracingIntegration, init as sentryInit} from "@sentry/browser";
+import {SupabaseIntegration} from "@supabase/sentry-js-integration";
+import {SupabaseClient} from "@supabase/supabase-js";
 import {StrictMode} from "react";
 import {createRoot} from "react-dom/client";
 
 import {App} from "~/app";
+import {SENTRY_DSN, SUPABASE_URL} from "~/lib/vars";
+
+// Setup Sentry
+if (SENTRY_DSN !== undefined) {
+  sentryInit({
+    dsn: SENTRY_DSN,
+    integrations: [
+      new SupabaseIntegration(SupabaseClient, {
+        tracing: true,
+        breadcrumbs: true,
+        errors: true,
+      }),
+      browserTracingIntegration({
+        /**
+         * Callback to determine if a request should create a span
+         * @param url Request URL
+         * @returns Whether a span should be created
+         */
+        shouldCreateSpanForRequest: url =>
+          !url.startsWith(`${SUPABASE_URL}/rest`),
+      }),
+    ],
+    tracesSampleRate: 1,
+  });
+}
 
 // Setup React
 const container = document.getElementById("root");

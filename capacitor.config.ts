@@ -7,7 +7,7 @@ import {CapacitorConfig} from "@capacitor/cli";
 
 const config: CapacitorConfig = {
   appId: "io.ionic.starter",
-  appName: "beacon",
+  appName: "Beacon",
   webDir: "dist",
   server: {
     androidScheme: "https",

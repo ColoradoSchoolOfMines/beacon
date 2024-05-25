@@ -85,6 +85,7 @@ docker run -p 80:8080 beacon
 | `VITE_HCAPTCHA_SITE_KEY`                      | `CADDY_HCAPTCHA_SITE_KEY`                | The hCaptcha site key          | Required ( :warning: **Must be manually set** :warning:; see [hCaptcha dashboard](https://dashboard.hcaptcha.com/sites)) |
 | `VITE_SUPABASE_URL`                           | `CADDY_SUPABASE_URL`                     | The absolute Supabase API URL  | Required (Automatically set by the setup script)                                                                         |
 | `VITE_SUPABASE_ANON_KEY`                      | `CADDY_SUPABASE_ANON_KEY`                | The Supabase API anonymous key | Required (Automatically set by the setup script)                                                                         |
+| `VITE_SENTRY_DSN`                             | `CADDY_SENTRY_DSN`                       | The Sentry DSN                 | Optional (Automatically set by the setup script)                                                                         |
 
 ### Technologies
 

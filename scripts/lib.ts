@@ -189,7 +189,8 @@ export const writeEnvs = async () => {
       frontendEnv,
       `VITE_HCAPTCHA_SITE_KEY = "" # Required!
 VITE_SUPABASE_URL = ${JSON.stringify(status.apiUrl)}
-VITE_SUPABASE_ANON_KEY = ${JSON.stringify(status.anonKey)}`,
+VITE_SUPABASE_ANON_KEY = ${JSON.stringify(status.anonKey)}
+VITE_SENTRY_DSN = "" # Required!`,
       {
         flag: envFlags,
       },
