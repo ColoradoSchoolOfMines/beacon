@@ -42,6 +42,7 @@ export default defineConfig(async () => {
       rollupOptions: {
         external: ["/runtime-vars.js"],
       },
+      sourcemap: true,
     },
     define: {
       "import.meta.env.VERSION": JSON.stringify(version),
