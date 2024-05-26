@@ -21,19 +21,31 @@ import "~/lib/geolocation";
 
 import {IonApp, isPlatform, setupIonicReact} from "@ionic/react";
 import {IonReactRouter} from "@ionic/react-router";
-import {browserTracingIntegration, init as sentryInit} from "@sentry/browser";
+import {
+  browserTracingIntegration,
+  init as sentryInit,
+  setTags,
+} from "@sentry/browser";
 import {SupabaseIntegration} from "@supabase/sentry-js-integration";
 import {SupabaseClient} from "@supabase/supabase-js";
 import {StrictMode} from "react";
 import {createRoot} from "react-dom/client";
 
 import {App} from "~/app";
-import {SENTRY_DSN, SUPABASE_URL} from "~/lib/vars";
+import {
+  GIT_BRANCH,
+  GIT_COMMIT,
+  SENTRY_DSN,
+  SUPABASE_URL,
+  VERSION,
+} from "~/lib/vars";
 
 // Setup Sentry
 if (SENTRY_DSN !== undefined) {
   sentryInit({
     dsn: SENTRY_DSN,
+    environment: import.meta.env.MODE,
+    tracesSampleRate: 1,
     integrations: [
       new SupabaseIntegration(SupabaseClient, {
         tracing: true,
@@ -50,7 +62,12 @@ if (SENTRY_DSN !== undefined) {
           !url.startsWith(`${SUPABASE_URL}/rest`),
       }),
     ],
-    tracesSampleRate: 1,
+  });
+
+  setTags({
+    GIT_BRANCH,
+    GIT_COMMIT,
+    VERSION,
   });
 }
 

@@ -32,7 +32,7 @@ RUN adduser -D caddy
 USER caddy
 
 # Copy files
-COPY --from=builder /build/deployment/Caddyfile /etc/caddy/Caddyfile
+COPY --from=builder /build/Caddyfile /etc/caddy/Caddyfile
 COPY --from=builder /build/dist /usr/share/caddy
 
 # Expose port

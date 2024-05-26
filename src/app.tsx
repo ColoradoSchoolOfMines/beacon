@@ -104,9 +104,9 @@ const routeAuthStates: RouteAuthState[] = [
   },
 ];
 
-// Set the user from the session (Block because this doesn't make a request to the backend)
-const session = await client.auth.getSession();
-useEphemeralUserStore.getState().setUser(session?.data?.session?.user);
+// // Set the user from the session (Block because this doesn't make a request to the backend)
+// const session = await client.auth.getSession();
+// useEphemeralUserStore.getState().setUser(session?.data?.session?.user);
 
 // Set the user from the backend (Don't block because this makes a request to the backend)
 // eslint-disable-next-line unicorn/prefer-top-level-await
@@ -122,11 +122,11 @@ useEphemeralUserStore.getState().setUser(session?.data?.session?.user);
   // If the backend returns an error or the user is null, sign out
   if (data.user === null || error !== null) {
     await client.auth.signOut();
-    return;
   }
-
-  // Set the user
-  useEphemeralUserStore.getState().setUser(data.user);
+  // Otherwise the user is logged in
+  else {
+    useEphemeralUserStore.getState().setUser(data.user);
+  }
 })();
 
 /**
@@ -149,7 +149,12 @@ export const App: FC = () => {
    * @param pathname Current route pathname
    * @param user Current user
    */
-  const guardRoute = (pathname: string, user: User | undefined) => {
+  const guardRoute = (pathname: string, user?: User | null) => {
+    // Require the user's state to be initialized (even if it's null)
+    if (user === undefined) {
+      return;
+    }
+
     // Get the required authentication state
     const requiredState = routeAuthStates.find(({pathname: regex}) =>
       regex.test(pathname),
@@ -208,7 +213,8 @@ export const App: FC = () => {
   // Subscribe to auth changes
   useEffect(() => {
     client.auth.onAuthStateChange(async (event, session) => {
-      let newUser = user;
+      // eslint-disable-next-line unicorn/no-null
+      let newUser = user ?? null;
 
       switch (event) {
         case "INITIAL_SESSION":
@@ -216,7 +222,8 @@ export const App: FC = () => {
         case "TOKEN_REFRESHED":
         case "USER_UPDATED":
           // Set the user
-          newUser = session?.user;
+          // eslint-disable-next-line unicorn/no-null
+          newUser = session?.user ?? null;
           break;
 
         case "SIGNED_OUT": {
@@ -224,12 +231,13 @@ export const App: FC = () => {
           setMessage(SIGNED_OUT_MESSAGE_METADATA);
 
           // Clear the user
-          newUser = undefined;
+          // eslint-disable-next-line unicorn/no-null
+          newUser = null;
         }
       }
 
       // Set the user
-      if (!isEqual(user, newUser)) {
+      if (user === undefined || !isEqual(user, newUser)) {
         setUser(newUser);
       }
 

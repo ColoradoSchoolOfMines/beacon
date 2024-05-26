@@ -67,7 +67,7 @@ npm run supabase:reset
 To build the frontend for production, run:
 
 ```bash
-docker build -t beacon -f deployment/frontend.dockerfile .
+docker build -t beacon -f Dockerfile .
 ```
 
 #### Run
@@ -92,7 +92,6 @@ docker run -p 80:8080 beacon
 - Frontend
   - Language: [TypeScript](https://www.typescriptlang.org)
   - Web framework: [React](https://reactjs.org) + [Vite](https://vitejs.dev)
-  - Mobile framework: [Capacitor](https://capacitorjs.com)
   - Component library: [Ionic React](https://ionicframework.com/docs/react)
   - Styling: [UnoCSS (Wind preset)](https://unocss.dev/presets/wind#wind-preset) (Tailwind/WindiCSS compatible)
 - Backend: [Supabase](https://supabase.com)

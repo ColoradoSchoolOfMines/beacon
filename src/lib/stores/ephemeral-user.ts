@@ -13,14 +13,17 @@ import {devtools} from "zustand/middleware";
 interface EphemeralUserStore {
   /**
    * Current user
+   * `undefined` if not initialized
+   * `null` if no user is logged in
+   * `User` if a user is logged in
    */
-  user?: User;
+  user: User | null | undefined;
 
   /**
    * Set the current user
-   * @param newUser New user or undefined to clear the user
+   * @param newUser New user or null to clear the user
    */
-  setUser: (newUser?: User) => void;
+  setUser: (newUser: User | null) => void;
 
   /**
    * Current geolocation
@@ -40,13 +43,13 @@ interface EphemeralUserStore {
 export const useEphemeralUserStore = create<EphemeralUserStore>()(
   devtools(set => ({
     user: undefined,
-    setUser: (newUser?: User) =>
+    setUser: newUser =>
       set(state => ({
         ...state,
         user: newUser,
       })),
     location: undefined,
-    setLocation: (newLocation?: GeolocationPosition) =>
+    setLocation: newLocation =>
       set(state => ({
         ...state,
         location: newLocation,

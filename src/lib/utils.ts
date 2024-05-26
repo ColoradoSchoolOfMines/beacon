@@ -28,8 +28,8 @@ export const METERS_TO_MILES = 0.000621371;
  * @param user User
  * @returns User's current auth state
  */
-export const getAuthState = (user: User | undefined): AuthState => {
-  if (user === undefined) {
+export const getAuthState = (user: User | null): AuthState => {
+  if (user === null) {
     return AuthState.UNAUTHENTICATED;
   }
 

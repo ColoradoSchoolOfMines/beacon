@@ -176,6 +176,7 @@ export const Menu: FC = () => {
           {navItems
             .filter(
               navItem =>
+                user !== undefined &&
                 navItem.position === NavItemPosition.TOP &&
                 (navItem.requiredState === undefined ||
                   navItem.requiredState === getAuthState(user)),
@@ -189,6 +190,7 @@ export const Menu: FC = () => {
           {navItems
             .filter(
               navItem =>
+                user !== undefined &&
                 navItem.position === NavItemPosition.BOTTOM &&
                 (navItem.requiredState === undefined ||
                   navItem.requiredState === getAuthState(user)),
