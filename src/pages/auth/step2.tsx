@@ -11,7 +11,7 @@ import {useHistory} from "react-router-dom";
 import {z} from "zod";
 
 import {AuthContainer} from "~/components/auth-container";
-import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
+import {useEphemeralStore} from "~/lib/stores/ephemeral";
 import {client} from "~/lib/supabase";
 import {UserMetadata} from "~/lib/types";
 
@@ -43,8 +43,8 @@ type FormSchema = z.infer<typeof formSchema>;
  */
 export const Step2: FC = () => {
   // Hooks
-  const email = useEphemeralUIStore(state => state.email);
-  const setMessage = useEphemeralUIStore(state => state.setMessage);
+  const email = useEphemeralStore(state => state.email);
+  const setMessage = useEphemeralStore(state => state.setMessage);
   const history = useHistory();
 
   const {control, handleSubmit, reset} = useForm<FormSchema>({

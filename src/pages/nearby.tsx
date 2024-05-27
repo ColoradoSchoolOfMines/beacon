@@ -33,6 +33,7 @@ import {PostCard} from "~/components/post-card";
 import {ScrollableContent} from "~/components/scrollable-content";
 import {SwipeableItem} from "~/components/swipeable-item";
 import {insertView, toggleVote} from "~/lib/entities";
+import {useEphemeralStore} from "~/lib/stores/ephemeral";
 import {usePersistentStore} from "~/lib/stores/persistent";
 import {client} from "~/lib/supabase";
 import {Post} from "~/lib/types";
@@ -44,6 +45,7 @@ import {Post} from "~/lib/types";
 export const Nearby: FC = () => {
   // Hooks
   const [posts, setPosts] = useState<Post[]>([]);
+  const waitForLocation = useEphemeralStore(state => state.waitForLocation);
   const showFABs = usePersistentStore(state => state.showFABs);
   const [sizerRef, {width}] = useMeasure<HTMLDivElement>();
   const history = useHistory();
@@ -64,6 +66,9 @@ export const Nearby: FC = () => {
    * @returns Posts
    */
   const fetchPosts = async (limit: number, cutoffRank?: number) => {
+    // Wait for a location
+    await waitForLocation();
+
     // Build the query
     let query = client
       .from("personalized_posts")

@@ -2,16 +2,18 @@
  * @file App shell
  */
 
+// Setup geolocation
+import "~/lib/geolocation";
+
 import {IonRouterOutlet, IonSplitPane} from "@ionic/react";
 import {User} from "@supabase/supabase-js";
 import {isEqual} from "lodash-es";
-import {FC, useEffect} from "react";
+import {ComponentProps, FC, useEffect} from "react";
 import {Route, useHistory, useLocation} from "react-router-dom";
 
 import {GlobalMessage} from "~/components/global-message";
 import {Menu} from "~/components/menu";
-import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
-import {useEphemeralUserStore} from "~/lib/stores/ephemeral-user";
+import {useEphemeralStore} from "~/lib/stores/ephemeral";
 import {usePersistentStore} from "~/lib/stores/persistent";
 import {client} from "~/lib/supabase";
 import {AuthState, GlobalMessageMetadata, Theme} from "~/lib/types";
@@ -40,79 +42,160 @@ const SIGNED_OUT_MESSAGE_METADATA: GlobalMessageMetadata = {
 };
 
 /**
- * Route authentication state
+ * Route metadata
  */
-interface RouteAuthState {
+interface RouteMetadata<T extends FC> {
   /**
-   * Route path pattern
+   * Unique identifier
    */
-  pathname: RegExp;
+  id: string;
+
+  /**
+   * Regex route path
+   */
+  regexPath: RegExp;
+
+  /**
+   * React route path
+   */
+  routerPath?: string;
+
+  /**
+   * Whether the React route is exact
+   */
+  routerExact?: boolean;
 
   /**
    * Required authentication state or undefined if the route is always available
    */
-  requiredState: AuthState | undefined;
+  requiredState?: AuthState;
+
+  /**
+   * Route component
+   */
+  component: T;
+
+  /**
+   * React component props
+   */
+  componentProps?: ComponentProps<T>;
 }
 
 /**
- * Route authentication states
+ * Route metadata
  */
-const routeAuthStates: RouteAuthState[] = [
+const routeMetadata: RouteMetadata<any>[] = [
   {
-    pathname: /^\/$/,
-    requiredState: undefined,
+    id: "index",
+    regexPath: /^\/$/,
+    routerPath: "/",
+    routerExact: true,
+    component: Index,
   },
   {
-    pathname: /^\/terms-and-conditions$/,
-    requiredState: undefined,
+    id: "terms-and-conditions",
+    regexPath: /^\/terms-and-conditions$/,
+    routerPath: "/terms-and-conditions",
+    routerExact: true,
+    component: Terms,
   },
   {
-    pathname: /^\/privacy-policy$/,
-    requiredState: undefined,
+    id: "privacy-policy",
+    regexPath: /^\/privacy-policy$/,
+    routerPath: "/privacy-policy",
+    routerExact: true,
+    component: Privacy,
   },
   {
-    pathname: /^\/auth\/1$/,
+    id: "auth-step-1",
+    regexPath: /^\/auth\/1$/,
+    routerPath: "/auth/1",
+    routerExact: true,
     requiredState: AuthState.UNAUTHENTICATED,
+    component: AuthStep1,
   },
   {
-    pathname: /^\/auth\/2$/,
+    id: "auth-step-2",
+    regexPath: /^\/auth\/2$/,
+    routerPath: "/auth/2",
+    routerExact: true,
     requiredState: AuthState.UNAUTHENTICATED,
+    component: AuthStep2,
   },
   {
-    pathname: /^\/auth\/3$/,
+    id: "auth-step-3",
+    regexPath: /^\/auth\/3$/,
+    routerPath: "/auth/3",
+    routerExact: true,
     requiredState: AuthState.AUTHENTICATED_NO_TERMS,
+    component: AuthStep3,
   },
   {
-    pathname: /^\/nearby$/,
+    id: "nearby",
+    regexPath: /^\/nearby$/,
+    routerPath: "/nearby",
+    routerExact: true,
     requiredState: AuthState.AUTHENTICATED_TERMS,
+    component: Nearby,
   },
   {
-    pathname: /^\/posts\/create\/1$/,
+    id: "posts-create-1",
+    regexPath: /^\/posts\/create\/1$/,
+    routerPath: "/posts/create/1",
+    routerExact: true,
     requiredState: AuthState.AUTHENTICATED_TERMS,
+    component: CreatePostStep1,
   },
   {
-    pathname: /^\/posts\/create\/2$/,
+    id: "posts-create-2",
+    regexPath: /^\/posts\/create\/2$/,
+    routerPath: "/posts/create/2",
+    routerExact: true,
     requiredState: AuthState.AUTHENTICATED_TERMS,
+    component: CreatePostStep2,
   },
   {
-    pathname: /^\/posts\/[\dA-Fa-f]{8}(?:-[\dA-Fa-f]{4}){3}-[\dA-Fa-f]{12}$/,
+    id: "posts-comments-create-1",
+    regexPath:
+      /^\/posts\/[\dA-Fa-f]{8}(?:-[\dA-Fa-f]{4}){3}-[\dA-Fa-f]{12}\/comments\/create\/1$/,
+    routerPath: "/posts/:id/comments/create/1",
+    routerExact: true,
     requiredState: AuthState.AUTHENTICATED_TERMS,
+    component: CreateCommentStep1,
   },
   {
-    pathname: /^\/settings$/,
+    id: "posts-index",
+    regexPath: /^\/posts\/[\dA-Fa-f]{8}(?:-[\dA-Fa-f]{4}){3}-[\dA-Fa-f]{12}$/,
+    routerPath: "/posts/:id",
+    routerExact: true,
     requiredState: AuthState.AUTHENTICATED_TERMS,
+    component: PostIndex,
+  },
+  {
+    id: "settings",
+    regexPath: /^\/settings$/,
+    routerPath: "/settings",
+    routerExact: true,
+    requiredState: AuthState.AUTHENTICATED_TERMS,
+    component: Settings,
+  },
+  {
+    id: "error",
+    regexPath: /^.*$/,
+    component: Error,
+    componentProps: {
+      name: "404",
+      description: "The requested page was not found!",
+      homeButton: true,
+    },
   },
 ];
-
-// // Set the user from the session (Block because this doesn't make a request to the backend)
-// const session = await client.auth.getSession();
-// useEphemeralUserStore.getState().setUser(session?.data?.session?.user);
 
 // Set the user from the backend (Don't block because this makes a request to the backend)
 // eslint-disable-next-line unicorn/prefer-top-level-await
 (async () => {
   // If there is no user, return
-  if (useEphemeralUserStore.getState().user === undefined) {
+  if (useEphemeralStore.getState().user === undefined) {
     return;
   }
 
@@ -125,7 +208,7 @@ const routeAuthStates: RouteAuthState[] = [
   }
   // Otherwise the user is logged in
   else {
-    useEphemeralUserStore.getState().setUser(data.user);
+    useEphemeralStore.getState().setUser(data.user);
   }
 })();
 
@@ -138,9 +221,9 @@ export const App: FC = () => {
   const history = useHistory();
   const location = useLocation();
 
-  const setMessage = useEphemeralUIStore(state => state.setMessage);
-  const user = useEphemeralUserStore(state => state.user);
-  const setUser = useEphemeralUserStore(state => state.setUser);
+  const setMessage = useEphemeralStore(state => state.setMessage);
+  const user = useEphemeralStore(state => state.user);
+  const setUser = useEphemeralStore(state => state.setUser);
   const theme = usePersistentStore(state => state.theme);
 
   // Methods
@@ -156,7 +239,7 @@ export const App: FC = () => {
     }
 
     // Get the required authentication state
-    const requiredState = routeAuthStates.find(({pathname: regex}) =>
+    const requiredState = routeMetadata.find(({regexPath: regex}) =>
       regex.test(pathname),
     )?.requiredState;
 
@@ -252,65 +335,19 @@ export const App: FC = () => {
         {location.pathname !== "/" && <Menu />}
 
         <IonRouterOutlet id="main">
-          {/* Routes that are always available */}
-          <Route path="/" exact={true}>
-            <Index />
-          </Route>
-
-          <Route path="/terms-and-conditions" exact={true}>
-            <Terms />
-          </Route>
-
-          <Route path="/privacy-policy" exact={true}>
-            <Privacy />
-          </Route>
-
-          {/* Unauthenticated routes */}
-          <Route path="/auth/1" exact={true}>
-            <AuthStep1 />
-          </Route>
-
-          <Route path="/auth/2" exact={true}>
-            <AuthStep2 />
-          </Route>
-
-          <Route path="/auth/3" exact={true}>
-            <AuthStep3 />
-          </Route>
-
-          {/* Authenticated routes */}
-          <Route path="/nearby" exact={true}>
-            <Nearby />
-          </Route>
-
-          <Route path="/posts/create/1" exact={true}>
-            <CreatePostStep1 />
-          </Route>
-
-          <Route path="/posts/create/2" exact={true}>
-            <CreatePostStep2 />
-          </Route>
-
-          <Route path="/posts/:id/comments/create/1" exact={true}>
-            <CreateCommentStep1 />
-          </Route>
-
-          <Route path="/posts/:id" exact={true}>
-            <PostIndex />
-          </Route>
-
-          <Route path="/settings" exact={true}>
-            <Settings />
-          </Route>
-
-          {/* Catch-all route */}
-          <Route>
-            <Error
-              name="404"
-              description="The requested page was not found!"
-              homeButton={true}
-            />
-          </Route>
+          {routeMetadata.map(
+            ({
+              id,
+              routerPath,
+              routerExact,
+              component: Component,
+              componentProps,
+            }) => (
+              <Route key={id} path={routerPath} exact={routerExact}>
+                <Component {...componentProps} />
+              </Route>
+            ),
+          )}
         </IonRouterOutlet>
       </IonSplitPane>
 

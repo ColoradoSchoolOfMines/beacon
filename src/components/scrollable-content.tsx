@@ -16,7 +16,7 @@ import {ReactNode, useEffect, useRef, useState} from "react";
 import {useMeasure} from "react-use";
 import {VList, VListHandle} from "virtua";
 
-import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
+import {useEphemeralStore} from "~/lib/stores/ephemeral";
 import {KeysOfType} from "~/lib/types";
 
 /**
@@ -161,11 +161,11 @@ export const ScrollableContent = <T extends object>({
   const loadedContentItems = useRef(new Set<string>());
   const viewedContentItems = useRef(new Set<string>());
 
-  const registerRefreshContent = useEphemeralUIStore(
+  const registerRefreshContent = useEphemeralStore(
     state => state.registerRefreshContent,
   );
 
-  const unregisterRefreshContent = useEphemeralUIStore(
+  const unregisterRefreshContent = useEphemeralStore(
     state => state.unregisterRefreshContent,
   );
 
@@ -384,7 +384,7 @@ export const ScrollableContent = <T extends object>({
         <IonRefresherContent />
       </IonRefresher>
 
-      <div className="flex flex-col h-full w-full">
+      <div className="flex flex-col h-full overflow-y-auto w-full">
         {contentItems.length > 0 ? (
           <VList
             className="ion-content-scroll-host overflow-auto"
@@ -433,14 +433,11 @@ export const ScrollableContent = <T extends object>({
               {fetching ? (
                 <IonSpinner className="h-16 w-16" color="primary" />
               ) : (
-                <div className="text-center">
-                  <h1 className="text-8xl">😢</h1>
-                  <p className="mt-4 text-xl">
-                    No {contentItemName}s to see 😢
-                    <br />
-                    Make a new {contentItemName} to see it here!
-                  </p>
-                </div>
+                <p className="my-4 text-center text-xl">
+                  No {contentItemName}s to see 😢
+                  <br />
+                  Make a new {contentItemName} to see it here!
+                </p>
               )}
             </div>
           </>

@@ -5,7 +5,7 @@
 import {SupabaseClient} from "@supabase/supabase-js";
 
 import {Database} from "~/lib/schema";
-import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
+import {useEphemeralStore} from "~/lib/stores/ephemeral";
 import {GlobalMessageMetadata} from "~/lib/types";
 import {SUPABASE_ANON_KEY, SUPABASE_URL} from "~/lib/vars";
 
@@ -23,7 +23,7 @@ const GENERIC_SERVER_ERROR_MESSAGE_METADATA_SYMBOL = Symbol(
   "supabase.server-error",
 );
 
-const setMessage = useEphemeralUIStore.getState().setMessage;
+const setMessage = useEphemeralStore.getState().setMessage;
 
 /**
  * Supabase client singleton

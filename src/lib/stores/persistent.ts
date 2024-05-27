@@ -4,7 +4,12 @@
 /* eslint-disable jsdoc/require-jsdoc */
 import {merge} from "lodash-es";
 import {create} from "zustand";
-import {createJSONStorage, devtools, persist} from "zustand/middleware";
+import {
+  createJSONStorage,
+  devtools,
+  persist,
+  subscribeWithSelector,
+} from "zustand/middleware";
 
 import {stateStorage} from "~/lib/storage";
 import {DeepPartial, MeasurementSystem, Theme} from "~/lib/types";
@@ -93,48 +98,50 @@ const defaultState: DeepPartial<PersistentStore> = {
  * Persistent store
  */
 export const usePersistentStore = create<PersistentStore>()(
-  devtools(
-    persist<PersistentStore, [], [], DeepPartial<PersistentStore>>(
-      set =>
-        merge({}, defaultState, {
-          setTheme: (newTheme: Theme) =>
-            set(state => ({
-              ...state,
-              theme: newTheme,
-            })),
-          setShowFABs: (newShowFABs: boolean) =>
-            set(state => ({
-              ...state,
-              showFABs: newShowFABs,
-            })),
-          setUseSlidingActions: (newSlidingActions: boolean) =>
-            set(state => ({
-              ...state,
-              useSlidingActions: newSlidingActions,
-            })),
-          setShowAmbientEffect: (newAmbientEffect: boolean) =>
-            set(state => ({
-              ...state,
-              showAmbientEffect: newAmbientEffect,
-            })),
-          setMeasurementSystem: (newMeasurementSystem: MeasurementSystem) =>
-            set(state => ({
-              ...state,
-              measurementSystem: newMeasurementSystem,
-            })),
-          reset: () => set(state => merge({}, state, defaultState)),
-        } as DeepPartial<PersistentStore>) as PersistentStore,
-      {
-        name: "persistent",
-        storage: createJSONStorage(() => stateStorage),
-        partialize: state => ({
-          showFABs: state.showFABs,
-          showAmbientEffect: state.showAmbientEffect,
-          measurementSystem: state.measurementSystem,
-          theme: state.theme,
-        }),
-        merge: (persisted, current) => merge({}, current, persisted),
-      },
+  subscribeWithSelector(
+    devtools(
+      persist<PersistentStore, [], [], DeepPartial<PersistentStore>>(
+        set =>
+          merge({}, defaultState, {
+            setTheme: (newTheme: Theme) =>
+              set(state => ({
+                ...state,
+                theme: newTheme,
+              })),
+            setShowFABs: (newShowFABs: boolean) =>
+              set(state => ({
+                ...state,
+                showFABs: newShowFABs,
+              })),
+            setUseSlidingActions: (newSlidingActions: boolean) =>
+              set(state => ({
+                ...state,
+                useSlidingActions: newSlidingActions,
+              })),
+            setShowAmbientEffect: (newAmbientEffect: boolean) =>
+              set(state => ({
+                ...state,
+                showAmbientEffect: newAmbientEffect,
+              })),
+            setMeasurementSystem: (newMeasurementSystem: MeasurementSystem) =>
+              set(state => ({
+                ...state,
+                measurementSystem: newMeasurementSystem,
+              })),
+            reset: () => set(state => merge({}, state, defaultState)),
+          } as DeepPartial<PersistentStore>) as PersistentStore,
+        {
+          name: "persistent",
+          storage: createJSONStorage(() => stateStorage),
+          partialize: state => ({
+            showFABs: state.showFABs,
+            showAmbientEffect: state.showAmbientEffect,
+            measurementSystem: state.measurementSystem,
+            theme: state.theme,
+          }),
+          merge: (persisted, current) => merge({}, current, persisted),
+        },
+      ),
     ),
   ),
 );

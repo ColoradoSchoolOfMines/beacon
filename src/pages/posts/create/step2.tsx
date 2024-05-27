@@ -41,8 +41,7 @@ import {
   getCategory,
   getMediaDimensions,
 } from "~/lib/media";
-import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
-import {useEphemeralUserStore} from "~/lib/stores/ephemeral-user";
+import {useEphemeralStore} from "~/lib/stores/ephemeral";
 import {usePersistentStore} from "~/lib/stores/persistent";
 import {client} from "~/lib/supabase";
 import {GlobalMessageMetadata, MeasurementSystem} from "~/lib/types";
@@ -100,16 +99,16 @@ type FormSchema = z.infer<typeof formSchema>;
  */
 export const Step2: FC = () => {
   // Hooks
-  const location = useEphemeralUserStore(state => state.location);
-  const setMessage = useEphemeralUIStore(state => state.setMessage);
-  const refreshContent = useEphemeralUIStore(state => state.refreshContent);
+  const location = useEphemeralStore(state => state.location);
+  const setMessage = useEphemeralStore(state => state.setMessage);
+  const refreshContent = useEphemeralStore(state => state.refreshContent);
 
   const measurementSystem = usePersistentStore(
     state => state.measurementSystem,
   );
 
-  const post = useEphemeralUIStore(state => state.postBeingCreated);
-  const setPost = useEphemeralUIStore(state => state.setPostBeingCreated);
+  const post = useEphemeralStore(state => state.postBeingCreated);
+  const setPost = useEphemeralStore(state => state.setPostBeingCreated);
 
   const history = useHistory();
 

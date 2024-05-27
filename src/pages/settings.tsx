@@ -33,7 +33,7 @@ import {
 import {FC} from "react";
 import {useHistory} from "react-router-dom";
 
-import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
+import {useEphemeralStore} from "~/lib/stores/ephemeral";
 import {usePersistentStore} from "~/lib/stores/persistent";
 import {client} from "~/lib/supabase";
 import {GlobalMessageMetadata, MeasurementSystem, Theme} from "~/lib/types";
@@ -54,7 +54,7 @@ const ACCOUNT_DELETED_MESSAGE_METADATA: GlobalMessageMetadata = {
  */
 export const Settings: FC = () => {
   // Hooks
-  const setMessage = useEphemeralUIStore(state => state.setMessage);
+  const setMessage = useEphemeralStore(state => state.setMessage);
   const theme = usePersistentStore(state => state.theme);
   const setTheme = usePersistentStore(state => state.setTheme);
   const showFABs = usePersistentStore(state => state.showFABs);

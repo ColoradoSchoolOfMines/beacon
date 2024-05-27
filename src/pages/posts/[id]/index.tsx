@@ -34,6 +34,7 @@ import {PostCard} from "~/components/post-card";
 import {ScrollableContent} from "~/components/scrollable-content";
 import {SwipeableItem} from "~/components/swipeable-item";
 import {insertView, toggleVote} from "~/lib/entities";
+import {useEphemeralStore} from "~/lib/stores/ephemeral";
 import {usePersistentStore} from "~/lib/stores/persistent";
 import {client} from "~/lib/supabase";
 import {Comment, Post} from "~/lib/types";
@@ -46,6 +47,7 @@ export const PostIndex: FC = () => {
   // Hooks
   const [post, setPost] = useState<Post | undefined>();
   const [comments, setComments] = useState<Comment[]>([]);
+  const waitForLocation = useEphemeralStore(state => state.waitForLocation);
   const showFABs = usePersistentStore(state => state.showFABs);
   const [sizerRef, {width}] = useMeasure<HTMLDivElement>();
   const params = useParams<{id: string}>();
@@ -99,6 +101,9 @@ export const PostIndex: FC = () => {
    * @returns Comments
    */
   const fetchComments = async (limit: number, cutoffRank?: number) => {
+    // Wait for a location
+    await waitForLocation();
+
     // Build the query
     let query = client
       .from("personalized_comments")

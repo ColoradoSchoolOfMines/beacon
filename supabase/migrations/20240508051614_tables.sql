@@ -68,7 +68,7 @@ CREATE TABLE public.posts (
   blur_hash VARCHAR(100) NULL,
 
   -- Media aspect ratio (Used to prevent layout shifts)
-  aspect_ratio DOUBLE PRECISION NULL CHECK (aspect_ratio IS NULL OR (aspect_ratio > 0 AND aspect_ratio < 10)),
+  aspect_ratio DOUBLE PRECISION NULL,
 
   -- View count
   views BIGINT NOT NULL DEFAULT 0 CHECK (views >= 0),

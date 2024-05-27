@@ -50,8 +50,8 @@ import {Avatar} from "~/components/avatar";
 import {Blurhash} from "~/components/blurhash";
 import {Markdown} from "~/components/markdown";
 import styles from "~/components/post-card.module.css";
-import {getCategory} from "~/lib/media";
-import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
+import {getCategory, MAX_MEDIA_DIMENSION} from "~/lib/media";
+import {useEphemeralStore} from "~/lib/stores/ephemeral";
 import {usePersistentStore} from "~/lib/stores/persistent";
 import {client} from "~/lib/supabase";
 import {GlobalMessageMetadata, MediaCategory, Post} from "~/lib/types";
@@ -136,7 +136,10 @@ export const PostCard: FC<PostCardProps> = ({
 }) => {
   // Variables
   const height = post.has_media
-    ? Math.round(width / (post as Post<true>).aspect_ratio)
+    ? Math.min(
+        Math.round(width / (post as Post<true>).aspect_ratio),
+        MAX_MEDIA_DIMENSION,
+      )
     : 0;
 
   const AvatarContainer = post.poster_id === null ? "div" : IonRouterLink;
@@ -157,7 +160,7 @@ export const PostCard: FC<PostCardProps> = ({
 
   const [present] = useIonActionSheet();
 
-  const setMessage = useEphemeralUIStore(state => state.setMessage);
+  const setMessage = useEphemeralStore(state => state.setMessage);
 
   const showAmbientEffect = usePersistentStore(
     state => state.showAmbientEffect,
@@ -377,7 +380,7 @@ export const PostCard: FC<PostCardProps> = ({
             width={width}
           />
           {media !== undefined && (
-            <div className="absolute animate-fade-in animate-duration-500">
+            <div className="absolute animate-duration-500 animate-fade-in h-full overflow-hidden w-full">
               {(() => {
                 switch (media.category) {
                   case MediaCategory.IMAGE:

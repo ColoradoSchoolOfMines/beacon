@@ -32,7 +32,7 @@ import {z} from "zod";
 import {CreateCommentContainer} from "~/components/create-comment-container";
 import {Markdown} from "~/components/markdown";
 import {SupplementalError} from "~/components/supplemental-error";
-import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
+import {useEphemeralStore} from "~/lib/stores/ephemeral";
 import {client} from "~/lib/supabase";
 import {GlobalMessageMetadata} from "~/lib/types";
 import styles from "~/pages/posts/[id]/comments/create/step1.module.css";
@@ -94,8 +94,8 @@ export const Step1: FC = () => {
     // eslint-disable-next-line unicorn/no-null
     useState<HTMLIonTextareaElement | null>(null);
 
-  const setMessage = useEphemeralUIStore(state => state.setMessage);
-  const refreshContent = useEphemeralUIStore(state => state.refreshContent);
+  const setMessage = useEphemeralStore(state => state.setMessage);
+  const refreshContent = useEphemeralStore(state => state.refreshContent);
 
   const [contentMode, setContentMode] = useState<ContentMode>(ContentMode.RAW);
 

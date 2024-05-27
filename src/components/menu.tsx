@@ -29,7 +29,7 @@ import {FC, useRef} from "react";
 import {useLocation} from "react-router-dom";
 
 import logo from "~/assets/logo.png";
-import {useEphemeralUserStore} from "~/lib/stores/ephemeral-user";
+import {useEphemeralStore} from "~/lib/stores/ephemeral";
 import {AuthState} from "~/lib/types";
 import {getAuthState} from "~/lib/utils";
 
@@ -159,7 +159,7 @@ const NavItem: FC<NavItem> = item => {
  */
 export const Menu: FC = () => {
   // Hooks
-  const user = useEphemeralUserStore(state => state.user);
+  const user = useEphemeralStore(state => state.user);
   const menu = useRef<HTMLIonMenuElement>(null);
 
   return (

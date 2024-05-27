@@ -2,10 +2,11 @@
  * @file Geolocation helper
  */
 
+import {User} from "@supabase/supabase-js";
 import {isEqual} from "lodash-es";
+import {once} from "lodash-es";
 
-import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
-import {useEphemeralUserStore} from "~/lib/stores/ephemeral-user";
+import {useEphemeralStore} from "~/lib/stores/ephemeral";
 import {client} from "~/lib/supabase";
 import {GlobalMessageMetadata} from "~/lib/types";
 
@@ -25,7 +26,7 @@ const GEOLOCATION_PERMISSION_DENIED_MESSAGE_METADATA: GlobalMessageMetadata = {
   symbol: Symbol("geolocation.permission-denied"),
   name: "Geolocation error",
   description:
-    "You have denied access to your geolocation, but it is required to show and create posts. You can grant Beacon access to your geolocation in your browser settings.",
+    "You have denied access to your geolocation, but it is required to show and create posts. You can grant Beacon access to your geolocation in your browser settings and then refresh the page to try again.",
 };
 
 /**
@@ -42,26 +43,19 @@ const GENERIC_GEOLOCATION_ERROR_METADATA_SYMBOL = Symbol(
   "geolocation.generic-error",
 );
 
-const setMessage = useEphemeralUIStore.getState().setMessage;
-const setLocation = useEphemeralUserStore.getState().setLocation;
+const setMessage = useEphemeralStore.getState().setMessage;
+/**
+ * Get the user's current location
+ * @returns User's current location
+ */
+const getLocation = () => useEphemeralStore.getState().location;
+const setLocation = useEphemeralStore.getState().setLocation;
 
 /**
- * Geolocation watcher ID
+ * Geolocation updater
+ * @param user User
  */
-let geolocationWatcherId: number | undefined;
-
-// Watch the user's geolocation
-useEphemeralUserStore.subscribe(async state => {
-  // Check if the user is logged in
-  if (state.user === undefined) {
-    return;
-  }
-
-  // Check if the watcher is already running
-  if (geolocationWatcherId !== undefined) {
-    return;
-  }
-
+const geolocationUpdater = once(async (user: User | null | undefined) => {
   // Check if geolocation is supported
   if (navigator.geolocation === undefined) {
     // Display the message
@@ -80,24 +74,32 @@ useEphemeralUserStore.subscribe(async state => {
     return;
   }
 
+  /**
+   * Geolocation watcher ID
+   */
+  let geolocationWatcherId: number | undefined;
+
   // Watch the user's geolocation
   try {
     geolocationWatcherId = navigator.geolocation.watchPosition(
       async location => {
         // Ensure the user still exists
-        if (geolocationWatcherId !== undefined && state.user === undefined) {
+        if (
+          geolocationWatcherId !== undefined &&
+          (user === undefined || user === null)
+        ) {
           navigator.geolocation.clearWatch(geolocationWatcherId);
           return;
         }
 
         // Get the old location
-        const oldLocation = useEphemeralUserStore.getState().location;
+        const oldLocation = getLocation();
 
-        // Update the frontend
-        setLocation(location);
-
-        // Update the backend
         if (!isEqual(location, oldLocation)) {
+          // Update the frontend
+          setLocation(location);
+
+          // Update the backend
           const {error} = await client.from("locations").insert({
             location: `POINT(${location.coords.longitude} ${location.coords.latitude})`,
           });
@@ -139,3 +141,20 @@ useEphemeralUserStore.subscribe(async state => {
     return;
   }
 });
+
+// Watch the user
+const unsubscribeEphemeralStore = useEphemeralStore.subscribe(
+  state => state.user,
+  user => {
+    // Check if the user is logged in
+    if (user === undefined || user === null) {
+      return;
+    }
+
+    // Start the geolocation updater (Not guaranteed to only run once, hence the `once` wrapper)
+    geolocationUpdater(user);
+
+    // Unsuscribe from further updates
+    unsubscribeEphemeralStore();
+  },
+);

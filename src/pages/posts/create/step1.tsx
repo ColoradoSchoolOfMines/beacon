@@ -42,7 +42,7 @@ import {
   MAX_MEDIA_DIMENSION,
   MIN_MEDIA_DIMENSION,
 } from "~/lib/media";
-import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
+import {useEphemeralStore} from "~/lib/stores/ephemeral";
 import {MediaCategory} from "~/lib/types";
 import styles from "~/pages/posts/create/step1.module.css";
 
@@ -151,8 +151,8 @@ export const Step1: FC = () => {
   const [previewUrl, setPreviewUrl] = useState<string | undefined>(undefined);
   const mediaInput = useRef<HTMLInputElement | null>(null);
 
-  const post = useEphemeralUIStore(state => state.postBeingCreated);
-  const setPost = useEphemeralUIStore(state => state.setPostBeingCreated);
+  const post = useEphemeralStore(state => state.postBeingCreated);
+  const setPost = useEphemeralStore(state => state.setPostBeingCreated);
 
   const history = useHistory();
 
@@ -346,17 +346,27 @@ export const Step1: FC = () => {
                     </div>
                     {previewUrl !== undefined &&
                       mediaCategory !== undefined && (
-                        <div className="max-h-[50vh] mb-4 object-fill overflow-hidden pointer-events-none rounded-lg w-full">
+                        <div className="max-h-[50vh] mb-4 overflow-hidden pointer-events-none rounded-lg w-full">
                           {(() => {
                             switch (mediaCategory) {
                               case MediaCategory.IMAGE:
                                 return (
-                                  <img alt="Media preview" src={previewUrl} />
+                                  <img
+                                    alt="Media preview"
+                                    className="object-cover mx-auto"
+                                    src={previewUrl}
+                                  />
                                 );
 
                               case MediaCategory.VIDEO:
                                 return (
-                                  <video autoPlay loop muted src={previewUrl} />
+                                  <video
+                                    autoPlay
+                                    className="object-cover mx-auto"
+                                    loop
+                                    muted
+                                    src={previewUrl}
+                                  />
                                 );
                             }
                           })()}

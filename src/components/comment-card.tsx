@@ -35,7 +35,7 @@ import {FC, HTMLAttributes, useEffect, useId, useState} from "react";
 import {Avatar} from "~/components/avatar";
 import styles from "~/components/comment-card.module.css";
 import {Markdown} from "~/components/markdown";
-import {useEphemeralUIStore} from "~/lib/stores/ephemeral-ui";
+import {useEphemeralStore} from "~/lib/stores/ephemeral";
 import {client} from "~/lib/supabase";
 import {Comment, GlobalMessageMetadata} from "~/lib/types";
 import {formatDuration, formatScalar} from "~/lib/utils";
@@ -114,7 +114,7 @@ export const CommentCard: FC<CommentCardProps> = ({
 
   const [present] = useIonActionSheet();
 
-  const setMessage = useEphemeralUIStore(state => state.setMessage);
+  const setMessage = useEphemeralStore(state => state.setMessage);
 
   // Effects
   useEffect(() => {
