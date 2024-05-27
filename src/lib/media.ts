@@ -3,6 +3,7 @@
  */
 
 import {encode} from "blurhash";
+import {flatten} from "lodash-es";
 
 import {
   MediaCategory,
@@ -70,6 +71,48 @@ export const getCategory = (mimeType: string): MediaCategory | undefined => {
   }
 
   return undefined;
+};
+
+/**
+ * Capture media from the user's device
+ * @param newCapture Whether to capture new media (i.e.: take a photo or record a video) or select existing media (i.e.: upload an existing photo or video)
+ * @param category Media category
+ * @returns Media file
+ */
+export const captureMedia = async <T extends boolean>(
+  newCapture: T,
+  category: T extends true ? MediaCategory : MediaCategory | undefined,
+) => {
+  // Create the input element
+  const input = document.createElement("input");
+  input.type = "file";
+
+  input.accept =
+    newCapture && category !== undefined
+      ? CATEGORIZED_MEDIA_MIME_TYPES[category].join(",")
+      : flatten(Object.values(CATEGORIZED_MEDIA_MIME_TYPES)).join(",");
+
+  if (newCapture) {
+    input.capture = "environment";
+  }
+
+  // Wait for the user to select media
+  await new Promise((resolve, reject) => {
+    // Register event listeners
+    input.addEventListener("change", resolve, {once: true});
+    input.addEventListener("error", reject, {once: true});
+
+    // Trigger the input
+    input.click();
+  });
+
+  // Get the media file
+  const file = input.files?.[0];
+
+  // Clean up
+  input.remove();
+
+  return file;
 };
 
 /**

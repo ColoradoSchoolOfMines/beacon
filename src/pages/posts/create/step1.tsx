@@ -12,6 +12,7 @@ import {
   IonSegment,
   IonSegmentButton,
   IonTextarea,
+  useIonActionSheet,
 } from "@ionic/react";
 import {
   arrowForwardOutline,
@@ -25,7 +26,6 @@ import {
   imageOutline,
   imageSharp,
 } from "ionicons/icons";
-import {flatten} from "lodash-es";
 import {FC, useEffect, useRef, useState} from "react";
 import {Controller, useForm} from "react-hook-form";
 import {useHistory} from "react-router-dom";
@@ -35,7 +35,7 @@ import {CreatePostContainer} from "~/components/create-post-container";
 import {Markdown} from "~/components/markdown";
 import {SupplementalError} from "~/components/supplemental-error";
 import {
-  CATEGORIZED_MEDIA_MIME_TYPES,
+  captureMedia,
   createMediaElement,
   getCategory,
   getMediaDimensions,
@@ -72,36 +72,29 @@ const MIN_CONTENT_LENGTH = 1;
 const MAX_CONTENT_LENGTH = 300;
 
 /**
- * Allowed media mime types
- */
-const MEDIA_MIME_TYPES = flatten(Object.values(CATEGORIZED_MEDIA_MIME_TYPES));
-
-/**
  * Form schema
  */
 const formSchema = z.object({
   content: z.string().min(MIN_CONTENT_LENGTH).max(MAX_CONTENT_LENGTH),
   media: z
-    .array(z.instanceof(File))
-    .min(0)
-    .max(1)
+    .instanceof(File)
     .optional()
     .superRefine(async (value, ctx) => {
-      if (value?.length === 1) {
+      if (value !== undefined) {
         // Get the dimensions
-        const category = getCategory(value[0]!.type);
+        const category = getCategory(value.type);
 
         if (category === undefined) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: `Unsupported media type ${value[0]!.type}`,
+            message: `Unsupported media type ${value.type}`,
             fatal: true,
           });
 
           return;
         }
 
-        const objectURL = URL.createObjectURL(value[0]!);
+        const objectURL = URL.createObjectURL(value);
         const element = await createMediaElement(category, objectURL);
         const dimensions = getMediaDimensions(category, element);
         URL.revokeObjectURL(objectURL);
@@ -154,9 +147,11 @@ export const Step1: FC = () => {
   const post = useEphemeralStore(state => state.postBeingCreated);
   const setPost = useEphemeralStore(state => state.setPostBeingCreated);
 
+  const [present] = useIonActionSheet();
+
   const history = useHistory();
 
-  const {control, handleSubmit, watch, reset} = useForm<FormSchema>({
+  const {control, handleSubmit, reset, setValue, watch} = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
   });
 
@@ -164,7 +159,7 @@ export const Step1: FC = () => {
   const media = watch("media");
 
   const mediaCategory =
-    media?.[0]?.type === undefined ? undefined : getCategory(media[0].type);
+    media?.type === undefined ? undefined : getCategory(media.type);
 
   // Effects
   useEffect(() => {
@@ -192,10 +187,7 @@ export const Step1: FC = () => {
 
   useEffect(() => {
     // Update the upload value
-    if (
-      (media === undefined || media.length === 0) &&
-      mediaInput.current !== null
-    ) {
+    if (media === undefined && mediaInput.current !== null) {
       mediaInput.current.value = "";
     }
 
@@ -203,8 +195,8 @@ export const Step1: FC = () => {
     (async () => {
       let url: string | undefined;
 
-      if (media !== undefined && media.length > 0) {
-        url = URL.createObjectURL(media[0]!);
+      if (media !== undefined) {
+        url = URL.createObjectURL(media);
       }
 
       setPreviewUrl(url);
@@ -213,6 +205,65 @@ export const Step1: FC = () => {
 
   // Methods
   /**
+   * Capture media and update the form
+   * @param category Media category
+   * @param newCapture Whether to capture new media
+   */
+  const captureMediaAndUpdateForm = async <T extends boolean>(
+    newCapture: T,
+    category: T extends true ? MediaCategory : MediaCategory | undefined,
+  ) => {
+    // Capture the media
+    const media = await captureMedia(newCapture, category);
+
+    // Update the form
+    setValue("media", media);
+  };
+
+  /**
+   * Prompt the user to add media to the post
+   * @returns Promise
+   */
+  const addMedia = () =>
+    present({
+      header: "Choose Photo/Video",
+      subHeader: "Note: you can only add one photo or video per post.",
+      buttons: [
+        {
+          text: "Cancel",
+          role: "cancel",
+        },
+        {
+          text: "New photo",
+          role: "selected",
+          /**
+           * Capture a new photo
+           * @returns Promise
+           */
+          handler: () => captureMediaAndUpdateForm(true, MediaCategory.IMAGE),
+        },
+        {
+          text: "New video",
+          role: "selected",
+          /**
+           * Capture a new video
+           * @returns Promise
+           */
+          handler: () => captureMediaAndUpdateForm(true, MediaCategory.VIDEO),
+        },
+        {
+          text: "Existing photo/video",
+          role: "selected",
+          /**
+           * Capture an existing photo or video
+           * @returns Promise
+           */
+          handler: () => captureMediaAndUpdateForm(false, undefined),
+        },
+      ],
+    });
+
+  /**
    * Form submit handler
    * @param form Form data
    */
@@ -220,7 +271,7 @@ export const Step1: FC = () => {
     // Update the post
     setPost({
       content: form.content,
-      media: form.media?.[0],
+      media: form.media,
     });
 
     // Go to the next step
@@ -299,83 +350,71 @@ export const Step1: FC = () => {
             <Controller
               control={control}
               name="media"
-              render={({field: {onChange, onBlur}, fieldState: {error}}) => (
-                <>
-                  <label className="cursor-pointer w-full">
-                    <div className="flex flex-row items-center justify-center relative w-full my-2">
-                      <IonIcon
-                        className="text-2xl"
-                        ios={imageOutline}
-                        md={imageSharp}
-                      />
+              render={({fieldState: {error}}) => (
+                <div className="flex flex-col w-full">
+                  <IonButton className="w-full" fill="clear" onClick={addMedia}>
+                    <div className="flex flex-col">
+                      <div className="flex flex-row items-center justify-center relative w-full my-2">
+                        <IonIcon
+                          className="text-2xl"
+                          ios={imageOutline}
+                          md={imageSharp}
+                        />
 
-                      <p className="ml-2 text-center">Add a photo or video</p>
+                        <p className="ml-2 text-3.5 text-center">
+                          Add a photo or video
+                        </p>
 
-                      <input
-                        accept={MEDIA_MIME_TYPES.join(",")}
-                        capture="environment"
-                        className="h-0 w-0"
-                        onChange={event =>
-                          onChange(
-                            event.target.files === null
-                              ? []
-                              : Array.from(event.target.files),
-                          )
-                        }
-                        onBlur={onBlur}
-                        ref={mediaInput}
-                        type="file"
-                      />
+                        {media !== undefined && (
+                          <IonButton
+                            fill="clear"
+                            onClick={event => {
+                              event.stopPropagation();
+                              setValue("media", undefined);
+                            }}
+                          >
+                            <IonIcon
+                              slot="icon-only"
+                              ios={closeOutline}
+                              md={closeSharp}
+                            />
+                          </IonButton>
+                        )}
+                      </div>
 
-                      {media !== undefined && media.length > 0 && (
-                        <IonButton
-                          className={`absolute right-0 ${styles.clearButton}`}
-                          fill="clear"
-                          onClick={event => {
-                            event.preventDefault();
-                            onChange([]);
-                          }}
-                        >
-                          <IonIcon
-                            slot="icon-only"
-                            ios={closeOutline}
-                            md={closeSharp}
-                          />
-                        </IonButton>
-                      )}
+                      {previewUrl !== undefined &&
+                        mediaCategory !== undefined && (
+                          <div className="max-h-[50vh] mb-4 overflow-hidden pointer-events-none rounded-lg w-full">
+                            {(() => {
+                              switch (mediaCategory) {
+                                case MediaCategory.IMAGE:
+                                  return (
+                                    <img
+                                      alt="Media preview"
+                                      className="object-cover mx-auto"
+                                      src={previewUrl}
+                                    />
+                                  );
+
+                                case MediaCategory.VIDEO:
+                                  return (
+                                    <video
+                                      autoPlay
+                                      className="object-cover mx-auto"
+                                      loop
+                                      muted
+                                      src={previewUrl}
+                                    />
+                                  );
+                              }
+                            })()}
+                          </div>
+                        )}
                     </div>
-                    {previewUrl !== undefined &&
-                      mediaCategory !== undefined && (
-                        <div className="max-h-[50vh] mb-4 overflow-hidden pointer-events-none rounded-lg w-full">
-                          {(() => {
-                            switch (mediaCategory) {
-                              case MediaCategory.IMAGE:
-                                return (
-                                  <img
-                                    alt="Media preview"
-                                    className="object-cover mx-auto"
-                                    src={previewUrl}
-                                  />
-                                );
-
-                              case MediaCategory.VIDEO:
-                                return (
-                                  <video
-                                    autoPlay
-                                    className="object-cover mx-auto"
-                                    loop
-                                    muted
-                                    src={previewUrl}
-                                  />
-                                );
-                            }
-                          })()}
-                        </div>
-                      )}
-                  </label>
+                  </IonButton>
 
                   <SupplementalError error={error?.message} />
-                </>
+                </div>
               )}
             />
           </IonItem>
