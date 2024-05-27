@@ -106,6 +106,7 @@ const geolocationUpdater = once(async (user: User | null | undefined) => {
 
           // Handle error
           if (error !== null) {
+            // Display the message
             setMessage({
               symbol: FAILED_TO_UPDATE_LOCATION_MESSAGE_METADATA_SYMBOL,
               name: "Failed to update location",
@@ -131,6 +132,9 @@ const geolocationUpdater = once(async (user: User | null | undefined) => {
       },
     );
   } catch (error) {
+    // Log the error
+    console.error(error);
+
     // Display the message
     setMessage({
       symbol: GENERIC_GEOLOCATION_ERROR_METADATA_SYMBOL,
