@@ -13,6 +13,7 @@ import {
   IonLabel,
   IonList,
   IonMenuButton,
+  IonModal,
   IonNote,
   IonPage,
   IonSelect,
@@ -20,24 +21,33 @@ import {
   IonTitle,
   IonToggle,
   IonToolbar,
+  isPlatform,
   useIonActionSheet,
 } from "@ionic/react";
 import {
+  downloadOutline,
+  downloadSharp,
+  ellipsisVertical,
   logOutOutline,
   logOutSharp,
+  menuSharp,
   refreshOutline,
   refreshSharp,
   warningOutline,
   warningSharp,
 } from "ionicons/icons";
-import {FC} from "react";
+import {FC, useEffect, useRef, useState} from "react";
 import {useHistory} from "react-router-dom";
 
+import AddToHomeScreen from "~/assets/icons/md-add-to-home-screen.svg?react";
+import PlusApp from "~/assets/icons/sf-symbols-plus.app.svg?react";
+import SquareAndArrowUp from "~/assets/icons/sf-symbols-square.and.arrow.up.svg?react";
 import {useEphemeralStore} from "~/lib/stores/ephemeral";
 import {usePersistentStore} from "~/lib/stores/persistent";
 import {client} from "~/lib/supabase";
 import {GlobalMessageMetadata, MeasurementSystem, Theme} from "~/lib/types";
 import {GIT_BRANCH, GIT_COMMIT, VERSION} from "~/lib/vars";
+import styles from "~/pages/settings.module.css";
 
 /**
  * Account deleted message metadata
@@ -54,6 +64,15 @@ const ACCOUNT_DELETED_MESSAGE_METADATA: GlobalMessageMetadata = {
  */
 export const Settings: FC = () => {
   // Hooks
+  const [beforeInstallPromptEvent, setBeforeInstallPromptEvent] =
+    useState<BeforeInstallPromptEvent>();
+
+  const [appInstalled, setAppInstalled] = useState(
+    window.matchMedia("(display-mode: standalone)").matches,
+  );
+
+  const appInstallInstructionsModal = useRef<HTMLIonModalElement>(null);
+
   const setMessage = useEphemeralStore(state => state.setMessage);
   const theme = usePersistentStore(state => state.theme);
   const setTheme = usePersistentStore(state => state.setTheme);
@@ -86,6 +105,16 @@ export const Settings: FC = () => {
   const history = useHistory();
   const [present] = useIonActionSheet();
 
+  // Methods
+  /**
+   * Begin the app installation process
+   */
+  const installApp = async () => {
+    await (beforeInstallPromptEvent === undefined
+      ? appInstallInstructionsModal.current?.present()
+      : beforeInstallPromptEvent.prompt());
+  };
+
   /**
    * Reset all settings
    * @returns Promise
@@ -108,7 +137,6 @@ export const Settings: FC = () => {
       ],
     });
 
-  // Methods
   /**
    * Sign out
    * @returns Promise
@@ -181,6 +209,24 @@ export const Settings: FC = () => {
       ],
     });
 
+  // Effects
+  useEffect(() => {
+    // Capture the installed event
+    window.addEventListener("appinstalled", () => setAppInstalled(true));
+
+    // Capture the installable event
+    window.addEventListener(
+      "beforeinstallprompt",
+      event => {
+        event.preventDefault();
+        setBeforeInstallPromptEvent(event as BeforeInstallPromptEvent);
+      },
+      {
+        once: true,
+      },
+    );
+  }, []);
+
   return (
     <IonPage>
       <IonHeader className="ion-no-border">
@@ -192,6 +238,89 @@ export const Settings: FC = () => {
           <IonTitle>Settings</IonTitle>
         </IonToolbar>
       </IonHeader>
+
+      <IonModal
+        className={styles.modal}
+        ref={appInstallInstructionsModal}
+        initialBreakpoint={1}
+        breakpoints={[0, 1]}
+      >
+        <div className="flex flex-col items-center justify-center p-4 w-full">
+          <h2 className="font-bold mb-2 text-center text-lg">
+            App Install Instructions
+          </h2>
+
+          <p className="mb-2">
+            This website is a Progresive Web App (PWA), meaning it has app
+            functionality. You can install it on your device by following the
+            below instructions:
+          </p>
+
+          <ol className="list-decimal list-inside">
+            {(() => {
+              if (isPlatform("ios")) {
+                return (
+                  <>
+                    <li>
+                      Press the share button on the menu bar below.
+                      <div className="my-4 w-full">
+                        <SquareAndArrowUp className="dark:fill-[#4693ff] dark:stroke-[#4693ff] fill-[#007aff] h-16 mx-auto stroke-[#007aff] w-16" />
+                      </div>
+                    </li>
+                    <li>
+                      Select <q>Add to Home Screen</q>.
+                      <div className="my-4 w-full">
+                        <PlusApp className="dark:fill-white dark:stroke-white fill-black h-14 mx-auto stroke-black w-14" />
+                      </div>
+                    </li>
+                  </>
+                );
+              } else if (isPlatform("android")) {
+                return (
+                  <>
+                    <li>
+                      Press the three dots on the menu bar above.
+                      <div className="my-4 w-full">
+                        <IonIcon
+                          className="block dark:fill-white dark:stroke-white fill-black h-14 mx-auto stroke-black w-14"
+                          icon={ellipsisVertical}
+                        />
+                      </div>
+                    </li>
+                    <li>
+                      Select <q>Add to Home screen</q>.
+                      <div className="my-4 w-full">
+                        <AddToHomeScreen className="dark:fill-white dark:stroke-white fill-black h-16 mx-auto stroke-black w-16" />
+                      </div>
+                    </li>
+                  </>
+                );
+              } else {
+                return (
+                  <>
+                    <li>
+                      Open your browser&apos;s menu.
+                      <div className="my-4 w-full">
+                        <IonIcon
+                          className="block dark:fill-white dark:stroke-white fill-black h-16 mx-auto stroke-black w-16"
+                          icon={menuSharp}
+                        />
+                      </div>
+                    </li>
+                    <li>
+                      Select <q>Add to Home Screen</q>, <q>Install Beacon</q>,
+                      or similar option.
+                      <div className="my-4 w-full">
+                        <AddToHomeScreen className="dark:fill-white dark:stroke-white fill-black h-16 mx-auto stroke-black w-16" />
+                      </div>
+                    </li>
+                  </>
+                );
+              }
+            })()}
+          </ol>
+        </div>
+      </IonModal>
 
       <IonContent color="light">
         <IonList className="py-0" inset={true}>
@@ -271,6 +400,18 @@ export const Settings: FC = () => {
             <IonItemDivider>
               <IonLabel>Miscellaneous</IonLabel>
             </IonItemDivider>
+
+            <IonItem button={true} disabled={appInstalled} onClick={installApp}>
+              <IonLabel>
+                Install app {appInstalled ? "(Already Installed)" : ""}
+              </IonLabel>
+              <IonIcon
+                color="success"
+                slot="end"
+                ios={downloadOutline}
+                md={downloadSharp}
+              />
+            </IonItem>
 
             <IonItem button={true} onClick={resetSettings}>
               <IonLabel>Reset all settings</IonLabel>

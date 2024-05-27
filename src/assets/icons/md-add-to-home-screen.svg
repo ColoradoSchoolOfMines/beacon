@@ -1,0 +1,5 @@
+<!-- Credit: https://fonts.google.com/icons -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0.9 0.9 680.2 880.2">
+  <path
+    d="M 201 881 q -33 0 -56.5 -23.5 T 121 801 v -160 h 80 v 40 h 400 v -480 H 201 v 40 h -80 v -160 q 0 -33 23.5 -56.5 T 201 1 h 400 q 33 0 56.5 23.5 T 681 81 v 720 q 0 33 -23.5 56.5 T 601 881 H 201 Z M 57 641 l -56 -56 l 224 -224 H 81 v -80 h 280 v 280 h -80 v -144 L 57 641 Z" />
+</svg>
