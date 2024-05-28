@@ -5,6 +5,7 @@
 import {Schema} from "hast-util-sanitize";
 import {FC} from "react";
 import ReactMarkdown, {Options} from "react-markdown";
+import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
 import remarkGfm from "remark-gfm";
 
@@ -37,7 +38,6 @@ const schema = {
     "hr",
     "i",
     "ins",
-    "kbd",
     "li",
     "ol",
     "p",
@@ -48,6 +48,11 @@ const schema = {
     "sub",
     "summary",
     "sup",
+    "table",
+    "td",
+    "th",
+    "u",
+    "tr",
     "ul",
   ],
 } as Schema;
@@ -71,7 +76,7 @@ export const Markdown: FC<MarkdownProps> = ({raw, ...props}) => (
     {...props}
     className={`${styles.markdown} ${props.className ?? ""}`}
     remarkPlugins={[remarkGfm]}
-    rehypePlugins={[[rehypeSanitize, schema]]}
+    rehypePlugins={[[rehypeRaw], [rehypeSanitize, schema]]}
   >
     {raw}
   </ReactMarkdown>

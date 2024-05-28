@@ -26,20 +26,56 @@
   @apply text-sm;
 }
 
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4,
+.markdown h5,
+.markdown h6 {
+  @apply font-bold mt-4 mb-2;
+}
+
+.markdown p {
+  @apply my-2;
+}
+
 .markdown ol {
-  @apply list-decimal list-inside;
+  @apply list-decimal;
 }
 
 .markdown ul {
-  @apply list-disc list-inside;
+  @apply list-disc;
+}
+
+.markdown ol,
+.markdown ul {
+  @apply ml-4;
+}
+
+.markdown th,
+.markdown td {
+  @apply b-1 p-1;
+}
+
+.markdown table {
+  @apply my-4;
 }
 
 .markdown hr {
   @apply my-4;
 }
 
+*:not(pre) code,
 .markdown pre {
-  @apply bg-neutral-100 dark:bg-neutral-800 p-2 rounded-md;
+  @apply bg-neutral-100 dark:bg-neutral-800 rounded-md;
+}
+
+.markdown *:not(pre) code {
+  @apply p-0.5;
+}
+
+.markdown pre {
+  @apply p-2;
 }
 
 .markdown blockquote {

@@ -6,6 +6,8 @@ import {IonButton, IonContent, IonIcon, IonPage} from "@ionic/react";
 import {
   documentTextOutline,
   documentTextSharp,
+  helpCircleOutline,
+  helpCircleSharp,
   navigateCircleOutline,
   navigateCircleSharp,
   shieldOutline,
@@ -172,14 +174,28 @@ export const Index: FC = () => {
         {/* Sixth frame */}
         <div className="flex flex-col h-[var(--window-height)] items-center justify-center px-6 text-center w-full snap-center">
           <div className="my-2">
-            <h2 className="text-4xl">Legal Stuff</h2>
+            <h2 className="text-4xl">Other Things</h2>
           </div>
 
           <IonButton
             className="my-2"
             color="dark"
             fill="outline"
-            href="/terms-and-conditions"
+            routerLink="/faq"
+          >
+            <IonIcon
+              slot="start"
+              ios={helpCircleOutline}
+              md={helpCircleSharp}
+            />
+            Frequently Asked Questions
+          </IonButton>
+
+          <IonButton
+            className="my-2"
+            color="dark"
+            fill="outline"
+            routerLink="/terms-and-conditions"
           >
             <IonIcon
               slot="start"
@@ -193,7 +209,7 @@ export const Index: FC = () => {
             className="my-2"
             color="dark"
             fill="outline"
-            href="/privacy-policy"
+            routerLink="/privacy-policy"
           >
             <IonIcon slot="start" ios={shieldOutline} md={shieldSharp} />
             Privacy Policy

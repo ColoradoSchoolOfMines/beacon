@@ -256,7 +256,7 @@ export const Settings: FC = () => {
             below instructions:
           </p>
 
-          <ol className="list-decimal list-inside">
+          <ol className="list-decimal ml-4">
             {(() => {
               if (isPlatform("ios")) {
                 return (
@@ -475,6 +475,19 @@ export const Settings: FC = () => {
             <IonItemDivider>
               <IonLabel>Links</IonLabel>
             </IonItemDivider>
+
+            <IonItem routerLink="/faq">
+              <IonLabel>Frequently Asked Questions</IonLabel>
+            </IonItem>
+
+            <IonItem routerLink="/terms-and-conditions">
+              <IonLabel>Terms and Conditions</IonLabel>
+            </IonItem>
+
+            <IonItem routerLink="/privacy-policy">
+              <IonLabel>Privacy Policy</IonLabel>
+            </IonItem>
+
             <IonItem
               rel="noreferrer"
               target="_blank"
@@ -489,14 +502,6 @@ export const Settings: FC = () => {
               href="https://github.com/ColoradoSchoolOfMines/beacon/issues/new/choose"
             >
               <IonLabel>Bug report/feature request</IonLabel>
-            </IonItem>
-
-            <IonItem href="/terms-and-conditions">
-              <IonLabel>Terms and Conditions</IonLabel>
-            </IonItem>
-
-            <IonItem href="/privacy-policy">
-              <IonLabel>Privacy Policy</IonLabel>
             </IonItem>
           </IonItemGroup>
         </IonList>

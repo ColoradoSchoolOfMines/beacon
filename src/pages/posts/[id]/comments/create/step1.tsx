@@ -186,7 +186,7 @@ export const Step1: FC = () => {
                     ) : (
                       <>
                         <Markdown
-                          className="break-anywhere h-full overflow-auto py-2 text-wrap w-full whitespace-pre"
+                          className="break-anywhere h-full overflow-auto py-2 text-wrap w-full"
                           raw={value}
                         />
                       </>

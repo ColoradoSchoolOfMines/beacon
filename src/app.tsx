@@ -23,14 +23,13 @@ import {Step2 as AuthStep2} from "~/pages/auth/step2";
 import {Step3 as AuthStep3} from "~/pages/auth/step3";
 import {Error} from "~/pages/error";
 import {Index} from "~/pages/index";
+import {Markdown} from "~/pages/markdown";
 import {Nearby} from "~/pages/nearby";
 import {Step1 as CreateCommentStep1} from "~/pages/posts/[id]/comments/create/step1";
 import {PostIndex} from "~/pages/posts/[id]/index";
 import {Step1 as CreatePostStep1} from "~/pages/posts/create/step1";
 import {Step2 as CreatePostStep2} from "~/pages/posts/create/step2";
-import {Privacy} from "~/pages/privacy";
 import {Settings} from "~/pages/settings";
-import {Terms} from "~/pages/terms";
 
 /**
  * Signed out message metadata
@@ -93,18 +92,37 @@ const routeMetadata: RouteMetadata<any>[] = [
     component: Index,
   },
   {
+    id: "faq",
+    regexPath: /^\/faq$/,
+    routerPath: "/faq",
+    routerExact: true,
+    component: Markdown,
+    componentProps: {
+      title: "Frequently Asked Questions",
+      url: "/custom/faq.md",
+    },
+  },
+  {
     id: "terms-and-conditions",
     regexPath: /^\/terms-and-conditions$/,
     routerPath: "/terms-and-conditions",
     routerExact: true,
-    component: Terms,
+    component: Markdown,
+    componentProps: {
+      title: "Terms and Conditions",
+      url: "/custom/terms-and-conditions.md",
+    },
   },
   {
     id: "privacy-policy",
     regexPath: /^\/privacy-policy$/,
     routerPath: "/privacy-policy",
     routerExact: true,
-    component: Privacy,
+    component: Markdown,
+    componentProps: {
+      title: "Privacy Policy",
+      url: "/custom/privacy-policy.md",
+    },
   },
   {
     id: "auth-step-1",

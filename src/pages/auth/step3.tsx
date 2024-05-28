@@ -2,7 +2,7 @@
  * @file Auth step 3 page
  */
 
-import {IonButton, IonIcon} from "@ionic/react";
+import {IonButton, IonIcon, IonRouterLink} from "@ionic/react";
 import {
   checkmarkOutline,
   checkmarkSharp,
@@ -65,25 +65,23 @@ export const Step3: FC = () => {
       <form onSubmit={onSubmit}>
         <p>
           You agree to the{" "}
-          <a
+          <IonRouterLink
             className="font-bold underline"
-            target="_blank"
-            href="/terms-and-conditions"
+            routerLink="/terms-and-conditions"
           >
             terms and conditions
-          </a>{" "}
+          </IonRouterLink>{" "}
           and{" "}
-          <a
+          <IonRouterLink
             className="font-bold underline"
-            target="_blank"
-            href="/privacy-policy"
+            routerLink="/privacy-policy"
           >
             privacy policy
-          </a>{" "}
+          </IonRouterLink>{" "}
           of this app. This includes (but is not limited to):
         </p>
 
-        <ul className="list-disc list-inside my-1">
+        <ul className="list-disc ml-4 my-1">
           <li>
             We reserve the right to remove any content and ban any user at any
             time at our own discretion.
