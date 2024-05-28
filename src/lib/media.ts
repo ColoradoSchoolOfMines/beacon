@@ -46,7 +46,6 @@ export const CATEGORIZED_MEDIA_MIME_TYPES = {
     "image/gif",
     "image/jpeg",
     "image/png",
-    "image/svg+xml",
     "image/webp",
   ],
   [MediaCategory.VIDEO]: [
@@ -204,19 +203,14 @@ export const getMediaDimensions = <T extends MediaCategory = any>(
 };
 
 /**
- * Create a blurhash for the media
- * @param category Media category
+ * Create a canvas for the media
  * @param element Media element
  * @param dimensions Media dimensions
- * @param componentX Number of X components
- * @param componentY Number of Y components
- * @returns Blurhash
+ * @returns Media canvas
  */
-export const createBlurhash = async <T extends MediaCategory = any>(
+export const createMediaCanvas = <T extends MediaCategory = any>(
   element: MediaCategoryElement<T>,
   dimensions: MediaDimensions,
-  componentX: number,
-  componentY: number,
 ) => {
   // Create the canvas
   const canvas = document.createElement("canvas");
@@ -228,6 +222,26 @@ export const createBlurhash = async <T extends MediaCategory = any>(
 
   // Draw the media
   context.drawImage(element, 0, 0, dimensions.width, dimensions.height);
+
+  return canvas;
+};
+
+/**
+ * Create a blurhash for the media
+ * @param canvas Media canvas
+ * @param dimensions Media dimensions
+ * @param componentX Number of X components
+ * @param componentY Number of Y components
+ * @returns Blurhash
+ */
+export const createBlurhash = (
+  canvas: HTMLCanvasElement,
+  dimensions: MediaDimensions,
+  componentX: number,
+  componentY: number,
+) => {
+  // Get the context
+  const context = canvas.getContext("2d")!;
 
   // Scale down the canvas to speed up blurhash generation
   const scaledDimensions = {
@@ -260,4 +274,21 @@ export const createBlurhash = async <T extends MediaCategory = any>(
   );
 
   return hash;
+};
+
+/**
+ * Export the media
+ * @param canvas Media canvas
+ * @param mimeType MIME type
+ * @param quality Quality (0-1)
+ * @returns Media blob
+ */
+export const exportMedia = async (
+  canvas: HTMLCanvasElement,
+  mimeType: string,
+  quality: number,
+) => {
+  return new Promise<Blob | undefined>(resolve => {
+    canvas.toBlob(blob => resolve(blob ?? undefined), mimeType, quality);
+  });
 };

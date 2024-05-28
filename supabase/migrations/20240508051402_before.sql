@@ -42,7 +42,6 @@ INSERT INTO storage.buckets (
     'image/gif',
     'image/jpeg',
     'image/png',
-    'image/svg+xml',
     'image/webp',
 
     -- Videos

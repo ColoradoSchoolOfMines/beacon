@@ -37,14 +37,20 @@ import {
   BLURHASH_COMPONENT_X,
   BLURHASH_COMPONENT_Y,
   createBlurhash,
+  createMediaCanvas,
   createMediaElement,
+  exportMedia,
   getCategory,
   getMediaDimensions,
 } from "~/lib/media";
 import {useEphemeralStore} from "~/lib/stores/ephemeral";
 import {usePersistentStore} from "~/lib/stores/persistent";
 import {client} from "~/lib/supabase";
-import {GlobalMessageMetadata, MeasurementSystem} from "~/lib/types";
+import {
+  GlobalMessageMetadata,
+  MeasurementSystem,
+  MediaCategory,
+} from "~/lib/types";
 import {METERS_TO_KILOMETERS, METERS_TO_MILES} from "~/lib/utils";
 import styles from "~/pages/posts/create/step2.module.css";
 
@@ -175,25 +181,40 @@ export const Step2: FC = () => {
       setMessage(GEOLOCATION_NOT_SUPPORTED_MESSAGE_METADATA);
     }
 
-    let blurHash: string | null = null;
     let aspectRatio: number | null = null;
+    let blurHash: string | null = null;
+    let blob: Blob | undefined = undefined;
 
     // Process the media
     if (post.media !== undefined) {
+      // Get the media category
       const category = getCategory(post.media.type)!;
+
+      // Generate an object URL for the media
       const objectURL = URL.createObjectURL(post.media!);
+
+      // Create the media element and canvas
       const element = await createMediaElement(category, objectURL);
       const dimensions = getMediaDimensions(category, element);
+      aspectRatio = dimensions.width / dimensions.height;
+      const canvas = createMediaCanvas(element, dimensions);
+
+      // Revoke the object URL (The media has already been drawn to the canvas)
       URL.revokeObjectURL(objectURL);
 
-      aspectRatio = dimensions.width / dimensions.height;
-
+      // Generate the blurhash
       blurHash = await createBlurhash(
-        element,
+        canvas,
         dimensions,
         BLURHASH_COMPONENT_X,
         BLURHASH_COMPONENT_Y,
       );
+
+      // Export the media if it is an image (to strip metadata)
+      blob =
+        category === MediaCategory.IMAGE
+          ? await exportMedia(canvas, post.media.type, 1)
+          : post.media;
     }
 
     // Insert the post
@@ -218,10 +239,10 @@ export const Step2: FC = () => {
     }
 
     // Upload the media
-    if (post.media !== undefined) {
+    if (blob !== undefined) {
       const {error} = await client.storage
         .from("media")
-        .upload(`posts/${data.id}`, post.media);
+        .upload(`posts/${data.id}`, blob);
 
       // Handle error
       if (error !== null) {
