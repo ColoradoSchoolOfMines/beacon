@@ -34,7 +34,7 @@
     "@types/react-router-dom": "^5.3.3",
     "@unocss/preset-wind": "^0.60.3",
     "@unocss/transformer-directives": "^0.60.3",
-    "@vitejs/plugin-legacy": "^5.4.0",
+    "@vitejs/plugin-legacy": "^5.4.1",
     "@vitejs/plugin-react": "^4.3.0",
     "blurhash": "^2.0.5",
     "colord": "^2.9.3",
