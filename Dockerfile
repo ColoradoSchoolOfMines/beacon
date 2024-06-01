@@ -1,7 +1,7 @@
 # Static content Dockerfile
 
 # Builder image (https://hub.docker.com/layers/library/node/20.12.2-alpine3.18/images/sha256-5cfa23de5d7e5e6226dea49eab15fdf4e53fde84b8feccbce97aa27695242bb9?context=explore)
-FROM node:20.12.2-alpine3.18@sha256:d328c7bc3305e1ab26491817936c8151a47a8861ad617c16c1eeaa9c8075c8f6 AS builder
+FROM node:22.2.0-alpine3.18@sha256:a46d9fcb38cae53de45b35b90f6df232342242bebc9323a417416eb67942979e AS builder
 
 # Install packages
 RUN apk add --no-cache git
