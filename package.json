@@ -22,7 +22,7 @@
     "@ionic/react": "^8.2.0",
     "@ionic/react-router": "^8.2.0",
     "@ionic/storage": "^4.0.0",
-    "@sentry/browser": "^7.116.0",
+    "@sentry/browser": "^8.7.0",
     "@supabase/sentry-js-integration": "^0.2.0-beta.4",
     "@supabase/supabase-js": "^2.43.4",
     "@types/humanize-duration": "^3.27.4",
