@@ -18,22 +18,37 @@ export const MIN_MEDIA_DIMENSION = 128;
 
 /**
  * Maximum media dimension
- * @see https://github.com/supabase/imgproxy/blob/c15dbefb4ba85ac6ca807949073707ea7fceb270/config/config.go#L235 (Must be smaller than the square root of this)
+ * @see https://github.com/imgproxy/imgproxy/blob/8c22d7b1532e848e30dc3cb81ce8993452589562/config/config.go#L235C2-L235C18 (Must be no more than the square root of this)
  */
 export const MAX_MEDIA_DIMENSION = 4096;
 
 /**
- * Default blurhash X component count
+ * Maximum media blob size
+ */
+export const MAX_MEDIA_SIZE = 4194304; // 4 MiB
+
+/**
+ * Preferred image MIME type
+ */
+export const PREFERRED_IMAGE_MIME_TYPE = "image/webp";
+
+/**
+ * Preferred image quality (0-1)
+ */
+export const PREFERRED_IMAGE_QUALITY = 0.95;
+
+/**
+ * Blurhash X component count
  */
 export const BLURHASH_COMPONENT_X = 4;
 
 /**
- * Default blurhash Y component count
+ * Blurhash Y component count
  */
 export const BLURHASH_COMPONENT_Y = 5;
 
 /**
- * Default blurhash pixels per component
+ * Blurhash pixels per component
  */
 export const BLURHASH_PIXELS_PER_COMPONENT = 8;
 
@@ -107,6 +122,10 @@ export const captureMedia = async <T extends boolean>(
 
   // Get the media file
   const file = input.files?.[0];
+
+  if (file === undefined) {
+    throw new Error("No media file selected!");
+  }
 
   // Clean up
   input.remove();
@@ -216,14 +235,34 @@ export const createMediaCanvas = <T extends MediaCategory = any>(
   const canvas = document.createElement("canvas");
   canvas.height = dimensions.height;
   canvas.width = dimensions.width;
-
-  // Get the context
   const context = canvas.getContext("2d")!;
 
   // Draw the media
   context.drawImage(element, 0, 0, dimensions.width, dimensions.height);
 
   return canvas;
+};
+
+/**
+ * Scale the canvas to the specified dimensions
+ * @param canvas Original canvas
+ * @param dimensions New dimensions
+ * @returns Scaled canvas
+ */
+export const scaleCanvas = (
+  canvas: HTMLCanvasElement,
+  dimensions: MediaDimensions,
+) => {
+  // Create a new canvas
+  const scaledCanvas = document.createElement("canvas");
+  scaledCanvas.height = dimensions.height;
+  scaledCanvas.width = dimensions.width;
+  const context = scaledCanvas.getContext("2d")!;
+
+  // Scale the canvas
+  context.drawImage(canvas, 0, 0, dimensions.width, dimensions.height);
+
+  return scaledCanvas;
 };
 
 /**
@@ -236,33 +275,28 @@ export const createMediaCanvas = <T extends MediaCategory = any>(
  */
 export const createBlurhash = (
   canvas: HTMLCanvasElement,
-  dimensions: MediaDimensions,
   componentX: number,
   componentY: number,
 ) => {
-  // Get the context
-  const context = canvas.getContext("2d")!;
-
   // Scale down the canvas to speed up blurhash generation
   const scaledDimensions = {
     width: componentX * BLURHASH_PIXELS_PER_COMPONENT,
     height: componentY * BLURHASH_PIXELS_PER_COMPONENT,
   } as MediaDimensions;
 
-  context.scale(
-    scaledDimensions.width / dimensions.width,
-    scaledDimensions.height / dimensions.height,
-  );
-
-  context.drawImage(canvas, 0, 0);
+  const scaledCanvas = scaleCanvas(canvas, scaledDimensions);
+  const scaledCanvasContext = scaledCanvas.getContext("2d")!;
 
   // Get the image data
-  const imageData = context.getImageData(
+  const imageData = scaledCanvasContext.getImageData(
     0,
     0,
     scaledDimensions.width,
     scaledDimensions.height,
   );
+
+  // Clean up
+  scaledCanvas.remove();
 
   // Generate the blurhash
   const hash = encode(
@@ -288,7 +322,11 @@ export const exportMedia = async (
   mimeType: string,
   quality: number,
 ) => {
-  return new Promise<Blob | undefined>(resolve => {
-    canvas.toBlob(blob => resolve(blob ?? undefined), mimeType, quality);
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      blob => (blob === null ? reject("Canvas blob is null!") : resolve(blob)),
+      mimeType,
+      quality,
+    );
   });
 };

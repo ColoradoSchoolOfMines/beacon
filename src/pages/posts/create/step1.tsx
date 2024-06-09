@@ -13,6 +13,7 @@ import {
   IonSegmentButton,
   IonTextarea,
   useIonActionSheet,
+  useIonLoading,
 } from "@ionic/react";
 import {
   arrowForwardOutline,
@@ -35,15 +36,24 @@ import {CreatePostContainer} from "~/components/create-post-container";
 import {Markdown} from "~/components/markdown";
 import {SupplementalError} from "~/components/supplemental-error";
 import {
+  BLURHASH_COMPONENT_X,
+  BLURHASH_COMPONENT_Y,
   captureMedia,
+  createBlurhash,
+  createMediaCanvas,
   createMediaElement,
+  exportMedia,
   getCategory,
   getMediaDimensions,
   MAX_MEDIA_DIMENSION,
+  MAX_MEDIA_SIZE,
   MIN_MEDIA_DIMENSION,
+  PREFERRED_IMAGE_MIME_TYPE,
+  PREFERRED_IMAGE_QUALITY,
+  scaleCanvas,
 } from "~/lib/media";
 import {useEphemeralStore} from "~/lib/stores/ephemeral";
-import {MediaCategory} from "~/lib/types";
+import {MediaCategory, MediaDimensions} from "~/lib/types";
 import styles from "~/pages/posts/create/step1.module.css";
 
 /**
@@ -77,58 +87,25 @@ const MAX_CONTENT_LENGTH = 300;
 const formSchema = z.object({
   content: z.string().min(MIN_CONTENT_LENGTH).max(MAX_CONTENT_LENGTH),
   media: z
-    .instanceof(File)
-    .optional()
-    .superRefine(async (value, ctx) => {
-      if (value !== undefined) {
-        // Get the dimensions
-        const category = getCategory(value.type);
-
-        if (category === undefined) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: `Unsupported media type ${value.type}`,
-            fatal: true,
-          });
-
-          return;
-        }
-
-        const objectURL = URL.createObjectURL(value);
-        const element = await createMediaElement(category, objectURL);
-        const dimensions = getMediaDimensions(category, element);
-        URL.revokeObjectURL(objectURL);
-
-        // Check the media dimensions
-        if (
-          dimensions.height < MIN_MEDIA_DIMENSION ||
-          dimensions.width < MIN_MEDIA_DIMENSION
-        ) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: `Media must be at least ${MIN_MEDIA_DIMENSION} x ${MIN_MEDIA_DIMENSION}`,
-          });
-        }
-
-        if (
-          dimensions.height > MAX_MEDIA_DIMENSION ||
-          dimensions.width > MAX_MEDIA_DIMENSION
-        ) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: `Media must be at most ${MAX_MEDIA_DIMENSION} x ${MAX_MEDIA_DIMENSION}`,
-          });
-        }
-      }
-
-      return false;
-    }),
+    .object({
+      aspectRatio: z.number(),
+      blurHash: z.string(),
+      blob: z.instanceof(Blob),
+      category: z.nativeEnum(MediaCategory),
+      objectURL: z.string(),
+    })
+    .optional(),
 });
 
 /**
- * Form schema type
+ * Form schema input type
  */
-type FormSchema = z.infer<typeof formSchema>;
+type FormSchemaInput = z.input<typeof formSchema>;
+
+/**
+ * Form schema output type
+ */
+type FormSchemaOutput = z.output<typeof formSchema>;
 
 /**
  * Create post step 1 page
@@ -141,25 +118,26 @@ export const Step1: FC = () => {
     useState<HTMLIonTextareaElement | null>(null);
 
   const [contentMode, setContentMode] = useState<ContentMode>(ContentMode.RAW);
-  const [previewUrl, setPreviewUrl] = useState<string | undefined>(undefined);
   const mediaInput = useRef<HTMLInputElement | null>(null);
 
   const post = useEphemeralStore(state => state.postBeingCreated);
   const setPost = useEphemeralStore(state => state.setPostBeingCreated);
 
-  const [present] = useIonActionSheet();
+  const [presentActionSheet] = useIonActionSheet();
+  const [presentLoading, dismissLoading] = useIonLoading();
 
   const history = useHistory();
 
-  const {control, handleSubmit, reset, setValue, watch} = useForm<FormSchema>({
+  const {control, handleSubmit, reset, setError, setValue, watch} = useForm<
+    FormSchemaInput,
+    z.ZodTypeDef,
+    FormSchemaOutput
+  >({
     resolver: zodResolver(formSchema),
   });
 
   // Variables
   const media = watch("media");
-
-  const mediaCategory =
-    media?.type === undefined ? undefined : getCategory(media.type);
 
   // Effects
   useEffect(() => {
@@ -190,34 +168,143 @@ export const Step1: FC = () => {
     if (media === undefined && mediaInput.current !== null) {
       mediaInput.current.value = "";
     }
-
-    // Update the preview URL
-    (async () => {
-      let url: string | undefined;
-
-      if (media !== undefined) {
-        url = URL.createObjectURL(media);
-      }
-
-      setPreviewUrl(url);
-    })();
   }, [media]);
 
   // Methods
   /**
    * Capture media and update the form
-   * @param category Media category
    * @param newCapture Whether to capture new media
+   * @param rawCategory Media category
    */
   const captureMediaAndUpdateForm = async <T extends boolean>(
     newCapture: T,
-    category: T extends true ? MediaCategory : MediaCategory | undefined,
+    rawCategory: T extends true ? MediaCategory : MediaCategory | undefined,
   ) => {
     // Capture the media
-    const media = await captureMedia(newCapture, category);
+    const media = await captureMedia(newCapture, rawCategory);
 
-    // Update the form
-    setValue("media", media);
+    // Start the loading indicator
+    await presentLoading({
+      message: "Processing media...",
+    });
+
+    // Get the media category
+    const category = rawCategory ?? getCategory(media.type);
+
+    if (category === undefined) {
+      setError("media", {message: `Unsupported media type ${media.type}`});
+      await dismissLoading();
+
+      return;
+    }
+
+    // Generate an object URL for the media
+    const originalObjectURL = URL.createObjectURL(media);
+
+    // Create the media element and canvas
+    const element = await createMediaElement(category, originalObjectURL);
+    const dimensions = getMediaDimensions(category, element);
+
+    const aspectRatio = dimensions.width / dimensions.height;
+    let canvas = createMediaCanvas(element, dimensions);
+
+    // Check the media dimensions
+    if (
+      dimensions.height > MAX_MEDIA_DIMENSION ||
+      dimensions.width > MAX_MEDIA_DIMENSION
+    ) {
+      switch (category) {
+        case MediaCategory.IMAGE: {
+          // Calculate scaled dimensions (while preserving aspect ratio)
+          const scaledDimensions: MediaDimensions =
+            aspectRatio > 1
+              ? {
+                  height: Math.floor(MAX_MEDIA_DIMENSION / aspectRatio),
+                  width: MAX_MEDIA_DIMENSION,
+                }
+              : {
+                  height: MAX_MEDIA_DIMENSION,
+                  width: Math.floor(MAX_MEDIA_DIMENSION * aspectRatio),
+                };
+
+          // Scale the media
+          canvas = scaleCanvas(canvas, scaledDimensions);
+
+          break;
+        }
+
+        default:
+          setError("media", {
+            message: `Media must be at most ${MAX_MEDIA_DIMENSION} x ${MAX_MEDIA_DIMENSION}`,
+          });
+
+          await dismissLoading();
+
+          return;
+      }
+    }
+
+    if (
+      dimensions.height < MIN_MEDIA_DIMENSION ||
+      dimensions.width < MIN_MEDIA_DIMENSION
+    ) {
+      setError("media", {
+        message: `Media must be at least ${MIN_MEDIA_DIMENSION} x ${MIN_MEDIA_DIMENSION}`,
+      });
+
+      await dismissLoading();
+
+      return;
+    }
+
+    // Generate the blurhash
+    const blurHash = await createBlurhash(
+      canvas,
+      BLURHASH_COMPONENT_X,
+      BLURHASH_COMPONENT_Y,
+    );
+
+    // Export the media if it is an image (to strip metadata)
+    let blob: Blob;
+    let objectURL: string;
+
+    switch (category) {
+      case MediaCategory.IMAGE:
+        blob = await exportMedia(
+          canvas,
+          PREFERRED_IMAGE_MIME_TYPE,
+          PREFERRED_IMAGE_QUALITY,
+        );
+
+        objectURL = URL.createObjectURL(blob);
+        break;
+
+      default:
+        blob = media;
+        objectURL = originalObjectURL;
+        break;
+    }
+
+    // Check the media size
+    if (blob.size > MAX_MEDIA_SIZE) {
+      setError("media", {
+        message: `Media must be at most ${MAX_MEDIA_SIZE / (1024 * 1024)} MiB`,
+      });
+
+      await dismissLoading();
+
+      return;
+    }
+
+    setValue("media", {
+      aspectRatio,
+      blurHash,
+      blob,
+      category,
+      objectURL,
+    });
+
+    await dismissLoading();
   };
 
   /**
@@ -225,7 +312,7 @@ export const Step1: FC = () => {
    * @returns Promise
    */
   const addMedia = () =>
-    present({
+    presentActionSheet({
       header: "Choose Photo/Video",
       subHeader: "Note: you can only add one photo or video per post.",
       buttons: [
@@ -238,27 +325,30 @@ export const Step1: FC = () => {
           role: "selected",
           /**
            * Capture a new photo
-           * @returns Promise
            */
-          handler: () => captureMediaAndUpdateForm(true, MediaCategory.IMAGE),
+          handler: () => {
+            captureMediaAndUpdateForm(true, MediaCategory.IMAGE);
+          },
         },
         {
           text: "New video",
           role: "selected",
           /**
            * Capture a new video
-           * @returns Promise
            */
-          handler: () => captureMediaAndUpdateForm(true, MediaCategory.VIDEO),
+          handler: () => {
+            captureMediaAndUpdateForm(true, MediaCategory.VIDEO);
+          },
         },
         {
           text: "Existing photo/video",
           role: "selected",
           /**
            * Capture an existing photo or video
-           * @returns Promise
            */
-          handler: () => captureMediaAndUpdateForm(false, undefined),
+          handler: () => {
+            captureMediaAndUpdateForm(false, undefined);
+          },
         },
       ],
     });
@@ -267,7 +357,7 @@ export const Step1: FC = () => {
    * Form submit handler
    * @param form Form data
    */
-  const onSubmit = async (form: FormSchema) => {
+  const onSubmit = async (form: FormSchemaOutput) => {
     // Update the post
     setPost({
       content: form.content,
@@ -382,34 +472,33 @@ export const Step1: FC = () => {
                         )}
                       </div>
 
-                      {previewUrl !== undefined &&
-                        mediaCategory !== undefined && (
-                          <div className="max-h-[50vh] mb-4 overflow-hidden pointer-events-none rounded-lg w-full">
-                            {(() => {
-                              switch (mediaCategory) {
-                                case MediaCategory.IMAGE:
-                                  return (
-                                    <img
-                                      alt="Media preview"
-                                      className="object-cover mx-auto"
-                                      src={previewUrl}
-                                    />
-                                  );
+                      {media !== undefined && (
+                        <div className="h-[50vh] mb-4 overflow-hidden pointer-events-none rounded-lg w-full">
+                          {(() => {
+                            switch (media?.category) {
+                              case MediaCategory.IMAGE:
+                                return (
+                                  <img
+                                    alt="Media preview"
+                                    className="h-full w-full"
+                                    src={media.objectURL}
+                                  />
+                                );
 
-                                case MediaCategory.VIDEO:
-                                  return (
-                                    <video
-                                      autoPlay
-                                      className="object-cover mx-auto"
-                                      loop
-                                      muted
-                                      src={previewUrl}
-                                    />
-                                  );
-                              }
-                            })()}
-                          </div>
-                        )}
+                              case MediaCategory.VIDEO:
+                                return (
+                                  <video
+                                    autoPlay
+                                    className="h-full w-full"
+                                    loop
+                                    muted
+                                    src={media.objectURL}
+                                  />
+                                );
+                            }
+                          })()}
+                        </div>
+                      )}
                     </div>
                   </IonButton>
 

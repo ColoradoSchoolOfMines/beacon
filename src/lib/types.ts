@@ -269,7 +269,22 @@ export interface PostCreate {
   /**
    * Post media
    */
-  media?: File;
+  media?: {
+    /**
+     * Media aspect ratio
+     */
+    aspectRatio: number;
+
+    /**
+     * Media blur hash
+     */
+    blurHash: string;
+
+    /**
+     * Media blob
+     */
+    blob: Blob;
+  };
 
   /**
    * Whether or not the post is anonymous

@@ -137,7 +137,7 @@ export const PostCard: FC<PostCardProps> = ({
   // Variables
   const height = post.has_media
     ? Math.min(
-        Math.round(width / (post as Post<true>).aspect_ratio),
+        Math.floor(width / (post as Post<true>).aspect_ratio),
         MAX_MEDIA_DIMENSION,
       )
     : 0;
@@ -194,8 +194,8 @@ export const PostCard: FC<PostCardProps> = ({
         client.storage.from("media").getPublicUrl(`posts/${post.id}`, {
           transform: {
             quality: 90,
-            height: height,
-            width: width,
+            height,
+            width: Math.floor(width),
           },
         }).data.publicUrl,
         client.storage.from("media").getPublicUrl(`posts/${post.id}`).data
