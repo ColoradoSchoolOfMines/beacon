@@ -19,7 +19,7 @@ RUN npm install --omit=dev
 RUN npm run build
 
 # Base image (https://hub.docker.com/layers/library/caddy/2.7.6-alpine/images/sha256-a6054d207060158cd0f019d6a35907bf47d1f8dacf58cdb63075a930d8ebca38?context=explore)
-FROM caddy:2.7.6-alpine@sha256:95ce04978787e23e35143d23b8af2fbb6d6de55213b54a2e9ed2dbf8ffe7313c
+FROM caddy:2.8.1-alpine@sha256:54b067d60ae306670ab09f10b6f309f19e4e0f43927ae514d3740fbe7964872f
 
 # Install packages
 RUN apk add --no-cache wget
