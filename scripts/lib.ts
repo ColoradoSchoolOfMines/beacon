@@ -67,6 +67,7 @@ export const startSupabase = async () => {
     "supabase",
     [
       "start",
+      "--debug",
     ],
     {
       all: true,
@@ -90,6 +91,7 @@ export const resetSupabase = async () => {
     [
       "db",
       "reset",
+      "--debug",
     ],
     {
       all: true,
@@ -215,6 +217,7 @@ export const generateSupabaseSchema = async () => {
     "--local",
     "--schema",
     "public",
+    "--debug",
   ];
 
   // Generate the schema
@@ -259,6 +262,7 @@ export const writeSupabaseSchema = async () => {
     [
       frontendSchema,
       "--fix",
+      "--debug",
     ],
     {
       all: true,
