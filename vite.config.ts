@@ -1,3 +1,4 @@
+/* eslint-disable @limegrass/import-alias/import-alias */
 /**
  * @file Vite config
  * @see https://vitejs.dev/config/
@@ -85,6 +86,10 @@ export default defineConfig(async () => {
     ],
     server: {
       port: 3000,
+    },
+    test: {
+      outputFile: join(root, "test/vitest/index.html"),
+      reporters: ["default", "html"],
     },
   };
 });

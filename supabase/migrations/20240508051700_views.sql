@@ -119,6 +119,6 @@ AS (
     personalized_comment.private_commenter_id = auth.uid()
 
     -- Or only show comments for posts the user has access to
-    OR utilities.validate_post_access(post_id, auth.uid())
+    OR public.validate_post_access(post_id)
   )
 );

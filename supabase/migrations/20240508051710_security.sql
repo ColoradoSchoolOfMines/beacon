@@ -2,20 +2,71 @@
  * Setup security policies
  */
 
-/* --------------------------------------- Setup schemas --------------------------------------- */
+/* -------------------------------------- Reset privileges ------------------------------------- */
 
--- Auth
-GRANT ALL ON ALL TABLES IN SCHEMA auth TO postgres, service_role;
-GRANT ALL ON ALL SEQUENCES IN SCHEMA auth TO postgres, service_role;
+-- Alter default privileges
+ALTER DEFAULT PRIVILEGES IN SCHEMA extensions REVOKE ALL ON SEQUENCES FROM anon, authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA utilities REVOKE ALL ON SEQUENCES FROM anon, authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON SEQUENCES FROM anon, authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA storage REVOKE ALL ON SEQUENCES FROM anon, authenticated;
 
--- Utilities (Non-public helpers)
-REVOKE ALL ON SCHEMA utilities FROM anon, authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA extensions REVOKE ALL ON TABLES FROM anon, authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA utilities REVOKE ALL ON TABLES FROM anon, authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES FROM anon, authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA storage REVOKE ALL ON TABLES FROM anon, authenticated;
 
--- Public
-REVOKE ALL ON SCHEMA public FROM anon, authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA extensions REVOKE ALL ON ROUTINES FROM public, anon, authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA utilities REVOKE ALL ON ROUTINES FROM public, anon, authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON ROUTINES FROM public, anon, authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA storage REVOKE ALL ON ROUTINES FROM public, anon, authenticated;
+
+-- Revoke existing privileges
+REVOKE ALL PRIVILEGES ON DATABASE postgres FROM anon, authenticated;
+
+REVOKE ALL PRIVILEGES ON SCHEMA extensions FROM anon, authenticated;
+REVOKE ALL PRIVILEGES ON SCHEMA utilities FROM anon, authenticated;
+REVOKE ALL PRIVILEGES ON SCHEMA public FROM anon, authenticated;
+REVOKE ALL PRIVILEGES ON SCHEMA storage FROM anon, authenticated;
+
+REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA extensions FROM anon, authenticated;
+REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA utilities FROM anon, authenticated;
+REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM anon, authenticated;
+REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA storage FROM anon, authenticated;
+
+REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA extensions FROM anon, authenticated;
+REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA utilities FROM anon, authenticated;
 REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM anon, authenticated;
+REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA storage FROM anon, authenticated;
 
-/* ----------------------------------- Setup role permissions ---------------------------------- */
+REVOKE ALL PRIVILEGES ON ALL ROUTINES IN SCHEMA extensions FROM public, anon, authenticated;
+REVOKE ALL PRIVILEGES ON ALL ROUTINES IN SCHEMA utilities FROM public, anon, authenticated;
+REVOKE ALL PRIVILEGES ON ALL ROUTINES IN SCHEMA public FROM public, anon, authenticated;
+REVOKE ALL PRIVILEGES ON ALL ROUTINES IN SCHEMA storage FROM public, anon, authenticated;
+
+/* ----------------------------------- Setup type privileges ----------------------------------- */
+
+-- Extensions
+GRANT USAGE ON SCHEMA extensions TO authenticated;
+
+/* ---------------------------------- Setup routine privileges --------------------------------- */
+
+-- Public routines
+GRANT EXECUTE ON FUNCTION public.validate_post_access(UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.validate_media_object_name(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.delete_account() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.distance_to(extensions.GEOGRAPHY(POINT, 4326)) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.get_latest_location() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.calculate_rank(DOUBLE PRECISION, BIGINT, TIMESTAMPTZ) TO authenticated;
+
+/* ----------------------------------- Setup view privileges ----------------------------------- */
+
+-- Posts
+GRANT SELECT ON public.personalized_posts TO authenticated;
+
+-- Comments
+GRANT SELECT ON public.personalized_comments TO authenticated;
+
+/* ----------------------------------- Setup table privileges ---------------------------------- */
 
 -- Profiles
 GRANT SELECT ON public.profiles TO authenticated;
@@ -28,7 +79,6 @@ GRANT INSERT (
 ON public.locations TO authenticated;
 
 -- Posts
-GRANT SELECT ON public.personalized_posts TO authenticated;
 GRANT SELECT (id) ON public.posts TO authenticated;
 GRANT DELETE ON public.posts TO authenticated;
 GRANT INSERT (
@@ -64,7 +114,6 @@ GRANT INSERT (
 ON public.post_reports TO authenticated;
 
 -- Comments
-GRANT SELECT ON public.personalized_comments TO authenticated;
 GRANT SELECT (id) ON public.comments TO authenticated;
 GRANT DELETE ON public.comments TO authenticated;
 GRANT INSERT (
@@ -97,10 +146,7 @@ GRANT INSERT (
 )
 ON public.comment_reports TO authenticated;
 
--- Public functions
-GRANT EXECUTE ON FUNCTION public.distance_to(extensions.GEOGRAPHY(POINT, 4326)) TO authenticated;
-
-/* ----------------------------- Row-level security (RLS) policies ----------------------------- */
+/* -------------------------- Setup Row-level security (RLS) policies -------------------------- */
 
 -- Enable row-level security
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
@@ -244,7 +290,7 @@ USING (
   private_commenter_id = (SELECT auth.uid())
 
   -- Or only show comments for posts the user has access to
-  OR utilities.validate_post_access(post_id, (SELECT auth.uid()))
+  OR public.validate_post_access(post_id)
 );
 
 CREATE POLICY insert_comments
@@ -344,7 +390,7 @@ WITH CHECK (
   bucket_id = 'media'
 
   -- Valiate the object name
-  AND utilities.validate_media_object_name(name, (SELECT auth.uid()))
+  AND public.validate_media_object_name(name)
 );
 
 CREATE POLICY delete_media_objects
@@ -356,5 +402,5 @@ USING (
   bucket_id = 'media'
 
   -- Valiate the object name
-  AND utilities.validate_media_object_name(name, (SELECT auth.uid()))
+  AND public.validate_media_object_name(name)
 );

@@ -1,8 +1,8 @@
 /**
- * Setup functions
+ * Setup routines
  */
 
-/* --------------------------------- Private utility functions --------------------------------- */
+/* ---------------------------------- Private utility routines --------------------------------- */
 
 -- Generate a random double precision number between 0 (inclusive) and 1 (exclusive), using crypto-safe random data
 --
@@ -126,118 +126,7 @@ BEGIN
 END;
 $$;
 
--- Validate access to a post
-CREATE OR REPLACE FUNCTION utilities.validate_post_access(
-  _post_id UUID,
-  _user_id UUID
-)
-RETURNS BOOLEAN
-SECURITY DEFINER
-STABLE
-LANGUAGE plpgsql
-SET search_path = ''
-AS $$
-BEGIN
-  RETURN EXISTS (
-    SELECT 1
-    FROM public.posts post
-    WHERE
-      -- Only get the specified post
-      post.id = _post_id
-
-      AND (
-        -- Only get posts for which the user is the poster
-        post.private_poster_id = _user_id
-
-        -- Or only get posts for which the user is within the post's radius
-        OR public.distance_to(post.private_location) <= post.radius
-      )
-  );
-END;
-$$;
-
--- Validate a media object name
-CREATE OR REPLACE FUNCTION utilities.validate_media_object_name(
-  _object_name TEXT,
-  _user_id UUID
-)
-RETURNS BOOLEAN
-SECURITY DEFINER
-STABLE
-LANGUAGE plpgsql
-SET search_path = ''
-AS $$
-DECLARE
-  -- Parsed name segments
-  _segments TEXT[];
-BEGIN
-  -- Parse the name
-  _segments = STRING_TO_ARRAY(_object_name, '/');
-
-  -- Return false if the name has an incorrect number of segments
-  IF ARRAY_LENGTH(_segments, 1) != 2 THEN
-    RETURN FALSE;
-  END IF;
-
-  -- Posts category
-  IF _segments[1] = 'posts' THEN
-    -- Check that the user owns the corresponding post and that the post should have media
-    RETURN EXISTS(
-      SELECT 1
-      FROM public.posts
-      WHERE
-        private_poster_id = _user_id
-        AND has_media = TRUE
-        AND id = _segments[2]::UUID
-    );
-
-  -- Unknown media category
-  ELSE
-    RETURN FALSE;
-  END IF;
-END;
-$$;
-
--- Get the latest location for a user, raising an exception if there's no previous location or if the previous location is too old
-CREATE OR REPLACE FUNCTION utilities.get_latest_location(
-  -- User ID for which to get the latest location
-  _user_id UUID
-)
-RETURNS extensions.GEOGRAPHY(POINT, 4326)
-SECURITY DEFINER
-VOLATILE
-LANGUAGE plpgsql
-SET search_path = ''
-AS $$
-DECLARE
-  -- Created at
-  _created_at TIMESTAMPTZ;
-
-  -- Location
-  _location extensions.GEOGRAPHY(POINT, 4326);
-BEGIN
-  -- Get the latest location
-  SELECT created_at, location INTO _created_at, _location
-  FROM public.locations
-  WHERE user_id = _user_id
-  ORDER BY created_at DESC
-  LIMIT 1;
-
-  -- No previous location
-  IF _created_at IS NULL AND _location IS NULL THEN
-    RAISE EXCEPTION 'You do not have a location set';
-  END IF;
-
-  -- Previous location too old
-  IF _created_at < (NOW() - INTERVAL '1 hour') THEN
-    RAISE EXCEPTION 'Your location is too old';
-  END IF;
-
-  RETURN _location;
-END;
-$$;
-
-/* ------------------------------------- Trigger functions ------------------------------------- */
+/* -------------------------------------- Trigger routines ------------------------------------- */
 
 -- Prune locations trigger function
 CREATE OR REPLACE FUNCTION utilities.prune_locations_trigger()
@@ -591,7 +480,77 @@ BEGIN
 END;
 $$;
 
-/* -------------------------------------- Public functions ------------------------------------- */
+/* -------------------------------------- Public routines -------------------------------------- */
+
+-- Validate access to a post
+CREATE OR REPLACE FUNCTION public.validate_post_access(
+  _post_id UUID
+)
+RETURNS BOOLEAN
+SECURITY DEFINER
+STABLE
+LANGUAGE plpgsql
+SET search_path = ''
+AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1
+    FROM public.posts post
+    WHERE
+      -- Only get the specified post
+      post.id = _post_id
+
+      AND (
+        -- Only get posts for which the current user is the poster
+        post.private_poster_id = auth.uid()
+
+        -- Or only get posts for which the user is within the post's radius
+        OR public.distance_to(post.private_location) <= post.radius
+      )
+  );
+END;
+$$;
+
+-- Validate a media object name
+CREATE OR REPLACE FUNCTION public.validate_media_object_name(
+  _object_name TEXT
+)
+RETURNS BOOLEAN
+SECURITY DEFINER
+STABLE
+LANGUAGE plpgsql
+SET search_path = ''
+AS $$
+DECLARE
+  -- Parsed name segments
+  _segments TEXT[];
+BEGIN
+  -- Parse the name
+  _segments = STRING_TO_ARRAY(_object_name, '/');
+
+  -- Return false if the name has an incorrect number of segments
+  IF ARRAY_LENGTH(_segments, 1) != 2 THEN
+    RETURN FALSE;
+  END IF;
+
+  -- Posts category
+  IF _segments[1] = 'posts' THEN
+    -- Check that the current user owns the corresponding post and that the post should have media
+    RETURN EXISTS(
+      SELECT 1
+      FROM public.posts
+      WHERE
+        private_poster_id = auth.uid()
+        AND has_media = TRUE
+        AND id = _segments[2]::UUID
+    );
+
+  -- Unknown media category
+  ELSE
+    RETURN FALSE;
+  END IF;
+END;
+$$;
 
 -- Delete a user's account
 CREATE OR REPLACE FUNCTION public.delete_account()
@@ -621,9 +580,45 @@ SET search_path = ''
 AS $$
 DECLARE
   -- Current user's location
-  _user_location extensions.GEOGRAPHY(POINT, 4326) := utilities.get_latest_location(auth.uid());
+  _user_location extensions.GEOGRAPHY(POINT, 4326) := public.get_latest_location();
 BEGIN
   RETURN extensions.ST_Distance(_user_location, _other_location);
+END;
+$$;
+
+-- Get the latest location for the current user, raising an exception if there's no previous location or if the previous location is too old
+CREATE OR REPLACE FUNCTION public.get_latest_location()
+RETURNS extensions.GEOGRAPHY(POINT, 4326)
+SECURITY DEFINER
+VOLATILE
+LANGUAGE plpgsql
+SET search_path = ''
+AS $$
+DECLARE
+  -- Created at
+  _created_at TIMESTAMPTZ;
+
+  -- Location
+  _location extensions.GEOGRAPHY(POINT, 4326);
+BEGIN
+  -- Get the latest location
+  SELECT created_at, location INTO _created_at, _location
+  FROM public.locations
+  WHERE user_id = auth.uid()
+  ORDER BY created_at DESC
+  LIMIT 1;
+
+  -- No previous location
+  IF _created_at IS NULL AND _location IS NULL THEN
+    RAISE EXCEPTION 'You do not have a location set';
+  END IF;
+
+  -- Previous location too old
+  IF _created_at < (NOW() - INTERVAL '1 hour') THEN
+    RAISE EXCEPTION 'Your location is too old';
+  END IF;
+
+  RETURN _location;
 END;
 $$;
 

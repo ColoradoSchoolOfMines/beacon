@@ -2,13 +2,14 @@
  * @file Reset Supabase
  */
 
-import {resetSupabase, writeEnvs} from "./lib";
+import {writeEnvs} from "#/scripts/lib";
+import {reset} from "#/supabase/supabase";
 
 /**
  * Main async function
  */
 const main = async () => {
-  await resetSupabase();
+  await reset();
   await writeEnvs();
 
   // Log

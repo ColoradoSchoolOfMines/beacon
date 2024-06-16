@@ -11,6 +11,9 @@
     "analyze": "vite-bundle-visualizer --open",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "test": "vitest --run",
+    "test:preview": "vite preview --outDir test/vitest",
+    "test:watch": "vitest",
     "supabase:reset": "tsx scripts/reset.ts",
     "supabase:start": "tsx scripts/start.ts",
     "supabase:stop": "supabase stop",
@@ -73,6 +76,8 @@
     "@limegrass/eslint-plugin-import-alias": "^1.4.1",
     "@typescript-eslint/eslint-plugin": "^7.13.0",
     "@typescript-eslint/parser": "^7.13.0",
+    "@vitest/coverage-v8": "^1.6.0",
+    "@vitest/ui": "^1.6.0",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-jsdoc": "^48.2.12",
@@ -83,6 +88,7 @@
     "prettier": "^3.3.2",
     "prettier-plugin-multiline-arrays": "^3.0.6",
     "supabase": "^1.176.10",
-    "vite-bundle-visualizer": "^1.2.1"
+    "vite-bundle-visualizer": "^1.2.1",
+    "vitest": "^1.6.0"
   }
 }

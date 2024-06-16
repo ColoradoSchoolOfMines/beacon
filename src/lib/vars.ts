@@ -10,6 +10,11 @@ const RUNTIME_VARS = (
 ) as ImportMetaEnv;
 
 /**
+ * Current environment mode
+ */
+const MODE = import.meta.env.MODE;
+
+/**
  * Current semantic version
  */
 const VERSION = import.meta.env.VERSION;
@@ -70,6 +75,7 @@ export {
   GIT_BRANCH,
   GIT_COMMIT,
   HCAPTCHA_SITE_KEY,
+  MODE,
   SENTRY_DSN,
   SUPABASE_ANON_KEY,
   SUPABASE_URL,

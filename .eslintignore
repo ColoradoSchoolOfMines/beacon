@@ -1,3 +1,13 @@
+# Runtime variables
+public/runtime-vars.js
+
+# Test reports
+/test
+
+# Supabase
+.branches
+.temp
+
 # Ionic
 .ionic
 .idea

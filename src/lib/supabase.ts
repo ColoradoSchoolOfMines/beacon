@@ -7,7 +7,7 @@ import {SupabaseClient} from "@supabase/supabase-js";
 import {Database} from "~/lib/schema";
 import {useEphemeralStore} from "~/lib/stores/ephemeral";
 import {GlobalMessageMetadata} from "~/lib/types";
-import {SUPABASE_ANON_KEY, SUPABASE_URL} from "~/lib/vars";
+import {MODE, SUPABASE_ANON_KEY, SUPABASE_URL} from "~/lib/vars";
 
 /**
  * Generic network error message metadata symbol
@@ -45,8 +45,10 @@ export const client = new SupabaseClient<Database>(
         try {
           res = await fetch(input as any, init);
         } catch (error) {
-          // Log the error
-          console.error(error);
+          // Log the error (if not running under Vitest)
+          if (MODE !== "test") {
+            console.error(error);
+          }
 
           // Display the message
           setMessage({
@@ -90,8 +92,10 @@ export const client = new SupabaseClient<Database>(
             description,
           };
 
-          // Log the error
-          console.error(err);
+          // Log the error (if not running under Vitest)
+          if (MODE !== "test") {
+            console.error(err);
+          }
 
           // Display the message
           setMessage(err);

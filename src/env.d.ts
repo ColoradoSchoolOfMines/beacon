@@ -56,7 +56,3 @@ interface BeforeInstallPromptEvent extends Event {
     platform: string;
   }>;
 }
-
-// interface WindowEventMap {
-//   beforeinstallprompt: BeforeInstallPromptEvent;
-// }

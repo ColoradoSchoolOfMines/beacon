@@ -2,7 +2,7 @@
  * @file Generate Supabase schema files
  */
 
-import {writeSupabaseSchema} from "./lib";
+import {writeSupabaseSchema} from "#/scripts/lib";
 
 /**
  * Main async function
