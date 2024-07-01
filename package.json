@@ -87,7 +87,7 @@
     "eslint-plugin-unicorn": "^54.0.0",
     "prettier": "^3.3.2",
     "prettier-plugin-multiline-arrays": "^3.0.6",
-    "supabase": "^1.176.10",
+    "supabase": "^1.178.2",
     "vite-bundle-visualizer": "^1.2.1",
     "vitest": "^1.6.0"
   }
