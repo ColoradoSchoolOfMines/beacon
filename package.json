@@ -43,7 +43,7 @@
     "blurhash": "^2.0.5",
     "colord": "^2.9.3",
     "dotenv": "^16.4.5",
-    "execa": "^9.2.0",
+    "execa": "^9.3.0",
     "hast-util-sanitize": "^5.0.1",
     "humanize-duration": "^3.32.1",
     "ionicons": "^7.4.0",
