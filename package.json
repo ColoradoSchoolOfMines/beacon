@@ -85,7 +85,7 @@
     "eslint-plugin-react": "^7.34.2",
     "eslint-plugin-simple-import-sort": "^12.1.0",
     "eslint-plugin-unicorn": "^55.0.0",
-    "prettier": "^3.3.2",
+    "prettier": "^3.3.3",
     "prettier-plugin-multiline-arrays": "^3.0.6",
     "supabase": "^1.178.2",
     "vite-bundle-visualizer": "^1.2.1",
