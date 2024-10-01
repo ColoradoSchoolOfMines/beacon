@@ -36,7 +36,7 @@
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
     "@types/react-router-dom": "^5.3.3",
-    "@unocss/preset-wind": "^0.61.0",
+    "@unocss/preset-wind": "^0.63.1",
     "@unocss/transformer-directives": "^0.61.0",
     "@vitejs/plugin-legacy": "^5.4.1",
     "@vitejs/plugin-react": "^4.3.1",
