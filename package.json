@@ -34,7 +34,7 @@
     "@types/lodash-es": "^4.17.12",
     "@types/luxon": "^3.4.2",
     "@types/react": "^18.3.5",
-    "@types/react-dom": "^18.3.0",
+    "@types/react-dom": "^18.3.1",
     "@types/react-router-dom": "^5.3.3",
     "@unocss/preset-wind": "^0.63.1",
     "@unocss/transformer-directives": "^0.61.0",
