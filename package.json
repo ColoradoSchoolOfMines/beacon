@@ -27,7 +27,7 @@
     "@ionic/react-router": "^8.2.2",
     "@ionic/storage": "^4.0.0",
     "@sentry/browser": "^8.32.0",
-    "@supabase/sentry-js-integration": "^0.2.0",
+    "@supabase/sentry-js-integration": "^0.3.0",
     "@supabase/supabase-js": "^2.45.0",
     "@types/humanize-duration": "^3.27.4",
     "@types/leaflet": "^1.9.12",
