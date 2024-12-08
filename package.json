@@ -28,7 +28,7 @@
     "@ionic/storage": "^4.0.0",
     "@sentry/browser": "^8.32.0",
     "@supabase/sentry-js-integration": "^0.3.0",
-    "@supabase/supabase-js": "^2.45.0",
+    "@supabase/supabase-js": "^2.47.2",
     "@types/humanize-duration": "^3.27.4",
     "@types/leaflet": "^1.9.12",
     "@types/lodash-es": "^4.17.12",
