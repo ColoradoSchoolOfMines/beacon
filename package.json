@@ -83,7 +83,7 @@
     "eslint-plugin-jsdoc": "^48.2.12",
     "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-react": "^7.37.2",
-    "eslint-plugin-simple-import-sort": "^12.1.0",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-unicorn": "^56.0.1",
     "prettier": "^3.4.1",
     "prettier-plugin-multiline-arrays": "^3.0.6",
