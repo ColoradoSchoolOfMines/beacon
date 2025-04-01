@@ -89,6 +89,6 @@
     "prettier-plugin-multiline-arrays": "^3.0.6",
     "supabase": "^1.207.9",
     "vite-bundle-visualizer": "^1.2.1",
-    "vitest": "^1.6.1"
+    "vitest": "^3.1.1"
   }
 }
